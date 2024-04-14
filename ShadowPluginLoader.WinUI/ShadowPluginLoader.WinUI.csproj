@@ -20,6 +20,7 @@
 		<Copyright>Copyright 2024</Copyright>
 		<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
 		<PackageOutputPath>.\NugetPackages</PackageOutputPath>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,5 +30,7 @@
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755"/>
         <PackageReference Include="Serilog" Version="3.1.1"/>
     </ItemGroup>
-
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 </Project>
