@@ -158,16 +158,14 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// <exception cref="PluginImportError">Plugin Type Is Null</exception>
     protected void CheckPluginType(Type? plugin)
     {
-        if (plugin is null) throw new PluginImportError($"Plugin Type Not Found");
+        if (plugin is null) throw new PluginImportError("Plugin Type Not Found");
     }
 
     /// <summary>
     /// Check PluginMetaData(Default: No Check)
     /// </summary>
     /// <param name="meta">PluginMetaData</param>
-    protected void CheckPluginMetaData(TIMeta meta)
-    {
-    }
+    protected abstract void CheckPluginMetaData(TIMeta meta);
 
     /// <summary>
     /// LoadPlugin From SortedPluginTypes
@@ -246,7 +244,6 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
     /// <param name="meta">PluginMetaData</param>
-    protected void LoadPluginDi(Type plugin, TIMeta meta)
-    {
-    }
+    protected abstract void LoadPluginDi(Type plugin, TIMeta meta);
+
 }

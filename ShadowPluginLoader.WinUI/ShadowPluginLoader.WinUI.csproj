@@ -9,8 +9,8 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         
         <!-- Nuget -->
-        <Version>2023.12.31.43</Version>
-		<PackageId>ShadowViewer.Core</PackageId>
+        <Version>1.0.0.1</Version>
+		<PackageId>ShadowPluginLoader.WinUI</PackageId>
 		<Authors>kitUIN</Authors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
