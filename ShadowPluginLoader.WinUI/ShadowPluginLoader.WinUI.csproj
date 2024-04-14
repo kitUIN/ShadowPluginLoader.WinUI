@@ -7,6 +7,19 @@
         <UseWinUI>true</UseWinUI>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        
+        <!-- Nuget -->
+        <Version>2023.12.31.43</Version>
+		<PackageId>ShadowViewer.Core</PackageId>
+		<Authors>kitUIN</Authors>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
+		<Description>✨ ShadowPluginLoader | WinUI3✨</Description>
+		<Copyright>Copyright 2024</Copyright>
+		<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
+		<PackageOutputPath>.\NugetPackages</PackageOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
