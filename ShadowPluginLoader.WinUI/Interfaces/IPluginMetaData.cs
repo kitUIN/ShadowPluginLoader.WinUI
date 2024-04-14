@@ -1,16 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ShadowPluginLoader.WinUI.Interfaces;
 
-namespace ShadowPluginLoader.WinUI.Interfaces
+/// <summary>
+/// Default PluginMetaData Interface
+/// </summary>
+public interface IPluginMetaData
 {
-    public interface IPluginMetaData
-    {
-        string Id { get; }
-        string Name { get; }
-        string Version { get; }
-        string[] Requires { get; }
-    }
+    /// <summary>
+    /// Plugin Id
+    /// </summary>
+    string Id { get; }
+    /// <summary>
+    /// Plugin Name
+    /// </summary>
+    string Name { get; }
+    /// <summary>
+    /// Plugin Version
+    /// </summary>
+    string Version { get; }
+    /// <summary>
+    /// Plugin Requires
+    /// </summary>
+    string[] Requires { get; }
 }

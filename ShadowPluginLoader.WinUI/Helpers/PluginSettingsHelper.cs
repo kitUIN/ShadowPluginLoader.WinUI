@@ -2,10 +2,18 @@
 
 namespace ShadowPluginLoader.WinUI.Helpers;
 
-public class PluginStatusHelper
+/// <summary>
+/// Plugin Settings Helper
+/// </summary>
+public static class PluginSettingsHelper
 {
     private const string Container = "ShadowPluginLoader";
 
+    /// <summary>
+    /// If Key Exists In The Local Settings
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <returns></returns>
     public static bool Contains(string key)
     {
         var coreSettings =
@@ -13,7 +21,12 @@ public class PluginStatusHelper
                     ApplicationDataCreateDisposition.Always);
         return coreSettings.Values.ContainsKey(key);
     }
-    private static ApplicationDataCompositeValue GetPlugin(string key)
+    /// <summary>
+    /// Get Plugin Setting
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <returns></returns>
+    private static ApplicationDataCompositeValue GetPluginSetting(string key)
     {
         ApplicationDataCompositeValue composite;
         if (Contains(key))
@@ -34,21 +47,36 @@ public class PluginStatusHelper
         }
         return composite;
     }
-    private static void SetPlugin(string key, ApplicationDataCompositeValue value)
+    /// <summary>
+    /// Set Plugin Setting
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <param name="value">Plugin Setting</param>
+    private static void SetPluginSetting(string key, ApplicationDataCompositeValue value)
     {
         var coreSettings =
                 ApplicationData.Current.LocalSettings.CreateContainer(Container,
                     ApplicationDataCreateDisposition.Always);
         coreSettings.Values[key] = value;
     }
-    public static bool GetStatus(string key)
+    /// <summary>
+    /// Get Plugin IsEnabled
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <returns></returns>
+    public static bool GetPluginIsEnabled(string key)
     {
-        return (bool) GetPlugin(key)["enable"];
+        return (bool) GetPluginSetting(key)["enable"];
     }
-    public static void SetStatus(string key, bool value)
+    /// <summary>
+    /// Set Plugin Enabled
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <param name="value">Is Enabled</param>
+    public static void SetPluginEnabled(string key, bool value)
     {
-        var config = GetPlugin(key);
+        var config = GetPluginSetting(key);
         config["enable"] = value;
-        SetPlugin(key, config);
+        SetPluginSetting(key, config);
     }
 }

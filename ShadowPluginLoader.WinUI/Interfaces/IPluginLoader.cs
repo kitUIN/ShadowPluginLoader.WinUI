@@ -1,64 +1,88 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace ShadowPluginLoader.WinUI.Interfaces
+namespace ShadowPluginLoader.WinUI.Interfaces;
+
+/// <summary>
+/// PluginLoader Interface
+/// </summary>
+/// <typeparam name="TIPlugin">Plugin Base Interface, Default: <see cref="IPlugin"/></typeparam>
+public interface IPluginLoader<TIPlugin> where TIPlugin: IPlugin
 {
     /// <summary>
-    /// PluginLoader Interface
+    /// Import Plugin From Type
     /// </summary>
-    /// <typeparam name="IPT">Plugin Base Interface, Default: <see cref="IPlugin"/></typeparam>
-    public interface IPluginLoader<IPT> where IPT: IPlugin
-    {
-        /// <summary>
-        /// 导入一个插件,从类型T中
-        /// </summary>
-        void ImportOne<T>() where T : IPT;
-        /// <summary>
-        /// 从文件夹中导入一个插件
-        /// </summary>
-        Task ImportOneAsync(string pluginPath);
-        /// <summary>
-        /// 从插件文件夹导入插件
-        /// </summary>
-        Task ImportAllAsync(string directoryPath);
+    /// <param name="type">Plugin Type</param>
+    void Import(Type type);
+    /// <summary>
+    /// Import Plugins From Type
+    /// </summary>
+    /// <param name="types">Plugin Type List</param>
+    void Import(IEnumerable<Type> types);
+    
+    /// <summary>
+    /// Import Plugin From Plugin Dll Path
+    /// </summary>
+    /// <param name="pluginPath">Plugin Dll Path</param>
+    Task ImportAsync(string pluginPath);
+    
+    /// <summary>
+    /// Import Plugin From Plugin Dir Path
+    /// </summary>
+    /// <param name="directoryPath">Plugin Dir Path</param>
+    /// <returns></returns>
+    Task ImportAllAsync(string directoryPath);
 
-        /// <summary>
-        /// 获取已经启动的插件
-        /// </summary>
-        IList<IPT> GetEnabledPlugins();
-        /// <summary>
-        /// 获取所有插件
-        /// </summary>
-        IList<IPT> GetPlugins();
-        /// <summary>
-        /// 获取插件
-        /// </summary>
-        IPT? GetPlugin(string id);
-        /// <summary>
-        /// 获取已经启动的插件
-        /// </summary>
-        IPT? GetEnabledPlugin(string id);
+    /// <summary>
+    /// Get Enabled Plugins
+    /// </summary>
+    /// <returns>Enabled Plugins</returns>
+    IList<TIPlugin> GetEnabledPlugins();
+    /// <summary>
+    /// Get All Plugins
+    /// </summary>
+    /// <returns>All Plugins</returns>
+    IList<TIPlugin> GetPlugins();
+    /// <summary>
+    /// Get Plugin By Id
+    /// </summary>
+    /// <returns>Plugin or Null</returns>
+    TIPlugin? GetPlugin(string id);
+    /// <summary>
+    /// Get Enabled Plugin By Id
+    /// </summary>
+    /// <returns>Plugin or Null</returns>
+    TIPlugin? GetEnabledPlugin(string id);
 
-        /// <summary>
-        /// 插件是否启用
-        /// </summary>
-        bool? IsEnabled(string id);
+    /// <summary>
+    /// Whether The Plugin Is Enabled Or Not
+    /// </summary>
+    /// <param name="id">Plugin Id</param>
+    /// <returns>true Or false Or null</returns>
+    bool? IsEnabled(string id);
 
-        /// <summary>
-        /// 启用插件
-        /// </summary>
-        void PluginEnabled(string id);
+    /// <summary>
+    /// Enable Plugin
+    /// </summary>
+    /// <param name="id">Plugin Id</param>
+    void EnablePlugin(string id);
 
-        /// <summary>
-        /// 禁用插件
-        /// </summary>
-        void PluginDisabled(string id);
-        /// <summary>
-        /// 删除插件
-        /// </summary>
-        void Delete(string id);
-    }
+    /// <summary>
+    /// Disable Plugin
+    /// </summary>
+    /// <param name="id">Plugin Id</param>
+    void DisablePlugin(string id);
+    
+    /// <summary>
+    /// Delete Plugin
+    /// </summary>
+    /// <param name="id">Plugin Id</param>
+    void DeletePlugin(string id);
+    
+    /// <summary>
+    /// Upgrade Plugin
+    /// </summary>
+    /// <param name="id">Plugin Id</param>
+    void UpgradePlugin(string id);
 }
