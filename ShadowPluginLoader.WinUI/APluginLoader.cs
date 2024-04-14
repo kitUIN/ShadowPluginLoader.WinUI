@@ -187,7 +187,7 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// <exception cref="PluginImportError">PluginMetaData Type Is Null</exception>
     protected TIMeta GetAndCheckPluginMetaData(Type plugin)
     {
-        var meta = plugin.GetPluginMetaData<TIMeta>();
+        var meta = plugin.GetPluginMetaData<TMeta,TIMeta>();
         if (meta is null) throw new PluginImportError($"{plugin.FullName}: MetaData Not Found");
         CheckPluginMetaData(meta);
         return meta;
