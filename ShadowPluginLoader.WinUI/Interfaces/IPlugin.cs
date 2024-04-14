@@ -18,7 +18,7 @@ public interface IPlugin
     /// <summary>
     /// Know that this Plugin is Enabled/Disabled
     /// </summary>
-    bool IsEnabled { get; }
+    bool IsEnabled { get; set; }
     /// <summary>
     /// Enable this Plugin
     /// </summary>
