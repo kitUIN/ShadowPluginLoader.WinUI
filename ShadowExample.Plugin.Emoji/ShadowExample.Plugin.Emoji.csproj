@@ -1,18 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>ShadowExample.Plugin.Emoji</RootNamespace>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+        <RootNamespace>ShadowExample.Plugin.Emoji</RootNamespace>
+        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+        <UseWinUI>true</UseWinUI>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <!-- Nuget && Plugin Meta -->
 
-  <ItemGroup>
-      <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
-      <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
-  </ItemGroup>
+        <!-- Nuget Id -->
+        <PackageId>ShadowPluginLoader.WinUI</PackageId>
+        <!-- Nuget Version (Plugin Version) -->
+        <Version>1.0.0.1</Version>
+        <!-- Plugin Id -->
+        <PluginId>emoji</PluginId>
+        <!-- Plugin Name -->
+        <PluginName>emoji</PluginName>
+        <!-- Nuget Authors -->
+        <Authors>kitUIN</Authors>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
+        <Description>✨ ShadowPluginLoader | WinUI3✨</Description>
+        <Copyright>Copyright 2024</Copyright>
+        <PackageOutputPath>.\NugetPackages</PackageOutputPath>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ShadowExample.Core\ShadowExample.Core.csproj" />
-  </ItemGroup>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002"/>
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ShadowExample.Core\ShadowExample.Core.csproj"/>
+
+
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Microsoft.Build.Utilities">
+            <SpecificVersion>False</SpecificVersion>
+            <HintPath>.\Microsoft.Build.Utilities.dll</HintPath>
+        </Reference>
+	
+        <Reference Include="System.Runtime">
+            <SpecificVersion>False</SpecificVersion>
+            <HintPath>.\System.Runtime.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <UsingTask TaskName="PluginMetaBuildTask"
+               Runtime="*" Architecture="x64"
+               AssemblyFile="D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\ShadowExample.Plugin.Emoji\PluginMetaBuild.dll"/>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+
+        <Message Text="BeforePublish" Importance="high"/>
+        <PluginMetaBuildTask/>
+    </Target>
 </Project>

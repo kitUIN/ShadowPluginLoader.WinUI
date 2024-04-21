@@ -1,19 +1,20 @@
-﻿using System;
+﻿using ShadowPluginLoader.MetaAttributes;
+using System;
 
 namespace ShadowExample.Core.Plugins;
 
-public class ExampleMetaData: Attribute,IExampleMetaData
+public class ExampleMetaData : Attribute, IExampleMetaData
 {
-    public string Id { get; }
-    public string Name { get; }
-    public string Version { get; }
-    public string[] Requires { get; }
+    [Meta(Required = true)]
+    public string Id { get; init; }
 
-    public ExampleMetaData(string id, string name, string version, string[] requires)
-    {
-        Id = id;
-        Name = name;
-        Version = version;
-        Requires = requires;
-    }
+    [Meta(Required = true)]
+    public string Name { get; init; }
+
+    [Meta(Required = true)]
+    public string Version { get; init; }
+
+    [Meta(Required = true)]
+    public string[] Dependencies { get; init; }
+
 }
