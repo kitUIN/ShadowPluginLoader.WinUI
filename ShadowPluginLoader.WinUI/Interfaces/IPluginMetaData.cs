@@ -3,7 +3,7 @@ using MetaAttributes;
 /// <summary>
 /// Default PluginMetaData Interface
 /// </summary>
-public interface IPluginMetaData
+internal interface IPluginMetaData
 {
     /// <summary>
     /// Plugin Id

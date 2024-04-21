@@ -5,7 +5,7 @@ using ShadowPluginLoader.WinUI.Interfaces;
 namespace ShadowPluginLoader.WinUI.Models;
 
 /// <summary>
-/// Default PluginMetaData
+/// Abstract PluginMetaData
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = true)]
 public abstract class AbstractPluginMetaData: Attribute, IPluginMetaData
