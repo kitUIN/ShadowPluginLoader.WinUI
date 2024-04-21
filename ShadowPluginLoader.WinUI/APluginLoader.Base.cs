@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -66,7 +67,7 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin> : IPluginLo
             _tempSortPlugins.Clear();
             _sortLoader.Clear();
             await CheckPluginMetaDataFromJson(new DirectoryInfo(pluginPath));
-            var sorted = PluginSortExtension.SortPlugin(_sortLoader, x => x.Requires, _tempSortPlugins);
+            var sorted = PluginSortExtension.SortPlugin(_sortLoader, x => x.Dependencies, _tempSortPlugins);
             LoadPluginType(sorted);
         }
         catch (PluginImportError e)

@@ -203,7 +203,7 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     {
         if (meta is null) throw new PluginImportError($"MetaData Not Found: {path}");
         CheckPluginMetaData(meta);
-        var sortData = new SortPluginData(meta.Id, meta.Requires);
+        var sortData = new SortPluginData(meta.Id, meta.Dependencies);
         if (_tempSortPlugins.ContainsKey(meta.Id) || _plugins.ContainsKey(meta.Id))
         {
             // If Loaded, Next One

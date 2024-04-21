@@ -1,5 +1,5 @@
 ﻿namespace ShadowPluginLoader.WinUI.Interfaces;
-
+using MetaAttributes;
 /// <summary>
 /// Default PluginMetaData Interface
 /// </summary>
@@ -8,17 +8,17 @@ public interface IPluginMetaData
     /// <summary>
     /// Plugin Id
     /// </summary>
-    string Id { get; }
+    string Id { get; init; }
     /// <summary>
     /// Plugin Name
     /// </summary>
-    string Name { get; }
+    string Name { get; init; }
     /// <summary>
     /// Plugin Version
     /// </summary>
-    string Version { get; }
+    string Version { get; init; }
     /// <summary>
-    /// Plugin Requires
+    /// Plugin Dependencies
     /// </summary>
-    string[] Requires { get; }
+    string[] Dependencies { get; init; }
 }

@@ -12,9 +12,9 @@ namespace ShadowPluginLoader.WinUI.Models
     public class SortPluginData
     {
         /// <summary>
-        /// Plugin Requires
+        /// Plugin Dependencies
         /// </summary>
-        public string[] Requires { get;}
+        public string[] Dependencies { get;}
         /// <summary>
         /// Plugin Id
         /// </summary>
@@ -27,11 +27,11 @@ namespace ShadowPluginLoader.WinUI.Models
         /// SortPluginData
         /// </summary>
         /// <param name="id">Plugin Id</param>
-        /// <param name="req">Requires</param>
+        /// <param name="req">Dependencies</param>
         public SortPluginData(string id ,string[] req) 
         {
             Id = id;
-            Requires = req;
+            Dependencies = req;
         }
     }
 }
