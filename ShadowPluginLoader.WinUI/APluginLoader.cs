@@ -15,7 +15,7 @@ using Path = System.IO.Path;
 
 namespace ShadowPluginLoader.WinUI;
 
-public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
+public abstract partial class APluginLoader<TMeta, TIPlugin>
 {
     /// <summary>
     /// Logger Print With Prefix
@@ -165,7 +165,7 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// Check PluginMetaData(Default: No Check)
     /// </summary>
     /// <param name="meta">PluginMetaData</param>
-    protected abstract void CheckPluginMetaData(TIMeta meta);
+    protected abstract void CheckPluginMetaData(TMeta meta);
 
     /// <summary>
     /// LoadPlugin From SortedPluginTypes
@@ -185,9 +185,9 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// <param name="plugin">PluginMetaData</param>
     /// <returns>PluginMetaData</returns>
     /// <exception cref="PluginImportError">PluginMetaData Type Is Null</exception>
-    protected TIMeta GetAndCheckPluginMetaData(Type plugin)
+    protected TMeta GetAndCheckPluginMetaData(Type plugin)
     {
-        var meta = plugin.GetPluginMetaData<TMeta,TIMeta>();
+        var meta = plugin.GetPluginMetaData<TMeta>();
         if (meta is null) throw new PluginImportError($"{plugin.FullName}: MetaData Not Found");
         CheckPluginMetaData(meta);
         return meta;
@@ -199,7 +199,7 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// <param name="meta">PluginMetaData</param>
     /// <param name="path">Plugin Dll Path</param>
     /// <exception cref="PluginImportError">PluginMetaData Is Null</exception>
-    protected async Task CheckPluginMetaDataAsync(TIMeta meta, string path)
+    protected async Task CheckPluginMetaDataAsync(TMeta meta, string path)
     {
         if (meta is null) throw new PluginImportError($"MetaData Not Found: {path}");
         CheckPluginMetaData(meta);
@@ -229,7 +229,7 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// <param name="meta">PluginMetaData</param>
     /// <returns>Plugin Instance</returns>
     /// <exception cref="PluginImportError">Can't Register Plugin</exception>
-    protected TIPlugin RegisterPluginMain(Type plugin, TIMeta meta)
+    protected TIPlugin RegisterPluginMain(Type plugin, TMeta meta)
     {
         Services.Register(typeof(TIPlugin), plugin, Reuse.Singleton);
         var instance = Services.ResolveMany<TIPlugin>()
@@ -244,6 +244,6 @@ public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin>
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
     /// <param name="meta">PluginMetaData</param>
-    protected abstract void LoadPluginDi(Type plugin, TIMeta meta);
+    protected abstract void LoadPluginDi(Type plugin, TMeta meta);
 
 }

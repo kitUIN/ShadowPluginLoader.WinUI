@@ -7,18 +7,18 @@ namespace ShadowPluginLoader.WinUI.Models;
 /// <summary>
 /// Default PluginMetaData
 /// </summary>
-[AttributeUsage(AttributeTargets.Class)]
-public class DefaultPluginMetaData: Attribute, IPluginMetaData
+[AttributeUsage(AttributeTargets.Class, Inherited = true)]
+public abstract class AbstractPluginMetaData: Attribute, IPluginMetaData
 {
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Id"/>
     /// </summary>
-    [Meta(Required = true)]
+    [Meta(Required = true, PropertyGroupName = "PackageId")]
     public string Id { get; init; }
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Name"/>
     /// </summary>
-    [Meta(Required = true)]
+    [Meta(Required = true, PropertyGroupName = "PluginName")]
     public string Name { get; init; }
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Version"/>

@@ -13,13 +13,11 @@ namespace ShadowPluginLoader.WinUI;
 /// <summary>
 /// Abstract PluginLoader
 /// </summary>
-/// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="Attribute"/>, TIMeta</typeparam>
-/// <typeparam name="TIMeta">Your Custom Interface IMetaData Assignable To <see cref="IPluginMetaData"/></typeparam>
+/// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
 /// <typeparam name="TIPlugin">Your Custom Interface IPlugin Assignable To <see cref="IPlugin"/></typeparam>
-public abstract partial class APluginLoader<TMeta, TIMeta, TIPlugin> : IPluginLoader<TIPlugin>
-    where TMeta : Attribute, TIMeta
+public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIPlugin>
+    where TMeta : AbstractPluginMetaData
     where TIPlugin : IPlugin
-    where TIMeta : IPluginMetaData
 {
     /// <summary>
     /// <inheritdoc cref="IPluginLoader{TIPlugin}.Import(Type)"/>
