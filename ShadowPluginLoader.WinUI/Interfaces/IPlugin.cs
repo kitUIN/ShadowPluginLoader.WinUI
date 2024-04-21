@@ -1,4 +1,6 @@
-﻿namespace ShadowPluginLoader.WinUI.Interfaces;
+﻿using ShadowPluginLoader.WinUI.Models;
+
+namespace ShadowPluginLoader.WinUI.Interfaces;
 
 /// <summary>
 /// Default Plugin Interface
@@ -13,7 +15,7 @@ public interface IPlugin
     /// <summary>
     /// Get meta data of this plugin
     /// </summary>
-    IPluginMetaData GetMetaData();
+    AbstractPluginMetaData GetMetaData();
 
     /// <summary>
     /// Know that this Plugin is Enabled/Disabled
