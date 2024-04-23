@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <IsRoslynComponent>true</IsRoslynComponent>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>10</LangVersion>
-        
-        <Version>1.0.0.1</Version>
+        <LangVersion>latest</LangVersion>
+
+        <Version>1.0.0.7</Version>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <PackageId>ShadowPluginLoader.SourceGenerator</PackageId>
         <Authors>kitUIN</Authors>
@@ -16,30 +15,24 @@
         <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowPluginLoader.SourceGenerator</PackageProjectUrl>
         <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowPluginLoader.SourceGenerator</RepositoryUrl>
         <Description>✨ ShadowPluginLoader SourceGenerator ✨</Description>
-        <PluginLang>zh-CN</PluginLang>
         <Copyright>Copyright 2023</Copyright>
-        <PackageTags>kitUIN;</PackageTags>
-        <PackageOutputPath>.\NugetPackages</PackageOutputPath>
-        <NoWarn>MSB3277</NoWarn>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageTags>kitUIN</PackageTags>
+        <PackageOutputPath>..\NugetPackages</PackageOutputPath>
+		<NoWarn>MSB3277</NoWarn>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-        <PackageReference Include="System.Text.Json" Version="6.0.6" GeneratePathProperty="true" PrivateAssets="all"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"  GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
-    <PropertyGroup>
-        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-    </PropertyGroup>
 
-    <Target Name="GetDependencyTargetPaths">
-        <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Text_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
-        </ItemGroup>
-    </Target>
     <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+        <None Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+        <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
