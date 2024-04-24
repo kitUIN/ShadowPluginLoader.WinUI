@@ -43,7 +43,14 @@ internal class PluginMetaGenerator : ISourceGenerator
             }
         }
     }
-
+    public string GetValue(JToken token)
+    {
+        return token.Type switch
+        {
+            JTokenType.String => $"\"{token.Value<string>()}\"",
+            _ => $"{token}",
+        };
+    }
     public void Execute(GeneratorExecutionContext context)
     {
         try
@@ -83,11 +90,16 @@ internal class PluginMetaGenerator : ISourceGenerator
                         {
                             if(attr.Value!.Type == JTokenType.Array)
                             {
-                                attrs.Add("new [] { " + string.Join(",", attr.Value.Values<string>()) + "}");
+                                var ll = new List<string>();
+                                foreach(var attr2 in attr.Value.Values())
+                                {
+                                    ll.Add(GetValue(attr2));
+                                }
+                                attrs.Add("new [] { " + string.Join(",", ll) + "}");
                             }
                             else
                             {
-                                attrs.Add($"{attr.Key} = {attr.Value}");
+                                attrs.Add($"{attr.Key} = {GetValue(attr.Value)}");
                             }
                         }
                         var meta = $"{metaType}({string.Join(",", attrs)})";
