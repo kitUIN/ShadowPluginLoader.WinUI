@@ -75,12 +75,20 @@ internal class PluginMetaGenerator : ISourceGenerator
                     if (classSymbol!.GetAttributes().Any(a =>
                             a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default)))
                     {
+                        
                         var np = PluginDNode!.Value<string>("Namespace");
                         var metaType = PluginDNode!.Value<string>("Type");
                         var attrs = new List<string>();
                         foreach (var attr in PluginNode!)
                         {
-                            attrs.Add($"{attr.Key} = {attr.Value}");
+                            if(attr.Value!.Type == JTokenType.Array)
+                            {
+                                attrs.Add("new [] { " + string.Join(",", attr.Value.Values<string>()) + "}");
+                            }
+                            else
+                            {
+                                attrs.Add($"{attr.Key} = {attr.Value}");
+                            }
                         }
                         var meta = $"{metaType}({string.Join(",", attrs)})";
 
