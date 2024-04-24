@@ -102,14 +102,13 @@ internal class PluginMetaGenerator : ISourceGenerator
                             {
                                 attrs.Add($"{attr.Key} = {GetValue(attr.Value)}");
                             }
-                        }
-                        var metaAttr = string.Join(",", attrs);
-                        var meta = $"{metaType}({metaAttr})";
-                        var meta2 = metaType + "{" + metaAttr + "}";
+                        } 
+                        var meta = $"{metaType}({string.Join(", ", attrs)})";
+                        var meta2 = string.Join(",\n            ", attrs);
                         // Generate a Hello method with the class name
-                        var code = $@"
+                        var code = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
 using {np};
-// Automatic Generate From ShadowPluginLoader.SourceGenerator
+
 namespace {classSymbol.ContainingNamespace.ToDisplayString()}
 {{
     [{meta}]
@@ -118,7 +117,10 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
         /// <summary>
         /// PluginMetaData
         /// </summary>
-        public static {metaType} Meta {{ get; }} = new {meta2};
+        public static {metaType} Meta {{ get; }} = new {metaType}
+        {{
+            {meta2}
+        }};
     }}
 }}";
                         // Add the generated code to the compilation
