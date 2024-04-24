@@ -90,20 +90,22 @@ internal class PluginMetaGenerator : ISourceGenerator
                         {
                             if(attr.Value!.Type == JTokenType.Array)
                             {
+                                if (attr.Value.Count() == 0) continue;
                                 var ll = new List<string>();
                                 foreach(var attr2 in attr.Value.Values())
                                 {
                                     ll.Add(GetValue(attr2));
                                 }
-                                attrs.Add("new [] { " + string.Join(",", ll) + "}");
+                                attrs.Add(attr.Key + "= new [] { " + string.Join(",", ll) + "}");
                             }
                             else
                             {
                                 attrs.Add($"{attr.Key} = {GetValue(attr.Value)}");
                             }
                         }
-                        var meta = $"{metaType}({string.Join(",", attrs)})";
-
+                        var metaAttr = string.Join(",", attrs);
+                        var meta = $"{metaType}({metaAttr})";
+                        var meta2 = metaType + "{" + metaAttr + "}";
                         // Generate a Hello method with the class name
                         var code = $@"
 using {np};
@@ -116,7 +118,7 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
         /// <summary>
         /// PluginMetaData
         /// </summary>
-        public static {metaType} Meta {{ get; }} = new {meta};
+        public static {metaType} Meta {{ get; }} = new {meta2};
     }}
 }}";
                         // Add the generated code to the compilation

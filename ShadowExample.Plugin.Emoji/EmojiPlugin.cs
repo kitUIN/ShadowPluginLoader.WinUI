@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShadowExample.Core.Plugins;
+using ShadowPluginLoader.SourceGenerator.Attributes;
 using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowExample.Plugin.Emoji
 {
-    public class EmojiPlugin:IExamplePlugin
+    [AutoPluginMeta]
+    public partial class EmojiPlugin: IExamplePlugin
     {
         public static string Id => "emoji";
         public string GetId()
@@ -16,7 +19,7 @@ namespace ShadowExample.Plugin.Emoji
             return Id;
         }
 
-        public IPluginMetaData GetMetaData()
+        public AbstractPluginMetaData GetMetaData()
         {
             throw new NotImplementedException();
         }

@@ -1,20 +1,11 @@
 ﻿using ShadowPluginLoader.MetaAttributes;
-using System;
+using ShadowPluginLoader.WinUI.Models;
+
 
 namespace ShadowExample.Core.Plugins;
 
-public class ExampleMetaData : Attribute, IExampleMetaData
+[ExportMeta]
+public class ExampleMetaData : AbstractPluginMetaData
 {
-    [Meta(Required = true)]
-    public string Id { get; init; }
-
-    [Meta(Required = true)]
-    public string Name { get; init; }
-
-    [Meta(Required = true)]
-    public string Version { get; init; }
-
-    [Meta(Required = true)]
-    public string[] Dependencies { get; init; }
 
 }
