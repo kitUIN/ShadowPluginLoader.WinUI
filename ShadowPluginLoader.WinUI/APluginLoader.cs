@@ -9,6 +9,7 @@ using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -27,14 +28,10 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// Plugin MetaData Json File Name
     /// </summary>
     protected string PluginJson => "plugin.json";
-
     /// <summary>
-    /// The Plugin ddl Prefix
-    /// <para>
-    /// If My Plugin Called `Shadow.Plugin.Example.dll`, `Shadow.Plugin` Is The PluginPrefix
-    /// </para>
+    /// Plugins Folder
     /// </summary>
-    protected abstract string PluginPrefix { get; }
+    protected string PluginFolder => "plugins";
 
     /// <summary>
     /// DI Services
@@ -86,8 +83,7 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// <param name="dir">Plugin Dir</param>
     protected async Task CheckPluginMetaDataFromJson(DirectoryInfo dir)
     {
-        var result = new List<string>();
-        await GetAllPathAsync(dir, result);
+        var result = GetAllPathAsync(dir);
         foreach (var pluginFilePath in result)
         {
             await PreOnePluginAsync(pluginFilePath);
@@ -95,47 +91,34 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     }
 
     /// <summary>
-    /// Get All Plugin Dll Paths From The Plugin Folder
+    /// Get All Plugin JSON Paths From The Plugin Folder
     /// </summary>
     /// <param name="dir">The Plugin Folder</param>
-    /// <param name="result">All Plugin Dll Paths</param>
-    protected async Task GetAllPathAsync(DirectoryInfo dir, IList<string> result)
+    protected List<string> GetAllPathAsync(DirectoryInfo dir)
     {
-        var pls = dir.GetFiles(PluginPrefix + ".*.dll");
-        if (pls.Length > 0)
-        {
-            // Only One Plugin Dll In One Plugin Self Folder
-            result.Add(pls[0].FullName);
-        }
-
-        foreach (var item in dir.GetDirectories())
-        {
-            await GetAllPathAsync(item, result);
-        }
+        var pls = dir.GetFiles(PluginJson,SearchOption.AllDirectories);
+        return pls.Select(x => x.FullName).ToList();
     }
 
     /// <summary>
     /// Pre-operation For Loading Plugin
     /// </summary>
-    /// <param name="pluginFilePath">The Plugin Dll Path</param>
-    /// <exception cref="PluginImportError">Not Found Folder Or `plugin.json`</exception>
-    protected async Task PreOnePluginAsync(string pluginFilePath)
+    /// <param name="pluginJsonFilePath">The Plugin Json Path</param>
+    /// <exception cref="PluginImportError">Not Found Dll Or folder Or `plugin.json`</exception>
+    protected async Task PreOnePluginAsync(string pluginJsonFilePath)
     {
-        var dirPath = Path.GetDirectoryName(pluginFilePath);
+        if (!File.Exists(pluginJsonFilePath)) throw new PluginImportError($"Not Found {pluginJsonFilePath}");
+        // Load Json From plugin.json
+        var meta = JsonSerializer.Deserialize<TMeta>(await File.ReadAllTextAsync(pluginJsonFilePath));
+        var dirPath = Path.GetDirectoryName(pluginJsonFilePath);
+        
         if (dirPath is null || !Directory.Exists(dirPath))
         {
             // The Folder Containing The Plugin Dll Not Found
             throw new PluginImportError($"Dir Not Found: {dirPath}");
         }
-
-        var json = Path.Combine(dirPath, PluginJson);
-        if (!File.Exists(json))
-        {
-            throw new PluginImportError($"Not Found {PluginJson} In {dirPath}");
-        }
-
-        // Load Json From plugin.json
-        var meta = JsonSerializer.Deserialize<TMeta>(await File.ReadAllTextAsync(json));
+        var pluginFilePath = Path.Combine(dirPath, meta!.Id + ".dll");
+        if (!File.Exists(pluginFilePath)) throw new PluginImportError($"Not Found {pluginFilePath}");
         await CheckPluginMetaDataAsync(meta!, pluginFilePath);
     }
 
@@ -171,13 +154,15 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// Check PluginMetaData(Default: No Check)
     /// </summary>
     /// <param name="meta">PluginMetaData</param>
-    protected abstract void CheckPluginMetaData(TMeta meta);
+    protected virtual void CheckPluginMetaData(TMeta meta)
+    {
 
-    /// <summary>
-    /// LoadPlugin From SortedPluginTypes
-    /// </summary>
-    /// <param name="sortPlugins">SortedPluginData</param>
-    protected void LoadPluginType(IEnumerable<SortPluginData> sortPlugins)
+    }
+/// <summary>
+/// LoadPlugin From SortedPluginTypes
+/// </summary>
+/// <param name="sortPlugins">SortedPluginData</param>
+protected void LoadPluginType(IEnumerable<SortPluginData> sortPlugins)
     {
         foreach (var data in sortPlugins)
         {
@@ -250,6 +235,29 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
     /// <param name="meta">PluginMetaData</param>
-    protected abstract void LoadPluginDi(Type plugin, TMeta meta);
+    protected virtual void LoadPluginDi(Type plugin, TMeta meta)
+    {
 
+    }
+
+    /// <summary>
+    /// Check plugin.json In Zip
+    /// </summary>
+    /// <param name="zipPath">plugin zip path</param>
+    /// <exception cref="PluginImportError">Not Found plugin.json in zip</exception>
+    protected void CheckPluginInZip(string zipPath)
+    {
+        using FileStream zipToOpen = new(zipPath, FileMode.Open);
+        using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Update);
+        var jsonEntry = archive.GetEntry(PluginJson) ?? throw new PluginImportError($"Not Found {PluginJson} in zip {zipPath}");
+    }
+
+    /// <summary>
+    /// UnZip
+    /// </summary>
+    protected string UnZip(string zipPath,string outputPath)
+    {
+        ZipFile.ExtractToDirectory(zipPath,outputPath);
+        return outputPath;
+    }
 }

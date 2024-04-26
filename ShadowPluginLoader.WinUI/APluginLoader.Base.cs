@@ -50,9 +50,17 @@ public abstract partial class APluginLoader<TMeta, TAPlugin> : IPluginLoader<TAP
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public async Task ImportAllAsync(string directoryPath)
+    public async Task ImportFromZipAsync(string zipPath)
     {
-        await ImportAsync(directoryPath);
+        try
+        {
+            CheckPluginInZip(zipPath);
+            await ImportAsync(UnZip(PluginFolder, zipPath));
+        }
+        catch (PluginImportError e)
+        {
+            Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
+        }
     }
 
     /// <summary>

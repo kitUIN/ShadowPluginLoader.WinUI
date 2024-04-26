@@ -24,18 +24,15 @@ public partial interface IPluginLoader<TAPlugin>
     void Import(IEnumerable<Type> types);
     
     /// <summary>
-    /// Import Plugin From Plugin Dll Path
+    /// Import Plugin From Plugin Path
     /// </summary>
-    /// <param name="pluginPath">Plugin Dll Path</param>
+    /// <param name="pluginPath">Plugin Path</param>
     Task ImportAsync(string pluginPath);
-    
     /// <summary>
-    /// Import Plugin From Plugin Dir Path
+    /// Import Plugin From Plugin Zip Path
     /// </summary>
-    /// <param name="directoryPath">Plugin Dir Path</param>
-    /// <returns></returns>
-    Task ImportAllAsync(string directoryPath);
-
+    /// <param name="zipPath">Plugin Zip Path</param>
+    Task ImportFromZipAsync(string zipPath);
     /// <summary>
     /// Get Enabled Plugins
     /// </summary>
