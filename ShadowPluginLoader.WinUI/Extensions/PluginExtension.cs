@@ -14,13 +14,13 @@ public static class PluginExtension
     /// Get PluginMetaData
     /// </summary>
     /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-    /// <typeparam name="TIPlugin">Your Custom Interface IPlugin Assignable To <see cref="IPlugin"/></typeparam>
+    /// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="APlugin"/></typeparam>
     /// <returns>Your Custom Interface IMetaData</returns>
-    public static TMeta? GetPluginMetaData<TMeta, TIPlugin>() 
-        where TIPlugin: IPlugin
+    public static TMeta? GetPluginMetaData<TMeta, TAPlugin>() 
+        where TAPlugin: APlugin
         where TMeta : AbstractPluginMetaData
     {
-        return typeof(TIPlugin).GetPluginMetaData<TMeta>();
+        return typeof(TAPlugin).GetPluginMetaData<TMeta>();
     }
 
     /// <summary>
