@@ -1,0 +1,33 @@
+{
+  "Namespace": "ShadowExample.Core.Plugins",
+  "Type": "ExampleMetaData",
+  "Properties": {
+    "Author": {
+      "Type": "String",
+      "PropertyGroupName": "Author"
+    },
+    "Id": {
+      "Type": "String",
+      "PropertyGroupName": "PackageId"
+    },
+    "Name": {
+      "Type": "String",
+      "PropertyGroupName": "PluginName"
+    },
+    "Version": {
+      "Type": "String",
+      "PropertyGroupName": "Version"
+    },
+    "Dependencies": {
+      "Type": "String[]",
+      "PropertyGroupName": "Dependencies"
+    }
+  },
+  "Required": [
+    "Author",
+    "Id",
+    "Name",
+    "Version",
+    "Dependencies"
+  ]
+}

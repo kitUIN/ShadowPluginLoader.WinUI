@@ -5,5 +5,7 @@
 		<IsPluginLoader>true</IsPluginLoader>
         <!-- Whether the current project is a Plugin -->
         <IsPlugin>false</IsPlugin>
+		<!-- Auto Pack Plugin -->
+		<AutoPluginPackage>false</AutoPluginPackage>
     </PropertyGroup>
 </Project>

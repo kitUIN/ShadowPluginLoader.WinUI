@@ -9,26 +9,26 @@
 	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
 
-	  <!-- Nuget -->
-	  <Version>1.0.0.34</Version>
-	  <PackageId>ShadowExample.Core</PackageId>
-	  <Authors>kitUIN</Authors>
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowExample.Core</PackageProjectUrl>
-	  <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowExample.Core</RepositoryUrl>
-	  <Description>✨ ShadowExample.Core ✨</Description>
-	  <Copyright>Copyright 2024</Copyright>
-	  <PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
-	  <PackageOutputPath>..\NugetPackages</PackageOutputPath>
-	  <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
+	<!-- Nuget -->
+	<Version>1.0.1.1</Version>
+	<PackageId>ShadowExample.Core</PackageId>
+	<Authors>kitUIN</Authors>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowExample.Core</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowExample.Core</RepositoryUrl>
+	<Description>✨ ShadowExample.Core ✨</Description>
+	<Copyright>Copyright 2024</Copyright>
+	<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
+	<PackageOutputPath>..\NugetPackages</PackageOutputPath>
+	<!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
   </PropertyGroup>
  
 
   <ItemGroup>
       <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
-      <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.0.1.5" />
+      <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.0.1.8" />
   </ItemGroup>
 	
 </Project>

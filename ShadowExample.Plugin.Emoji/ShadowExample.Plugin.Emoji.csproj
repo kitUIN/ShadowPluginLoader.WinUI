@@ -9,9 +9,9 @@
 		<NoWarn>MSB3277</NoWarn>
         <!-- Nuget && Plugin Meta -->
         <PackageId>ShadowExample.Plugin.Emoji</PackageId>
-        <Version>1.0.0.10</Version>
+        <Version>1.0.0.12</Version>
         <PluginName>emoji</PluginName>
-        <Authors>kitUIN</Authors>
+        <Author>kitUIN</Author>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
         <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
@@ -24,17 +24,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
-		<PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.0.1.9" />
-        <PackageReference Include="ShadowExample.Core" Version="1.0.0.34" />
+        <PackageReference Include="ShadowExample.Core" Version="1.0.1.1" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="1.0.1.16" />
+        
     </ItemGroup>
 
-    <ItemGroup>
-      <AdditionalFiles Remove="D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\ShadowExample.Plugin.Emoji\plugin.d.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <AdditionalFiles Remove="D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\ShadowExample.Plugin.Emoji\plugin.json" />
-    </ItemGroup>
  
-
+    
 </Project>
