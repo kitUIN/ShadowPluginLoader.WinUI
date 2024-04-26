@@ -4,6 +4,7 @@ using Serilog;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Extensions;
 using ShadowPluginLoader.WinUI.Helpers;
+using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ using Path = System.IO.Path;
 
 namespace ShadowPluginLoader.WinUI;
 
-public abstract partial class APluginLoader<TMeta, TIPlugin>
+public abstract partial class APluginLoader<TMeta, TAPlugin>
 {
     /// <summary>
     /// Logger Print With Prefix
@@ -55,11 +56,18 @@ public abstract partial class APluginLoader<TMeta, TIPlugin>
         Logger = logger;
         Services = services;
     }
-
+    /// <summary>
+    /// Default
+    /// </summary>
+    /// <param name="services">di services</param>
+    protected APluginLoader(Container services):
+        this(Log.ForContext<APluginLoader<TMeta, TAPlugin>>(),services)
+    {
+    }
     /// <summary>
     /// All Plugins
     /// </summary>
-    private readonly Dictionary<string, TIPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, TAPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Temp Sort
@@ -143,9 +151,7 @@ public abstract partial class APluginLoader<TMeta, TIPlugin>
         var instance = RegisterPluginMain(plugin!, meta);
         LoadPluginDi(plugin!, meta);
         _plugins[meta.Id] = instance;
-        var isEnabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
-        if (isEnabled) instance.Enable();
-        else instance.Disable();
+        instance.IsEnabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
         Logger?.Information("{Pre}{ID}({Name}): Load Success!",
             LoggerPrefix, meta.Id, meta.Name);
     }
@@ -187,8 +193,8 @@ public abstract partial class APluginLoader<TMeta, TIPlugin>
     /// <exception cref="PluginImportError">PluginMetaData Type Is Null</exception>
     protected TMeta GetAndCheckPluginMetaData(Type plugin)
     {
-        var meta = plugin.GetPluginMetaData<TMeta>();
-        if (meta is null) throw new PluginImportError($"{plugin.FullName}: MetaData Not Found");
+        var meta = plugin.GetPluginMetaData<TMeta>() 
+            ?? throw new PluginImportError($"{plugin.FullName}: MetaData Not Found");
         CheckPluginMetaData(meta);
         return meta;
     }
@@ -215,7 +221,7 @@ public abstract partial class APluginLoader<TMeta, TIPlugin>
         // Load Asm From Dll
         var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(path);
         // Try Get First Exported Type AssignableTo TIPlugin
-        var t = asm.ForeignAssembly.GetExportedTypes().FirstOrDefault(x => x.IsAssignableTo(typeof(TIPlugin)));
+        var t = asm.ForeignAssembly.GetExportedTypes().FirstOrDefault(x => x.IsAssignableTo(typeof(TAPlugin)));
         CheckPluginType(t);
         sortData.PluginType = t;
         _sortLoader.Add(sortData);
@@ -229,10 +235,10 @@ public abstract partial class APluginLoader<TMeta, TIPlugin>
     /// <param name="meta">PluginMetaData</param>
     /// <returns>Plugin Instance</returns>
     /// <exception cref="PluginImportError">Can't Register Plugin</exception>
-    protected TIPlugin RegisterPluginMain(Type plugin, TMeta meta)
+    protected TAPlugin RegisterPluginMain(Type plugin, TMeta meta)
     {
-        Services.Register(typeof(TIPlugin), plugin, Reuse.Singleton);
-        var instance = Services.ResolveMany<TIPlugin>()
+        Services.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
+        var instance = Services.ResolveMany<TAPlugin>()
             .FirstOrDefault(x => meta.Id == x.GetId());
         if (instance is null) throw new PluginImportError($"{plugin.Name}: Can't Load Plugin");
         Logger?.Information("插件[{ID}]加载主类成功", meta.Id);

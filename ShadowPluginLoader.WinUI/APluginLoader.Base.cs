@@ -14,20 +14,20 @@ namespace ShadowPluginLoader.WinUI;
 /// Abstract PluginLoader
 /// </summary>
 /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-/// <typeparam name="TIPlugin">Your Custom Interface IPlugin Assignable To <see cref="IPlugin"/></typeparam>
-public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIPlugin>
+/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="APlugin"/></typeparam>
+public abstract partial class APluginLoader<TMeta, TAPlugin> : IPluginLoader<TAPlugin>
     where TMeta : AbstractPluginMetaData
-    where TIPlugin : IPlugin
+    where TAPlugin : APlugin
 {
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.Import(Type)"/>
+    /// <inheritdoc />
     /// </summary>
     public void Import(Type type)
     {
         try
         {
-            if (!type.IsAssignableTo(typeof(TIPlugin)))
-                throw new PluginImportError($"{type.FullName} is not assignable to {typeof(TIPlugin).FullName}");
+            if (!type.IsAssignableTo(typeof(TAPlugin)))
+                throw new PluginImportError($"{type.FullName} is not assignable to {typeof(TAPlugin).FullName}");
             LoadPlugin(type);
         }
         catch (PluginImportError e)
@@ -37,7 +37,7 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.Import(IEnumerable{Type})"/>
+    /// <inheritdoc />
     /// </summary>
     public void Import(IEnumerable<Type> types)
     {
@@ -48,7 +48,7 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.ImportAllAsync"/>
+    /// <inheritdoc />
     /// </summary>
     public async Task ImportAllAsync(string directoryPath)
     {
@@ -56,7 +56,7 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.ImportAsync"/>
+    /// <inheritdoc />
     /// </summary>
     public async Task ImportAsync(string pluginPath)
     {
@@ -75,7 +75,7 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.IsEnabled"/>
+    /// <inheritdoc />
     /// </summary>
     public bool? IsEnabled(string id)
     {
@@ -88,26 +88,26 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.GetPlugins"/>
+    /// <inheritdoc />
     /// </summary>
-    public IList<TIPlugin> GetPlugins()
+    public IList<TAPlugin> GetPlugins()
     {
         return _plugins.Values.ToList();
     }
 
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.GetPlugin"/>
+    /// <inheritdoc />
     /// </summary>
-    public TIPlugin? GetPlugin(string id)
+    public TAPlugin? GetPlugin(string id)
     {
         return _plugins.TryGetValue(id, out var plugin) ? plugin : default;
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.GetEnabledPlugins"/>
+    /// <inheritdoc />
     /// </summary>
-    public IList<TIPlugin> GetEnabledPlugins()
+    public IList<TAPlugin> GetEnabledPlugins()
     {
         return _plugins
             .Where(plugin => plugin.Value.IsEnabled)
@@ -116,38 +116,38 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.GetEnabledPlugin"/>
+    /// <inheritdoc />
     /// </summary>
-    public TIPlugin? GetEnabledPlugin(string id)
+    public TAPlugin? GetEnabledPlugin(string id)
     {
         if (GetPlugin(id) is { IsEnabled: true } plugin) return plugin;
         return default;
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.EnablePlugin"/>
+    /// <inheritdoc />
     /// </summary>
     public void EnablePlugin(string id)
     {
         if (!_plugins.TryGetValue(id, out var plugin)) return;
-        plugin.Enable();
+        plugin.IsEnabled = true;
         Logger?.Information("{Pre}{Id}: Enabled",
             LoggerPrefix, id);
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.DisablePlugin"/>
+    /// <inheritdoc />
     /// </summary>
     public void DisablePlugin(string id)
     {
         if (!_plugins.TryGetValue(id, out var plugin)) return;
-        plugin.Disable();
+        plugin.IsEnabled = false;
         Logger?.Information("{Pre}{Id}: Disabled",
             LoggerPrefix, id);
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.DeletePlugin"/>
+    /// <inheritdoc />
     /// </summary>
     public void DeletePlugin(string id)
     {
@@ -174,9 +174,11 @@ public abstract partial class APluginLoader<TMeta, TIPlugin> : IPluginLoader<TIP
     }
 
     /// <summary>
-    /// <inheritdoc cref="IPluginLoader{TIPlugin}.UpgradePlugin"/>
+    /// <inheritdoc />
     /// </summary>
     public void UpgradePlugin(string id)
     {
     }
+
+ 
 }

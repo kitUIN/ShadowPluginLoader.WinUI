@@ -7,9 +7,11 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 /// <summary>
 /// PluginLoader Interface
 /// </summary>
-/// <typeparam name="TIPlugin">Plugin Base Interface, Default: <see cref="IPlugin"/></typeparam>
-public interface IPluginLoader<TIPlugin> where TIPlugin: IPlugin
+/// <typeparam name="TAPlugin">Plugin Base Interface, Default: <see cref="APlugin"/></typeparam>
+public partial interface IPluginLoader<TAPlugin> 
+    where TAPlugin: APlugin
 {
+
     /// <summary>
     /// Import Plugin From Type
     /// </summary>
@@ -38,22 +40,22 @@ public interface IPluginLoader<TIPlugin> where TIPlugin: IPlugin
     /// Get Enabled Plugins
     /// </summary>
     /// <returns>Enabled Plugins</returns>
-    IList<TIPlugin> GetEnabledPlugins();
+    IList<TAPlugin> GetEnabledPlugins();
     /// <summary>
     /// Get All Plugins
     /// </summary>
     /// <returns>All Plugins</returns>
-    IList<TIPlugin> GetPlugins();
+    IList<TAPlugin> GetPlugins();
     /// <summary>
     /// Get Plugin By Id
     /// </summary>
     /// <returns>Plugin or Null</returns>
-    TIPlugin? GetPlugin(string id);
+    TAPlugin? GetPlugin(string id);
     /// <summary>
     /// Get Enabled Plugin By Id
     /// </summary>
     /// <returns>Plugin or Null</returns>
-    TIPlugin? GetEnabledPlugin(string id);
+    TAPlugin? GetEnabledPlugin(string id);
 
     /// <summary>
     /// Whether The Plugin Is Enabled Or Not
