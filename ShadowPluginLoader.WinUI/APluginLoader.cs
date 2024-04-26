@@ -36,7 +36,7 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// DI Services
     /// </summary>
-    public static Container Services { get; }
+    public static Container Services { get; set; }
 
     /// <summary>
     /// Logger
@@ -47,7 +47,6 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// Default
     /// </summary>
     /// <param name="logger">log</param>
-    /// <param name="services">di services</param>
     protected APluginLoader(ILogger logger)
     {
         Logger = logger;
@@ -55,8 +54,7 @@ public abstract partial class APluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// Default
     /// </summary>
-    /// <param name="services">di services</param>
-    protected APluginLoader(Container services):
+    protected APluginLoader():
         this(Log.ForContext<APluginLoader<TMeta, TAPlugin>>())
     {
     }
