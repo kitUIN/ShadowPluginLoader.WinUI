@@ -6,7 +6,7 @@ using ShadowPluginLoader.WinUI;
 namespace ShadowExample.Core
 {
     public class ShadowExamplePluginLoader : 
-        APluginLoader<ExampleMetaData, AExamplePlugin>
+        AbstractPluginLoader<ExampleMetaData, PluginBase>
     {
         public ShadowExamplePluginLoader(ILogger logger) : base(logger)
         {

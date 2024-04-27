@@ -14,7 +14,7 @@ public static class DiFactory
         Services.Register(
             Made.Of(() => Serilog.Log.ForContext(Arg.Index<Type>(0)), r => r.Parent.ImplementationType),
             setup: Setup.With(condition: r => r.Parent.ImplementationType != null));
-        APluginLoader<ExampleMetaData, AExamplePlugin>.Services = Services;
+        AbstractPluginLoader<ExampleMetaData, PluginBase>.Services = Services;
         Services.Register<ShadowExamplePluginLoader>(reuse: Reuse.Singleton);
     }
 
