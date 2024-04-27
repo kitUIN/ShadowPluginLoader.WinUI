@@ -59,7 +59,7 @@ internal class PluginMetaGenerator : ISourceGenerator
 
             // Get the symbol for the Serializable attribute
             var serializableSymbol =
-                compilation.GetTypeByMetadataName("ShadowPluginLoader.SourceGenerator.Attributes.AutoPluginMetaAttribute");
+                compilation.GetTypeByMetadataName("ShadowPluginLoader.MetaAttributes.AutoPluginMetaAttribute");
             
             GetJson(context);
             // Loop through the syntax trees in the compilation

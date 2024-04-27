@@ -68,7 +68,7 @@ internal class I18nGenerator : ISourceGenerator
     }
     private bool CheckIsPlugin(GeneratorExecutionContext context)
     {
-        return ContainsMetadataName(context, "ShadowPluginLoader.SourceGenerator.Attributes.AutoPluginMetaAttribute");
+        return ContainsMetadataName(context, "ShadowPluginLoader.MetaAttributes.AutoPluginMetaAttribute");
     }
     public void Execute(GeneratorExecutionContext context)
     {
