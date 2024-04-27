@@ -1,15 +1,15 @@
 ﻿namespace ShadowPluginLoader.WinUI.Exceptions;
 
 /// <summary>
-/// PluginImportError
+/// PluginImportException
 /// </summary>
-public class PluginImportError : System.Exception
+public class PluginImportException : System.Exception
 {
     /// <summary>
-    /// PluginImportError
+    /// PluginImportException
     /// </summary>
     /// <param name="message">Error Message</param>
-    public PluginImportError(string? message) : base(message)
+    public PluginImportException(string? message) : base(message)
     {
     }
 }

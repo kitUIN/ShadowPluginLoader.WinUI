@@ -7,9 +7,9 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 /// <summary>
 /// PluginLoader Interface
 /// </summary>
-/// <typeparam name="TAPlugin">Plugin Base Interface, Default: <see cref="APlugin"/></typeparam>
+/// <typeparam name="TAPlugin">Plugin Base Interface, Default: <see cref="AbstractPlugin"/></typeparam>
 public partial interface IPluginLoader<TAPlugin> 
-    where TAPlugin: APlugin
+    where TAPlugin: AbstractPlugin
 {
 
     /// <summary>

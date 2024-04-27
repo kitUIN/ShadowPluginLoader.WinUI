@@ -14,10 +14,10 @@ namespace ShadowPluginLoader.WinUI;
 /// Abstract PluginLoader
 /// </summary>
 /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="APlugin"/></typeparam>
-public abstract partial class APluginLoader<TMeta, TAPlugin> : IPluginLoader<TAPlugin>
+/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
+public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoader<TAPlugin>
     where TMeta : AbstractPluginMetaData
-    where TAPlugin : APlugin
+    where TAPlugin : AbstractPlugin
 {
     /// <summary>
     /// <inheritdoc />
@@ -27,10 +27,10 @@ public abstract partial class APluginLoader<TMeta, TAPlugin> : IPluginLoader<TAP
         try
         {
             if (!type.IsAssignableTo(typeof(TAPlugin)))
-                throw new PluginImportError($"{type.FullName} is not assignable to {typeof(TAPlugin).FullName}");
+                throw new PluginImportException($"{type.FullName} is not assignable to {typeof(TAPlugin).FullName}");
             LoadPlugin(type);
         }
-        catch (PluginImportError e)
+        catch (PluginImportException e)
         {
             Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
@@ -57,7 +57,7 @@ public abstract partial class APluginLoader<TMeta, TAPlugin> : IPluginLoader<TAP
             CheckPluginInZip(zipPath);
             await ImportAsync(UnZip(PluginFolder, zipPath));
         }
-        catch (PluginImportError e)
+        catch (PluginImportException e)
         {
             Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
@@ -76,7 +76,7 @@ public abstract partial class APluginLoader<TMeta, TAPlugin> : IPluginLoader<TAP
             var sorted = PluginSortExtension.SortPlugin(_sortLoader, x => x.Dependencies, _tempSortPlugins);
             LoadPluginType(sorted);
         }
-        catch (PluginImportError e)
+        catch (PluginImportException e)
         {
             Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
