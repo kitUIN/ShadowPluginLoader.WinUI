@@ -54,7 +54,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         try
         {
             CheckPluginInZip(zipPath);
-            await ImportAsync(UnZip(PluginFolder, zipPath));
+            await ImportFromDirAsync(UnZip(PluginFolder, zipPath));
         }
         catch (PluginImportException e)
         {

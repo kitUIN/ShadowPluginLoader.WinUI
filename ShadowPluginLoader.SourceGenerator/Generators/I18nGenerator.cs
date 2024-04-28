@@ -119,7 +119,7 @@ namespace {currentNamespace}.Enums
 }}";
         context.AddSource($"ResourceKey.g.cs", reswEnumCode);
         string? resourcesHelperCode;
-        if (isPlugin || isPluginLoader)
+        if (isPluginLoader)
         {
             resourcesHelperCode = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
 using {currentNamespace}.Enums;
@@ -133,6 +133,30 @@ namespace {currentNamespace}.Helpers
         public static string GetString(string key)
         {{
             return resourceManager.MainResourceMap.GetValue(""{currentNamespace}/Resources/"" + key).ValueAsString;
+        }}
+        public static string GetString(ResourceKey key)
+        {{
+            return GetString(key.ToString());
+        }}
+    }}
+}}";
+        }
+        else if (isPlugin)
+        {
+            resourcesHelperCode = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
+using CustomExtensions.WinUI;
+using {currentNamespace}.Enums;
+using Windows.ApplicationModel.Resources.Core;
+
+namespace {currentNamespace}.Helpers
+{{
+    internal static class ResourcesHelper
+    {{
+        // private static readonly ResourceMap resourceManager = ApplicationExtensionHost.GetResourceMapForAssembly();
+        public static string GetString(string key) 
+        {{
+            var resourceManager = ApplicationExtensionHost.GetResourceMapForAssembly();
+            return resourceManager.GetValue(key).ValueAsString;
         }}
         public static string GetString(ResourceKey key)
         {{

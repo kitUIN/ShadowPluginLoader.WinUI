@@ -10,8 +10,9 @@
 		<NoWarn>MSB3277</NoWarn>
 		
         <!-- Nuget -->
-        <Version>1.0.2.10</Version>
+        <Version>1.0.4.0</Version>
 		<PackageId>ShadowPluginLoader.WinUI</PackageId>
+		<Owner>kitUIN</Owner>
 		<Authors>kitUIN</Authors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -30,8 +31,8 @@
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
         <PackageReference Include="Serilog" Version="3.1.1" />
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.0.3.2" />
-		<PackageReference Include="ShadowPluginLoader.Tool" Version="1.0.3.10" />
+        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.0.4.0" />
+		<PackageReference Include="ShadowPluginLoader.Tool" Version="1.0.4.0" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />

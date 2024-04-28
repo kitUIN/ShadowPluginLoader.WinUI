@@ -252,9 +252,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// UnZip
     /// </summary>
-    protected string UnZip(string zipPath,string outputPath)
+    protected string UnZip(string zipPath, string outputPath)
     {
-        ZipFile.ExtractToDirectory(zipPath,outputPath);
+        ZipFile.ExtractToDirectory(zipPath,outputPath,true);
         return outputPath;
     }
 }
