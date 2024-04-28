@@ -1,3 +1,4 @@
+using DryIoc;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -5,8 +6,10 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using ShadowExample.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -26,8 +29,18 @@ namespace ShadowExample
         public MainWindow()
         {
             this.InitializeComponent();
+            Init();
         }
-
+        private async void Init()
+        {
+            var loader = DiFactory.Services.Resolve<ShadowExamplePluginLoader>();
+            await loader.ImportFromDirAsync(@"D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\ShadowExample.Plugin.Emoji\bin\Debug\net6.0-windows10.0.19041.0");
+            foreach (var plugin in loader.GetPlugins())
+            {
+                Debug.WriteLine(plugin.GetEmoji());
+                MyPanel.Children.Add(plugin.GetControl());
+            }
+        }
         private void myButton_Click(object sender, RoutedEventArgs e)
         {
             myButton.Content = "Clicked";

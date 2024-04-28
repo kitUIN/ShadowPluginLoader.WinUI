@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <!-- Whether the current project is a PluginLoader -->
-        <IsPluginLoader>true</IsPluginLoader>
+        <IsPluginLoader>false</IsPluginLoader>
         <!-- Whether the current project is a Plugin -->
         <IsPlugin>false</IsPlugin>
         <!-- Auto Pack Plugin -->

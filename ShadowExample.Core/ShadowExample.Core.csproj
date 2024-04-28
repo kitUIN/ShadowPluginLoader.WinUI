@@ -6,11 +6,11 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
 	<NoWarn>MSB3277</NoWarn>
+	<Nullable>enable</Nullable>
 	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-
 	<!-- Nuget -->
-	<Version>1.0.1.1</Version>
+	<Version>1.0.1.15</Version>
 	<PackageId>ShadowExample.Core</PackageId>
 	<Authors>kitUIN</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -20,7 +20,7 @@
 	<Description>✨ ShadowExample.Core ✨</Description>
 	<Copyright>Copyright 2024</Copyright>
 	<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
-	<PackageOutputPath>..\NugetPackages</PackageOutputPath>
+	<PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
 	<!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
   </PropertyGroup>
  
@@ -28,7 +28,7 @@
   <ItemGroup>
       <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
-      <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.0.2.2" />
+      <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.0.4.0" />
   </ItemGroup>
 	
 </Project>

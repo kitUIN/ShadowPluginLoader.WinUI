@@ -1,11 +1,20 @@
 ﻿using ShadowPluginLoader.MetaAttributes;
-using ShadowPluginLoader.WinUI.Models;
+using ShadowPluginLoader.WinUI;
 
 namespace ShadowExample.Core.Plugins;
 
 [ExportMeta]
 public class ExampleMetaData : AbstractPluginMetaData
 {
-    [Meta(Required = true, PropertyGroupName = "Author")]
-    public string Author { get; init; }
+    [Meta(Required = false)]
+    public string[] Authors { get; init; }
+
+    [Meta(Required = false)]
+    public string Url { get; init; }
+
+    [Meta(Required = false)]
+    public double? D { get; init; }
+
+    [Meta(Required = false)]
+    public float[]? F { get; init; }
 }

@@ -1,7 +1,10 @@
 {
-  "Author": "kitUIN",
+  "Authors": [
+    "kitUIN",
+    "Hello"
+  ],
   "Id": "ShadowExample.Plugin.Emoji",
   "Name": "emoji",
-  "Version": "1.0.0.12",
+  "Version": "1.0.0.14",
   "Dependencies": []
 }

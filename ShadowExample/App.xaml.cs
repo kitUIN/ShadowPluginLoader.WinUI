@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using CustomExtensions.WinUI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -33,6 +34,7 @@ namespace ShadowExample
         public App()
         {
             this.InitializeComponent();
+            ApplicationExtensionHost.Initialize(this);
         }
 
         /// <summary>
@@ -43,6 +45,7 @@ namespace ShadowExample
         {
             m_window = new MainWindow();
             m_window.Activate();
+            
         }
 
         private Window m_window;
