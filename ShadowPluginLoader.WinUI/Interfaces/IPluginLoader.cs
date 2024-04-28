@@ -27,7 +27,7 @@ public partial interface IPluginLoader<TAPlugin>
     /// Import Plugin From Plugin Path
     /// </summary>
     /// <param name="pluginPath">Plugin Path</param>
-    Task ImportAsync(string pluginPath);
+    Task ImportFromDirAsync(string pluginPath);
     /// <summary>
     /// Import Plugin From Plugin Zip Path
     /// </summary>

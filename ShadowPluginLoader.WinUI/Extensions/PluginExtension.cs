@@ -1,5 +1,4 @@
 ﻿using ShadowPluginLoader.WinUI.Interfaces;
-using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Reflection;
 

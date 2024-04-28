@@ -36,7 +36,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// DI Services
     /// </summary>
-    public static Container Services { get; set; }
+    public static Container? Services { get; set; }
 
     /// <summary>
     /// Logger
@@ -219,8 +219,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <exception cref="PluginImportException">Can't Register Plugin</exception>
     protected TAPlugin RegisterPluginMain(Type plugin, TMeta meta)
     {
-        Services.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
-        var instance = Services.ResolveMany<TAPlugin>()
+        Services?.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
+        var instance = Services?.ResolveMany<TAPlugin>()
             .FirstOrDefault(x => meta.Id == x.GetId());
         if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
         Logger?.Information("Plugin[{ID}] Main Class Load Success", meta.Id);

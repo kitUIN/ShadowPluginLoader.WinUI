@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
-        <Version>1.0.3.1</Version>
+        <Version>1.0.3.2</Version>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <PackageId>ShadowPluginLoader.SourceGenerator</PackageId>
         <Authors>kitUIN</Authors>
@@ -17,7 +17,7 @@
         <Description>✨ ShadowPluginLoader SourceGenerator ✨</Description>
         <Copyright>Copyright 2023</Copyright>
         <PackageTags>kitUIN</PackageTags>
-        <PackageOutputPath>..\NugetPackages</PackageOutputPath>
+        <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
 		<NoWarn>MSB3277</NoWarn>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -26,11 +26,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"  GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+        <!-- <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" /> -->
         <None Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
         <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>

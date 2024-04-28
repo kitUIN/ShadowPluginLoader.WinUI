@@ -2,23 +2,23 @@
 using ShadowPluginLoader.MetaAttributes;
 using ShadowPluginLoader.WinUI.Interfaces;
 
-namespace ShadowPluginLoader.WinUI.Models;
+namespace ShadowPluginLoader.WinUI;
 
 /// <summary>
 /// Abstract PluginMetaData
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = true)]
-public abstract class AbstractPluginMetaData: Attribute, IPluginMetaData
+public abstract class AbstractPluginMetaData : Attribute, IPluginMetaData
 {
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Id"/>
     /// </summary>
-    [Meta(Required = true, PropertyGroupName = "PackageId")]
+    [Meta(Required = true)]
     public string Id { get; init; }
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Name"/>
     /// </summary>
-    [Meta(Required = true, PropertyGroupName = "PluginName")]
+    [Meta(Required = true)]
     public string Name { get; init; }
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Version"/>

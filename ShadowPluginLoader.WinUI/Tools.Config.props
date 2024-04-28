@@ -7,5 +7,7 @@
         <IsPlugin>false</IsPlugin>
         <!-- Auto Pack Plugin -->
         <AutoPluginPackage>false</AutoPluginPackage>
+        <!-- Auto Generate I18N -->
+        <AutoGenerateI18N>false</AutoGenerateI18N>
     </PropertyGroup>
 </Project>

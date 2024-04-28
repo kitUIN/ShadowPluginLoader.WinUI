@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -66,7 +65,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public async Task ImportAsync(string pluginPath)
+    public async Task ImportFromDirAsync(string pluginPath)
     {
         try
         {
