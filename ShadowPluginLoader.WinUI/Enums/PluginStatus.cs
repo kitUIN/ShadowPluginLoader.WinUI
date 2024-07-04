@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ShadowPluginLoader.WinUI.Enums;
+﻿namespace ShadowPluginLoader.WinUI.Enums;
 
 /// <summary>
 /// Plugin Status
@@ -22,5 +16,13 @@ public enum PluginStatus
     /// <summary>
     /// Disabled
     /// </summary>
-    Disabled
+    Disabled,
+    /// <summary>
+    /// Upgraded
+    /// </summary>
+    Upgraded,
+    /// <summary>
+    /// Removed
+    /// </summary>
+    Removed
 }
