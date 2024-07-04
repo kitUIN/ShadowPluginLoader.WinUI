@@ -13,6 +13,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ShadowPluginLoader.WinUI.Args;
+using ShadowPluginLoader.WinUI.Enums;
 using Path = System.IO.Path;
 
 namespace ShadowPluginLoader.WinUI;
@@ -41,7 +43,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// Logger
     /// </summary>
-    private ILogger? Logger { get; }
+    protected ILogger? Logger { get; }
 
     /// <summary>
     /// Default
@@ -129,11 +131,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         CheckPluginType(plugin);
         var meta = GetAndCheckPluginMetaData(plugin!);
         var instance = RegisterPluginMain(plugin!, meta);
-        LoadPluginDi(plugin!, meta);
+        LoadPluginDi(plugin!, instance, meta);
         _plugins[meta.Id] = instance;
         instance.IsEnabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
         Logger?.Information("{Pre}{ID}({Name}): Load Success!",
             LoggerPrefix, meta.Id, meta.Name);
+        PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
     }
 
 
@@ -230,9 +233,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// Register Plugin DI
     /// </summary>
-    /// <param name="plugin">Plugin Type</param>
-    /// <param name="meta">PluginMetaData</param>
-    protected virtual void LoadPluginDi(Type plugin, TMeta meta)
+    protected virtual void LoadPluginDi(Type tPlugin,TAPlugin aPlugin ,TMeta meta)
     {
 
     }

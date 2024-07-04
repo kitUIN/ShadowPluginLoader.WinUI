@@ -34,6 +34,13 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
     }
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    public void Import<TPlugin>()
+    {
+        Import(typeof(TPlugin));
+    }
 
     /// <summary>
     /// <inheritdoc />
@@ -108,7 +115,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// </summary>
     public TAPlugin? GetPlugin(string id)
     {
-        return _plugins.TryGetValue(id, out var plugin) ? plugin : default;
+        return _plugins.GetValueOrDefault(id);
     }
 
     /// <summary>

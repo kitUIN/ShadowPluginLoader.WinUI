@@ -18,6 +18,10 @@ public partial interface IPluginLoader<TAPlugin>
     /// <param name="type">Plugin Type</param>
     void Import(Type type);
     /// <summary>
+    /// Import Plugin From Type
+    /// </summary>
+    void Import<TPlugin>();
+    /// <summary>
     /// Import Plugins From Type
     /// </summary>
     /// <param name="types">Plugin Type List</param>

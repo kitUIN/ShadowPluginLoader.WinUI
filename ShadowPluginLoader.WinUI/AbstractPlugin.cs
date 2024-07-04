@@ -15,27 +15,39 @@ public abstract class AbstractPlugin : IPlugin
     /// <summary>
     /// Default
     /// </summary>
-    public AbstractPlugin()
+    protected AbstractPlugin()
+    {
+        Init();
+    }
+    /// <summary>
+    /// Init
+    /// </summary>
+    protected void Init()
     {
         // Load ResourceDictionary
         foreach (var item in ResourceDictionaries)
         {
             Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary() { 
+                new ResourceDictionary()
+                {
                     Source = new Uri(item.AssetPath(this.GetType()))
                 });
         }
     }
+
     /// <summary>
     /// Resource Dictionaries, example: ms-appx:///Themes/BikaTheme.xaml
     /// </summary>
     public virtual IEnumerable<string> ResourceDictionaries => 
         new List<string>();
+    /// <summary>
+    /// Is Enabled
+    /// </summary>
+    private bool _isEnabled;
 
-    private bool isEnabled;
     /// <inheritdoc/>
     public bool IsEnabled { 
-        get => isEnabled;
+        get => _isEnabled;
         set
         {
             if (value)
@@ -52,16 +64,20 @@ public abstract class AbstractPlugin : IPlugin
                     new Args.PluginEventArgs(GetId(),
                     Enums.PluginStatus.Disabled));
             }
-            isEnabled = value;
-            PluginSettingsHelper.SetPluginEnabled(GetId(), isEnabled);
+            _isEnabled = value;
+            PluginSettingsHelper.SetPluginEnabled(GetId(), _isEnabled);
         }
     }
-    /// <inheritdoc/>
+    /// <summary>
+    /// Disable
+    /// </summary>
     protected virtual void Disable()
     {
 
     }
-    /// <inheritdoc/>
+    /// <summary>
+    /// Enable
+    /// </summary>
     protected virtual void Enable()
     {
         

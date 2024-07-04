@@ -3,6 +3,7 @@ using ShadowPluginLoader.MetaAttributes;
 using ShadowPluginLoader.WinUI.Interfaces;
 
 namespace ShadowPluginLoader.WinUI;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 /// <summary>
 /// Abstract PluginMetaData
@@ -31,3 +32,4 @@ public abstract class AbstractPluginMetaData : Attribute, IPluginMetaData
     [Meta(Required = true)]
     public string[] Dependencies { get; init; }
 }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
