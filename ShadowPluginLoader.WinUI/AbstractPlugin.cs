@@ -12,6 +12,8 @@ namespace ShadowPluginLoader.WinUI;
 /// </summary>
 public abstract class AbstractPlugin : IPlugin
 {
+    /// <inheritdoc />
+    public abstract string DisplayName { get; }
     /// <summary>
     /// Default
     /// </summary>
@@ -54,18 +56,16 @@ public abstract class AbstractPlugin : IPlugin
             {
                 Enable();
                 PluginEventService.InvokePluginEnabled(this, 
-                    new Args.PluginEventArgs(GetId(),
-                    Enums.PluginStatus.Enabled));
+                    new Args.PluginEventArgs(Id, Enums.PluginStatus.Enabled));
             }
             else
             {
                 Disable();
                 PluginEventService.InvokePluginDisabled(this,
-                    new Args.PluginEventArgs(GetId(),
-                    Enums.PluginStatus.Disabled));
+                    new Args.PluginEventArgs(Id, Enums.PluginStatus.Disabled));
             }
             _isEnabled = value;
-            PluginSettingsHelper.SetPluginEnabled(GetId(), _isEnabled);
+            PluginSettingsHelper.SetPluginEnabled(Id, _isEnabled);
         }
     }
     /// <summary>
@@ -82,6 +82,7 @@ public abstract class AbstractPlugin : IPlugin
     {
         
     }
+
     /// <inheritdoc/>
-    public abstract string GetId();
+    public abstract string Id { get; }
 }

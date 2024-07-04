@@ -25,9 +25,6 @@ namespace ShadowExample.Plugin.Emoji
             return "💡😭";
         }
 
-        public override string GetId()
-        {
-            return Meta.Id;
-        }
+        public override string DisplayName => "";
     }
 }

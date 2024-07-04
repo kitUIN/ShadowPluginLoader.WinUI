@@ -26,6 +26,10 @@
       "Type": "string",
       "PropertyGroupName": "Name"
     },
+    "DllName": {
+      "Type": "string",
+      "PropertyGroupName": "DllName"
+    },
     "Version": {
       "Type": "string",
       "PropertyGroupName": "Version"

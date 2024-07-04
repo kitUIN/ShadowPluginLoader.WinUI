@@ -14,6 +14,10 @@ internal interface IPluginMetaData
     /// </summary>
     string Name { get; init; }
     /// <summary>
+    /// Plugin DllName
+    /// </summary>
+    string DllName { get; init; }
+    /// <summary>
     /// Plugin Version
     /// </summary>
     string Version { get; init; }

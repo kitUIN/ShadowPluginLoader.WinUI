@@ -4,7 +4,6 @@ using Serilog;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Extensions;
 using ShadowPluginLoader.WinUI.Helpers;
-using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
@@ -110,13 +109,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         // Load Json From plugin.json
         var meta = JsonSerializer.Deserialize<TMeta>(await File.ReadAllTextAsync(pluginJsonFilePath));
         var dirPath = Path.GetDirectoryName(pluginJsonFilePath);
-        
         if (dirPath is null || !Directory.Exists(dirPath))
         {
             // The Folder Containing The Plugin Dll Not Found
             throw new PluginImportException($"Dir Not Found: {dirPath}");
         }
-        var pluginFilePath = Path.Combine(dirPath, meta!.Id + ".dll");
+        var pluginFilePath = Path.Combine(dirPath, meta!.DllName + ".dll");
         if (!File.Exists(pluginFilePath)) throw new PluginImportException($"Not Found {pluginFilePath}");
         await CheckPluginMetaDataAsync(meta!, pluginFilePath);
     }
@@ -134,8 +132,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         LoadPluginDi(plugin!, instance, meta);
         _plugins[meta.Id] = instance;
         instance.IsEnabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
-        Logger?.Information("{Pre}{ID}({Name}): Load Success!",
-            LoggerPrefix, meta.Id, meta.Name);
+        Logger?.Information("{Pre}{ID}: Load Success!",
+            LoggerPrefix, meta.Id);
         PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
     }
 
@@ -198,8 +196,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         if (_tempSortPlugins.ContainsKey(meta.Id) || _plugins.ContainsKey(meta.Id))
         {
             // If Loaded, Next One
-            Logger?.Warning("{Pre}{ID}({Name}): Exists, Continue",
-                LoggerPrefix, meta.Id, meta.Name);
+            Logger?.Warning("{Pre}{ID}: Exists, Continue",
+                LoggerPrefix, meta.Id);
             return;
         }
 
@@ -224,7 +222,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     {
         Services?.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
         var instance = Services?.ResolveMany<TAPlugin>()
-            .FirstOrDefault(x => meta.Id == x.GetId());
+            .FirstOrDefault(x => meta.Id == x.Id);
         if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
         Logger?.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
         return instance;

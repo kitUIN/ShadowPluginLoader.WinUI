@@ -22,6 +22,11 @@ public abstract class AbstractPluginMetaData : Attribute, IPluginMetaData
     [Meta(Required = true)]
     public string Name { get; init; }
     /// <summary>
+    /// <inheritdoc cref="IPluginMetaData.DllName"/>
+    /// </summary>
+    [Meta(Required = false)]
+    public string DllName { get; init; }
+    /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Version"/>
     /// </summary>
     [Meta(Required = true)]
