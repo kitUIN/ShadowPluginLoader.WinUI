@@ -7,9 +7,10 @@ namespace ShadowPluginLoader.SourceGenerator.Generators;
 [Generator]
 internal class PluginMetaGenerator : ISourceGenerator
 {
-    private static JObject? PluginNode;
-    private static JObject? PluginDNode;
-    static void GetJson(GeneratorExecutionContext context)
+    private static JObject? _pluginNode;
+    private static JObject? _pluginDNode;
+
+    private static void GetJson(GeneratorExecutionContext context)
     {
         foreach (var file in context.AdditionalFiles)
         {
@@ -17,36 +18,45 @@ internal class PluginMetaGenerator : ISourceGenerator
             if (name.Equals("plugin.json", StringComparison.OrdinalIgnoreCase))
             {
                 var jsonString = file.GetText();
-                if (jsonString is null)
+                if (jsonString is not null)
                 {
-                    throw new Exception($"Not Found plugin.json");
+                    _pluginNode = JObject.Parse(jsonString.ToString());
+                    if (_pluginNode is null)
+                    {
+                        throw new Exception("plugin.json Is Empty");
+                    }
                 }
-                PluginNode = JObject.Parse(jsonString.ToString());
-                if(PluginNode is null)
+                else
                 {
-                    throw new Exception($"plugin.json Is Empty");
+                    throw new Exception("Not Found plugin.json");
                 }
             }
             else if (name.Equals("plugin.d.json", StringComparison.OrdinalIgnoreCase))
             {
                 var jsonString = file.GetText();
-                if (jsonString is null)
+                if (jsonString is not null)
                 {
-                    throw new Exception($"Not Found plugin.d.json");
+                    _pluginDNode = JObject.Parse(jsonString.ToString());
+                    if (_pluginDNode is null)
+                    {
+                        throw new Exception("plugin.d.json Is Empty");
+                    }
                 }
-                PluginDNode = JObject.Parse(jsonString.ToString());
-                if(PluginDNode is null)
+                else
                 {
-                    throw new Exception($"plugin.d.json Is Empty");
+                    throw new Exception("Not Found plugin.d.json");
                 }
             }
         }
     }
+
     public string GetValue(JToken token)
     {
+
         return token.Type switch
         {
             JTokenType.String => $"\"{token.Value<string>()}\"",
+            JTokenType.Array => "[" + string.Join(",", token.Values().Select(GetValue).ToList()) + "]",
             _ => $"{token}",
         };
     }
@@ -78,34 +88,21 @@ internal class PluginMetaGenerator : ISourceGenerator
                     var classSymbol = model.GetDeclaredSymbol(cls);
 
                     // Check if the class has the Serializable attribute
-                    if (classSymbol!.GetAttributes().Any(a =>
-                            a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default)))
+                    if (!classSymbol!.GetAttributes().Any(a =>
+                            a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default))) continue;
+                    var np = _pluginDNode!.Value<string>("Namespace");
+                    var metaType = _pluginDNode!.Value<string>("Type");
+                    var attrs = new List<string>();
+                    var pluginId = "";
+                    foreach (var attr in _pluginNode!)
                     {
-                        
-                        var np = PluginDNode!.Value<string>("Namespace");
-                        var metaType = PluginDNode!.Value<string>("Type");
-                        var attrs = new List<string>();
-                        foreach (var attr in PluginNode!)
-                        {
-                            if(attr.Value!.Type == JTokenType.Array)
-                            {
-                                if (attr.Value.Count() == 0) continue;
-                                var ll = new List<string>();
-                                foreach(var attr2 in attr.Value.Values())
-                                {
-                                    ll.Add(GetValue(attr2));
-                                }
-                                attrs.Add(attr.Key + "= new [] { " + string.Join(",", ll) + "}");
-                            }
-                            else
-                            {
-                                attrs.Add($"{attr.Key} = {GetValue(attr.Value)}");
-                            }
-                        } 
-                        var meta = $"{metaType}({string.Join(", ", attrs)})";
-                        var meta2 = string.Join(",\n            ", attrs);
-                        // Generate a Hello method with the class name
-                        var code = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
+                        if (attr.Key == "Id") pluginId = GetValue(attr.Value!);
+                        attrs.Add($"{attr.Key} = {GetValue(attr.Value!)}");
+                    } 
+                    var meta = $"{metaType}({string.Join(", ", attrs)})";
+                    var meta2 = string.Join(",\n            ", attrs);
+                    // Generate a Hello method with the class name
+                    var code = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
 using {np};
 
 namespace {classSymbol.ContainingNamespace.ToDisplayString()}
@@ -113,6 +110,9 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
     [{meta}]
     public partial class {classSymbol.Name}
     {{
+        /// <inheritdoc/>
+        public override string Id => {pluginId};
+
         /// <summary>
         /// PluginMetaData
         /// </summary>
@@ -122,10 +122,9 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
         }};
     }}
 }}";
-                        // Add the generated code to the compilation
+                    // Add the generated code to the compilation
 
-                        context.AddSource($"{classSymbol.Name}.g.cs", code);
-                    }
+                    context.AddSource($"{classSymbol.Name}.g.cs", code);
                 }
             }
         }
