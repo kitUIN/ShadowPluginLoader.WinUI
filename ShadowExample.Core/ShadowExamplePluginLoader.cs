@@ -8,6 +8,8 @@ namespace ShadowExample.Core
     public class ShadowExamplePluginLoader : 
         AbstractPluginLoader<ExampleMetaData, PluginBase>
     {
+        protected override string PluginFolder => "plugins";
+
         public ShadowExamplePluginLoader(ILogger logger) : base(logger)
         {
         }

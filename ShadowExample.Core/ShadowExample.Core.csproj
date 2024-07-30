@@ -30,5 +30,10 @@
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
       <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.0.6.1" />
   </ItemGroup>
+ 
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShadowPluginLoader.WinUI\ShadowPluginLoader.WinUI.csproj" />
+  </ItemGroup>
 	
 </Project>

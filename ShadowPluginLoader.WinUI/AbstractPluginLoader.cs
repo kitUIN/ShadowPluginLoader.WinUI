@@ -23,22 +23,18 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// Logger Print With Prefix
     /// </summary>
-    protected string LoggerPrefix => "[PluginLoader] ";
+    protected virtual string LoggerPrefix => "[PluginLoader] ";
 
     /// <summary>
     /// Plugin MetaData Json File Name
     /// </summary>
-    protected string PluginJson => "plugin.json";
+    protected virtual string PluginJson => "plugin.json";
+
     /// <summary>
     /// Plugins Folder
     /// </summary>
-    protected string PluginFolder => "plugins";
-
-    /// <summary>
-    /// DI Services
-    /// </summary>
-    public static Container? Services { get; set; }
-
+    protected abstract string PluginFolder { get; }
+    
     /// <summary>
     /// Logger
     /// </summary>
@@ -220,8 +216,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <exception cref="PluginImportException">Can't Register Plugin</exception>
     protected TAPlugin RegisterPluginMain(Type plugin, TMeta meta)
     {
-        Services?.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
-        var instance = Services?.ResolveMany<TAPlugin>()
+        DiFactory.Services.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
+        var instance = DiFactory.Services.ResolveMany<TAPlugin>()
             .FirstOrDefault(x => meta.Id == x.Id);
         if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
         Logger?.Information("Plugin[{ID}] Main Class Load Success", meta.Id);

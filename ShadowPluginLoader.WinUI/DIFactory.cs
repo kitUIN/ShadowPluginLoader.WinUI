@@ -1,12 +1,17 @@
 ﻿using System;
 using DryIoc;
-using ShadowExample.Core.Plugins;
-using ShadowPluginLoader.WinUI;
 
-namespace ShadowExample.Core;
+namespace ShadowPluginLoader.WinUI;
 
+    
+/// <summary>
+/// 依赖注入-工厂
+/// </summary>
 public static class DiFactory
 {
+    /// <summary>
+    /// 依赖注入-容器
+    /// </summary>
     public static Container Services { get; }
     static DiFactory()
     {
@@ -14,8 +19,6 @@ public static class DiFactory
         Services.Register(
             Made.Of(() => Serilog.Log.ForContext(Arg.Index<Type>(0)), r => r.Parent.ImplementationType),
             setup: Setup.With(condition: r => r.Parent.ImplementationType != null));
-        AbstractPluginLoader<ExampleMetaData, PluginBase>.Services = Services;
-        Services.Register<ShadowExamplePluginLoader>(reuse: Reuse.Singleton);
     }
 
 }
