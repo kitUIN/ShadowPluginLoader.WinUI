@@ -10,12 +10,9 @@
 </div>
 
 <p align="center">
-  <a href="https://github.com/kitUIN/ShadowPluginLoader.WinUI/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
-  </a>
-  <a href="https://github.com/kitUIN/ShadowPluginLoader.WinUI/releases">
-    <img src="https://img.shields.io/github/v/release/kitUIN/ShadowPluginLoader.WinUI" alt="release">
-  </a>
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="license">
+  <img src="https://img.shields.io/nuget/v/ShadowPluginLoader.WinUI?style=flat-square" alt="nuget">
+  <img src="https://img.shields.io/github/v/release/kitUIN/ShadowPluginLoader.WinUI?style=flat-square" alt="release">
 </p> 
 <p align="center">
   📖<a href="https://plugin-loader.kituin.fun/zh/">文档</a>
