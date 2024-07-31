@@ -46,7 +46,7 @@
 ## 🥰特别鸣谢
 
 - 📦[kitUIN.CustomExtensions.WinUI](https://github.com/kitUIN/CustomExtensions.WinUI) 提供插件加载支持
-- 🛠️[ShadowPlugin.Tool](https://github.com/kitUIN/ShadowPlugin.Tool) 提供插件构建工具
+- 🛠️[ShadowPluginLoader.Tool](https://github.com/kitUIN/ShadowPluginLoader.Tool) 提供插件构建工具
 - 🎉[winui-extensions](https://github.com/dnchattan/winui-extensions) 开创了WinUI3中加载插件的先河
 - 📦[DryIoc](https://github.com/dadhi/DryIoc) 提供灵活的依赖注入
 - 📃[Serilog](https://serilog.net/) 提供开箱即用的日志
