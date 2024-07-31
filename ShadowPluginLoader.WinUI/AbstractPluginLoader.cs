@@ -75,7 +75,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// Check PluginMetaData From Json
     /// </summary>
     /// <param name="dir">Plugin Dir</param>
-    protected async Task CheckPluginMetaDataFromJson(DirectoryInfo dir)
+    protected virtual async Task CheckPluginMetaDataFromJson(DirectoryInfo dir)
     {
         var result = GetAllPathAsync(dir);
         foreach (var pluginFilePath in result)
@@ -88,7 +88,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// Get All Plugin JSON Paths From The Plugin Folder
     /// </summary>
     /// <param name="dir">The Plugin Folder</param>
-    protected List<string> GetAllPathAsync(DirectoryInfo dir)
+    protected virtual List<string> GetAllPathAsync(DirectoryInfo dir)
     {
         var pls = dir.GetFiles(PluginJson,SearchOption.AllDirectories);
         return pls.Select(x => x.FullName).ToList();
@@ -99,7 +99,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="pluginJsonFilePath">The Plugin Json Path</param>
     /// <exception cref="PluginImportException">Not Found Dll Or folder Or `plugin.json`</exception>
-    protected async Task PreOnePluginAsync(string pluginJsonFilePath)
+    protected virtual async Task PreOnePluginAsync(string pluginJsonFilePath)
     {
         if (!File.Exists(pluginJsonFilePath)) throw new PluginImportException($"Not Found {pluginJsonFilePath}");
         // Load Json From plugin.json
@@ -120,7 +120,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// Load Plugin From Type
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
-    protected void LoadPlugin(Type? plugin)
+    protected virtual void LoadPlugin(Type? plugin)
     {
         CheckPluginType(plugin);
         var meta = GetAndCheckPluginMetaData(plugin!);
@@ -139,7 +139,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
     /// <exception cref="PluginImportException">Plugin Type Is Null</exception>
-    protected void CheckPluginType(Type? plugin)
+    protected virtual void CheckPluginType(Type? plugin)
     {
         if (plugin is null) throw new PluginImportException("Plugin Type Not Found");
     }
@@ -156,7 +156,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// LoadPlugin From SortedPluginTypes
     /// </summary>
     /// <param name="sortPlugins">SortedPluginData</param>
-    protected void LoadPluginType(IEnumerable<SortPluginData> sortPlugins)
+    protected virtual void LoadPluginType(IEnumerable<SortPluginData> sortPlugins)
     {
         foreach (var data in sortPlugins)
         {
@@ -170,7 +170,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="plugin">PluginMetaData</param>
     /// <returns>PluginMetaData</returns>
     /// <exception cref="PluginImportException">PluginMetaData Type Is Null</exception>
-    protected TMeta GetAndCheckPluginMetaData(Type plugin)
+    protected virtual TMeta GetAndCheckPluginMetaData(Type plugin)
     {
         var meta = plugin.GetPluginMetaData<TMeta>() 
             ?? throw new PluginImportException($"{plugin.FullName}: MetaData Not Found");
@@ -184,7 +184,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="meta">PluginMetaData</param>
     /// <param name="path">Plugin Dll Path</param>
     /// <exception cref="PluginImportException">PluginMetaData Is Null</exception>
-    protected async Task CheckPluginMetaDataAsync(TMeta meta, string path)
+    protected virtual async Task CheckPluginMetaDataAsync(TMeta meta, string path)
     {
         if (meta is null) throw new PluginImportException($"MetaData Not Found: {path}");
         CheckPluginMetaData(meta);
@@ -214,7 +214,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="meta">PluginMetaData</param>
     /// <returns>Plugin Instance</returns>
     /// <exception cref="PluginImportException">Can't Register Plugin</exception>
-    protected TAPlugin RegisterPluginMain(Type plugin, TMeta meta)
+    protected virtual TAPlugin RegisterPluginMain(Type plugin, TMeta meta)
     {
         DiFactory.Services.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
         var instance = DiFactory.Services.ResolveMany<TAPlugin>()
@@ -237,7 +237,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="zipPath">plugin zip path</param>
     /// <exception cref="PluginImportException">Not Found plugin.json in zip</exception>
-    protected void CheckPluginInZip(string zipPath)
+    protected virtual void CheckPluginInZip(string zipPath)
     {
         using FileStream zipToOpen = new(zipPath, FileMode.Open);
         using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Update);
@@ -247,7 +247,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// UnZip
     /// </summary>
-    protected string UnZip(string zipPath, string outputPath)
+    protected virtual string UnZip(string zipPath, string outputPath)
     {
         ZipFile.ExtractToDirectory(zipPath,outputPath,true);
         return outputPath;
