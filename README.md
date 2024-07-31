@@ -17,7 +17,8 @@
 <p align="center">
   📖<a href="https://plugin-loader.kituin.fun/zh/">文档</a>
   ·
-  🐛提交建议
+  🐛<a href="https://github.com/kitUIN/ShadowPluginLoader.WinUI/issues/new">提交建议</a>
+  
 </p>
 
 ## ✨简介
