@@ -138,15 +138,15 @@ internal static class PluginPathHelper
 {{
     /// <summary>
     /// Converts the given path to a local file path format for plugins.
-    /// If the path starts with ""ms-appx:///"", it is converted to a local path format.
+    /// If the path starts with ""plugin:///"", it is converted to a local path format.
     /// </summary>
-    /// <param name=""path"">The plugin path, which can start with ""ms-appx:///"".</param>
+    /// <param name=""path"">The plugin path, which can start with ""plugin:///"".</param>
     /// <returns>A string representing the local file path.</returns>
     public static string PluginPath(string path) 
     {{
-        if(path.StartsWith(""ms-appx:///""))
+        if(path.StartsWith(""plugin:///""))
         {{
-            return path.Replace(""ms-appx:///"",""/"").AssetPath(typeof({classSymbol.Name}));
+            return path.Replace(""plugin:///"",""/"").AssetPath(typeof({classSymbol.Name}));
         }}
         return path.AssetPath(typeof({classSymbol.Name}));
     }}
@@ -154,7 +154,7 @@ internal static class PluginPathHelper
     /// <summary>
     /// Converts the given path to a URI object.
     /// </summary>
-    /// <param name=""path"">The plugin path, which can start with ""ms-appx:///"".</param>
+    /// <param name=""path"">The plugin path, which can start with ""plugin:///"".</param>
     /// <returns>A <see cref=""System.Uri""/> object representing the path.</returns>
     public static System.Uri PluginUri(string path) 
     {{
