@@ -92,6 +92,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                             a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default))) continue;
                     var np = _pluginDNode!.Value<string>("Namespace");
                     var metaType = _pluginDNode!.Value<string>("Type");
+                    // var props = _pluginDNode!.Value<JObject>("Properties")!;
                     var attrs = new List<string>();
                     var pluginId = "";
                     foreach (var attr in _pluginNode!)
@@ -104,6 +105,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                     // Generate a Hello method with the class name
                     var code = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
 using {np};
+using {classSymbol.ContainingNamespace.ToDisplayString()}.Helpers;
 
 namespace {classSymbol.ContainingNamespace.ToDisplayString()}
 {{
@@ -123,44 +125,8 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
     }}
 }}";
                     // Add the generated code to the compilation
-
                     context.AddSource($"{classSymbol.Name}.g.cs", code);
-                    context.AddSource($"PluginPathHelper.g.cs",$@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
-using CustomExtensions.WinUI;
-using {classSymbol.ContainingNamespace.ToDisplayString()};
-
-namespace {classSymbol.ContainingNamespace.ToDisplayString()}.Helpers;
-
-/// <summary>
-/// Provides utility methods for handling plugin paths and URIs.
-/// </summary>
-internal static class PluginPathHelper
-{{
-    /// <summary>
-    /// Converts the given path to a local file path format for plugins.
-    /// If the path starts with ""plugin:///"", it is converted to a local path format.
-    /// </summary>
-    /// <param name=""path"">The plugin path, which can start with ""plugin:///"".</param>
-    /// <returns>A string representing the local file path.</returns>
-    public static string PluginPath(string path) 
-    {{
-        if(path.StartsWith(""plugin:///""))
-        {{
-            return path.Replace(""plugin:///"",""/"").AssetPath(typeof({classSymbol.Name}));
-        }}
-        return path;
-    }}
-
-    /// <summary>
-    /// Converts the given path to a URI object.
-    /// </summary>
-    /// <param name=""path"">The plugin path, which can start with ""plugin:///"".</param>
-    /// <returns>A <see cref=""System.Uri""/> object representing the path.</returns>
-    public static System.Uri PluginUri(string path) 
-    {{
-        return new System.Uri(PluginPath(path));
-    }}
-}}");
+                    
                 }
             }
         }
