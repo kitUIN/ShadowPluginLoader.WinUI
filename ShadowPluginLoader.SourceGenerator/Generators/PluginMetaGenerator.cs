@@ -125,6 +125,43 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
                     // Add the generated code to the compilation
 
                     context.AddSource($"{classSymbol.Name}.g.cs", code);
+                    context.AddSource($"PluginPathHelper.g.cs",$@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
+using CustomExtensions.WinUI;
+using {classSymbol.ContainingNamespace.ToDisplayString()};
+
+namespace {classSymbol.ContainingNamespace.ToDisplayString()}.Helpers;
+
+/// <summary>
+/// Provides utility methods for handling plugin paths and URIs.
+/// </summary>
+internal static class PluginPathHelper
+{{
+    /// <summary>
+    /// Converts the given path to a local file path format for plugins.
+    /// If the path starts with ""ms-appx:///"", it is converted to a local path format.
+    /// </summary>
+    /// <param name=""path"">The plugin path, which can start with ""ms-appx:///"".</param>
+    /// <returns>A string representing the local file path.</returns>
+    public static string PluginPath(string path) 
+    {{
+        if(path.StartsWith(""ms-appx:///""))
+        {{
+            return path.Replace(""ms-appx:///"",""/"").AssetPath<{classSymbol.Name}>();
+        }}
+        return path.AssetPath<{classSymbol.Name}>();
+    }}
+
+    /// <summary>
+    /// Converts the given path to a URI object.
+    /// </summary>
+    /// <param name=""path"">The plugin path, which can start with ""ms-appx:///"".</param>
+    /// <returns>A <see cref=""Uri""/> object representing the path.</returns>
+    public static string PluginUri(string path) 
+    {{
+        return new Uri(PluginPath(path));
+    }}
+}}
+");
                 }
             }
         }
