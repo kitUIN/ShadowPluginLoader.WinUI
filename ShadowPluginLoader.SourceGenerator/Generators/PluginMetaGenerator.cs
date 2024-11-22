@@ -148,7 +148,7 @@ internal static class PluginPathHelper
         {{
             return path.Replace(""plugin:///"",""/"").AssetPath(typeof({classSymbol.Name}));
         }}
-        return path.AssetPath(typeof({classSymbol.Name}));
+        return path;
     }}
 
     /// <summary>
