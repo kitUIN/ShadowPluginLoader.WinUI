@@ -26,9 +26,9 @@ jobs:
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
         
-      - name: Setup VisualStudio 2022 Build Tools
+      - name: Setup VisualStudio 2017 Build Tools
         run: |
-          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.Universal"
+          choco install visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.Universal"
 
       - name: Build Packages
         run: |
