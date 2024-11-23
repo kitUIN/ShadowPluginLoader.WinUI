@@ -26,10 +26,6 @@ jobs:
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
         
-      - name: Setup VisualStudio 2017 Build Tools
-        run: |
-          choco install visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs"
-
       - name: Build Packages
         run: |
           dotnet restore .\ShadowPluginLoader.WinUI\ShadowPluginLoader.WinUI.csproj
