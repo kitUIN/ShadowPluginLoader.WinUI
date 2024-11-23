@@ -32,7 +32,7 @@ public abstract class AbstractPlugin : IPlugin
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary()
                 {
-                    Source = new Uri(item.AssetPath(this.GetType()))
+                    Source = new Uri(item.PluginPath())
                 });
         }
     }
