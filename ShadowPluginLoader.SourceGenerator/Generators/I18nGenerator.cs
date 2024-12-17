@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ShadowPluginLoader.SourceGenerator.Models;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
@@ -72,13 +73,17 @@ internal class I18nGenerator : ISourceGenerator
     }
     public void Execute(GeneratorExecutionContext context)
     {
+        var logger = new Logger("I18nGenerator", context);
         context.AnalyzerConfigOptions.GlobalOptions.TryGetValue($"build_property.RootNamespace", out var currentNamespace);
         if (currentNamespace is null) return;
         var isPlugin = CheckIsPlugin(context);
         var isPluginLoader = CheckIsPluginLoader(context);
         
         var resws = GetReswDatas(context);
-        if (resws.Count == 0) return;
+        if (resws.Count == 0) {
+            logger.Warning("SPLW001", "No .resw file found, skip I18N generation.");
+            return; 
+        }
         string keys = string.Empty;
         string i18ns = string.Empty;
         var keyList = new List<string>();

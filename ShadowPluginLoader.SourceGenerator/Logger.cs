@@ -2,28 +2,29 @@
 
 namespace ShadowPluginLoader.SourceGenerator;
 
-internal static class Logger
+internal class Logger(string Category, GeneratorExecutionContext Context)
 {
-    private static string LoggerPrefix => "[SourceGenerator]";
-    
-    public static void Error(GeneratorExecutionContext context, string message)
+
+    public void Log(string id, string title, string message, DiagnosticSeverity severity)
     {
-        var invalidXmlWarning = new DiagnosticDescriptor(id: "Error",
-            title: "Code Generator Error",
-            messageFormat: "{0}",
-            category: "CodeGenerator",
-            DiagnosticSeverity.Error,
+        var invalidXmlWarning = new DiagnosticDescriptor(id: id,
+            title: title,
+            messageFormat: "[{0}] {1}",
+            category: Category,
+            severity,
             isEnabledByDefault: true);
-        context.ReportDiagnostic(Diagnostic.Create(invalidXmlWarning, Location.None, LoggerPrefix + message));
+        Context.ReportDiagnostic(Diagnostic.Create(invalidXmlWarning, Location.None, Category, message));
     }
-    public static void Info(GeneratorExecutionContext context, string message)
+    public void Info(string id, string message)
     {
-        var invalidXmlWarning = new DiagnosticDescriptor(id: "Info",
-            title: "Code Generator Info",
-            messageFormat: "{0}",
-            category: "CodeGenerator",
-            DiagnosticSeverity.Info,
-            isEnabledByDefault: true);
-        context.ReportDiagnostic(Diagnostic.Create(invalidXmlWarning, Location.None, LoggerPrefix + message));
+        Log(id, $"{Category} Info", message, DiagnosticSeverity.Info);
+    }
+    public void Warning(string id, string message)
+    {
+        Log(id, $"{Category} Warning", message, DiagnosticSeverity.Warning);
+    }
+    public void Error(string id, string message)
+    {
+        Log(id, $"{Category} Error", message, DiagnosticSeverity.Error);
     }
 }

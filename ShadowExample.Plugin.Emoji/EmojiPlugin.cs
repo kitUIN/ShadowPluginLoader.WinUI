@@ -10,6 +10,7 @@ using ShadowPluginLoader.MetaAttributes;
 using Microsoft.UI.Xaml;
 using ShadowExample.Plugin.Emoji.Controls;
 
+
 namespace ShadowExample.Plugin.Emoji
 {
     [AutoPluginMeta]

@@ -62,6 +62,8 @@ internal class PluginMetaGenerator : ISourceGenerator
     }
     public void Execute(GeneratorExecutionContext context)
     {
+
+        var logger = new Logger("PluginMetaGenerator", context);
         try
         {
             // Get the compilation object
@@ -105,7 +107,6 @@ internal class PluginMetaGenerator : ISourceGenerator
                     // Generate a Hello method with the class name
                     var code = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
 using {np};
-using {classSymbol.ContainingNamespace.ToDisplayString()}.Helpers;
 
 namespace {classSymbol.ContainingNamespace.ToDisplayString()}
 {{
@@ -132,8 +133,8 @@ namespace {classSymbol.ContainingNamespace.ToDisplayString()}
         }
         catch (Exception e)
         {
-            
-            Logger.Error(context, e.Message);
+
+            logger.Error("SPLE000", e.Message);
             throw e;
         }
     }

@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShadowExample.Core", "Shado
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShadowPluginLoader.SourceGenerator", "ShadowPluginLoader.SourceGenerator\ShadowPluginLoader.SourceGenerator.csproj", "{672C3BFF-0FD9-4435-B8CF-DC5F6AC3E675}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{11C998D6-7B51-4118-A4B6-F0C6F2F9115D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -122,6 +124,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F647FCF6-3774-4141-B9FD-C03F6B662D26} = {11C998D6-7B51-4118-A4B6-F0C6F2F9115D}
+		{516AF835-097D-4CF1-95BB-1B12B3B15694} = {11C998D6-7B51-4118-A4B6-F0C6F2F9115D}
+		{05E296B0-9E67-4385-9268-8BB4E54DECDE} = {11C998D6-7B51-4118-A4B6-F0C6F2F9115D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B9A90B1F-237B-4D76-B288-ED5A27D83A9B}

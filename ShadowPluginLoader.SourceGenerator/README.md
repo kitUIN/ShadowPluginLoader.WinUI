@@ -1,3 +1,4 @@
 # ShadowPluginLoader.SourceGenerator
 
-- `AutoPluginMeta` ÌØĞÔ ×Ô¶¯Ìí¼Ó`PluginMetaData`
+- `AutoPluginMeta` ç‰¹æ€§ è‡ªåŠ¨æ·»åŠ `PluginMetaData`
+- `I18nGenerator` è‡ªåŠ¨è¯†åˆ«`.resw`æ–‡ä»¶, å¹¶ç”ŸæˆI18nç±»
