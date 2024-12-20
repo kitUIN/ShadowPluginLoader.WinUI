@@ -39,7 +39,9 @@
     </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.3.5.6" />
+		<PackageReference Include="ShadowPluginLoader.WinUI" Version="1.3.7" />
+		<PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.4.1.12" />
+        <PackageReference Include="ShadowPluginLoader.MetaAttributes" Version="1.1.2.4" />
 		<PackageReference Include="ShadowExample.Core" Version="1.0.4.2" />
     </ItemGroup>
 

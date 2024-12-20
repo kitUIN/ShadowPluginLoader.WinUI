@@ -10,18 +10,6 @@ public static class PluginSettingsHelper
     private const string Container = "ShadowPluginLoader";
 
     /// <summary>
-    /// If Key Exists In The Local Settings
-    /// </summary>
-    /// <param name="key">Plugin Id</param>
-    /// <returns></returns>
-    public static bool Contains(string key)
-    {
-        var coreSettings =
-                ApplicationData.Current.LocalSettings.CreateContainer(Container,
-                    ApplicationDataCreateDisposition.Always);
-        return coreSettings.Values.ContainsKey(key);
-    }
-    /// <summary>
     /// Get Plugin Setting
     /// </summary>
     /// <param name="key">Plugin Id</param>
@@ -29,12 +17,9 @@ public static class PluginSettingsHelper
     private static ApplicationDataCompositeValue GetPluginSetting(string key)
     {
         ApplicationDataCompositeValue composite;
-        if (Contains(key))
+        if (SettingsHelper.Contains(Container, key))
         {
-            var coreSettings =
-                ApplicationData.Current.LocalSettings.CreateContainer(Container,
-                    ApplicationDataCreateDisposition.Always);
-            composite = (ApplicationDataCompositeValue) coreSettings.Values[key];
+            composite = SettingsHelper.Get<ApplicationDataCompositeValue>(Container, key)!;
         }
         else
         {
@@ -45,8 +30,10 @@ public static class PluginSettingsHelper
                 ["path"] = "",
             };
         }
+
         return composite;
     }
+
     /// <summary>
     /// Set Plugin Setting
     /// </summary>
@@ -54,11 +41,9 @@ public static class PluginSettingsHelper
     /// <param name="value">Plugin Setting</param>
     private static void SetPluginSetting(string key, ApplicationDataCompositeValue value)
     {
-        var coreSettings =
-                ApplicationData.Current.LocalSettings.CreateContainer(Container,
-                    ApplicationDataCreateDisposition.Always);
-        coreSettings.Values[key] = value;
+        SettingsHelper.Set(Container, key, value);
     }
+
     /// <summary>
     /// Get Plugin IsEnabled
     /// </summary>
@@ -66,8 +51,9 @@ public static class PluginSettingsHelper
     /// <returns></returns>
     public static bool GetPluginIsEnabled(string key)
     {
-        return (bool) GetPluginSetting(key)["enable"];
+        return (bool)GetPluginSetting(key)["enable"];
     }
+
     /// <summary>
     /// Set Plugin Enabled
     /// </summary>

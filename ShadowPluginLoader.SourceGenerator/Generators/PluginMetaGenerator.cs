@@ -50,9 +50,8 @@ internal class PluginMetaGenerator : ISourceGenerator
         }
     }
 
-    public string GetValue(JToken token)
+    private static string GetValue(JToken token)
     {
-
         return token.Type switch
         {
             JTokenType.String => $"\"{token.Value<string>()}\"",
@@ -105,26 +104,28 @@ internal class PluginMetaGenerator : ISourceGenerator
                     var meta = $"{metaType}({string.Join(", ", attrs)})";
                     var meta2 = string.Join(",\n            ", attrs);
                     // Generate a Hello method with the class name
-                    var code = $@"// Automatic Generate From ShadowPluginLoader.SourceGenerator
-using {np};
+                    var code = $$"""
+                                 // Automatic Generate From ShadowPluginLoader.SourceGenerator
+                                 using {{np}};
 
-namespace {classSymbol.ContainingNamespace.ToDisplayString()}
-{{
-    [{meta}]
-    public partial class {classSymbol.Name}
-    {{
-        /// <inheritdoc/>
-        public override string Id => {pluginId};
-
-        /// <summary>
-        /// PluginMetaData
-        /// </summary>
-        public static {metaType} Meta {{ get; }} = new {metaType}
-        {{
-            {meta2}
-        }};
-    }}
-}}";
+                                 namespace {{classSymbol.ContainingNamespace.ToDisplayString()}}
+                                 {
+                                     [{{meta}}]
+                                     public partial class {{classSymbol.Name}}
+                                     {
+                                         /// <inheritdoc/>
+                                         public override string Id => {{pluginId}};
+                                 
+                                         /// <summary>
+                                         /// PluginMetaData
+                                         /// </summary>
+                                         public static {{metaType}} Meta { get; } = new {{metaType}}
+                                         {
+                                             {{meta2}}
+                                         };
+                                     }
+                                 }
+                                 """;
                     // Add the generated code to the compilation
                     context.AddSource($"{classSymbol.Name}.g.cs", code);
                     

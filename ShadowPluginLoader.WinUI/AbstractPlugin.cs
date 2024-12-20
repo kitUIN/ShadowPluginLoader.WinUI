@@ -40,7 +40,7 @@ public abstract class AbstractPlugin : IPlugin
     /// <summary>
     /// Resource Dictionaries, example: ms-appx:///Themes/BikaTheme.xaml
     /// </summary>
-    public virtual IEnumerable<string> ResourceDictionaries => 
+    protected virtual IEnumerable<string> ResourceDictionaries => 
         new List<string>();
     /// <summary>
     /// Is Enabled
