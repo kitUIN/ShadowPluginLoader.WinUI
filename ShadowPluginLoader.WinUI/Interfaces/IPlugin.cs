@@ -16,7 +16,10 @@ internal interface IPlugin
     /// </summary>
     string DisplayName { get; }
     /// <summary>
-    /// Know that this Plugin is Enabled/Disabled
+    /// Get Or Set Plugin Enabled/Disabled
+    /// <remarks>
+    /// It Will Call Enabled/Disabled Function And Plugin Enabled/Disabled Event
+    /// </remarks>
     /// </summary>
     bool IsEnabled { get; set; }
 }

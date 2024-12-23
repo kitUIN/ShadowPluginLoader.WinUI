@@ -54,13 +54,13 @@ public abstract class AbstractPlugin : IPlugin
         {
             if (value)
             {
-                Enable();
+                Enabled();
                 PluginEventService.InvokePluginEnabled(this, 
                     new Args.PluginEventArgs(Id, Enums.PluginStatus.Enabled));
             }
             else
             {
-                Disable();
+                Disabled();
                 PluginEventService.InvokePluginDisabled(this,
                     new Args.PluginEventArgs(Id, Enums.PluginStatus.Disabled));
             }
@@ -69,16 +69,16 @@ public abstract class AbstractPlugin : IPlugin
         }
     }
     /// <summary>
-    /// Disable
+    /// Plugin Disabled (Before Plugin Disabled Event)
     /// </summary>
-    protected virtual void Disable()
+    protected virtual void Disabled()
     {
 
     }
     /// <summary>
-    /// Enable
+    /// Plugin Enabled (Before Plugin Enabled Event)
     /// </summary>
-    protected virtual void Enable()
+    protected virtual void Enabled()
     {
         
     }
