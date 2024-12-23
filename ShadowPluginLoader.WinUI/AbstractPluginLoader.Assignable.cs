@@ -165,6 +165,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// </summary>
     public void DeletePlugin(string id)
     {
+        // TODO
         /*        try
                 {
                     if (GetPlugin(id) is { } plugin)
@@ -192,6 +193,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// </summary>
     public void UpgradePlugin(string id)
     {
+        // TODO
     }
 
  
