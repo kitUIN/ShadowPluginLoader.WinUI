@@ -4,6 +4,7 @@ using ShadowPluginLoader.WinUI.Interfaces;
 using System.Collections.Generic;
 using CustomExtensions.WinUI;
 using System;
+using Serilog;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -14,13 +15,27 @@ public abstract class AbstractPlugin : IPlugin
 {
     /// <inheritdoc />
     public abstract string DisplayName { get; }
+
+    /// <summary>
+    /// Logger
+    /// </summary>
+    protected ILogger Logger { get; }
+
+    /// <summary>
+    /// PluginEventService
+    /// </summary>
+    protected PluginEventService PluginEventService { get; }
+
     /// <summary>
     /// Default
     /// </summary>
-    protected AbstractPlugin()
+    protected AbstractPlugin(ILogger logger, PluginEventService pluginEventService)
     {
+        Logger = logger;
+        PluginEventService = pluginEventService;
         Init();
     }
+
     /// <summary>
     /// Init
     /// </summary>
@@ -40,22 +55,25 @@ public abstract class AbstractPlugin : IPlugin
     /// <summary>
     /// Resource Dictionaries, example: ms-appx:///Themes/BikaTheme.xaml
     /// </summary>
-    protected virtual IEnumerable<string> ResourceDictionaries => 
+    protected virtual IEnumerable<string> ResourceDictionaries =>
         new List<string>();
+
     /// <summary>
     /// Is Enabled
     /// </summary>
     private bool _isEnabled;
 
     /// <inheritdoc/>
-    public bool IsEnabled { 
+    public bool IsEnabled
+    {
         get => _isEnabled;
         set
         {
+            if (_isEnabled == value) return;
             if (value)
             {
                 Enabled();
-                PluginEventService.InvokePluginEnabled(this, 
+                PluginEventService.InvokePluginEnabled(this,
                     new Args.PluginEventArgs(Id, Enums.PluginStatus.Enabled));
             }
             else
@@ -64,23 +82,29 @@ public abstract class AbstractPlugin : IPlugin
                 PluginEventService.InvokePluginDisabled(this,
                     new Args.PluginEventArgs(Id, Enums.PluginStatus.Disabled));
             }
+
             _isEnabled = value;
             PluginSettingsHelper.SetPluginEnabled(Id, _isEnabled);
         }
     }
+
     /// <summary>
     /// Plugin Disabled (Before Plugin Disabled Event)
     /// </summary>
     protected virtual void Disabled()
     {
-
     }
+
     /// <summary>
     /// Plugin Enabled (Before Plugin Enabled Event)
     /// </summary>
     protected virtual void Enabled()
     {
-        
+    }
+
+    /// <inheritdoc/>
+    public virtual void Loaded()
+    {
     }
 
     /// <inheritdoc/>

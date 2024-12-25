@@ -34,27 +34,36 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// Plugins Folder
     /// </summary>
     protected abstract string PluginFolder { get; }
-    
+
     /// <summary>
     /// Logger
     /// </summary>
-    protected ILogger? Logger { get; }
+    protected ILogger Logger { get; }
+
+    /// <summary>
+    /// PluginEventService
+    /// </summary>
+    protected PluginEventService PluginEventService { get; }
 
     /// <summary>
     /// Default
     /// </summary>
     /// <param name="logger">log</param>
-    protected AbstractPluginLoader(ILogger logger)
+    /// <param name="pluginEventService">pluginEventService</param>
+    protected AbstractPluginLoader(ILogger logger, PluginEventService pluginEventService)
     {
         Logger = logger;
+        PluginEventService = pluginEventService;
     }
+
     /// <summary>
     /// Default
     /// </summary>
-    protected AbstractPluginLoader():
-        this(Log.ForContext<AbstractPluginLoader<TMeta, TAPlugin>>())
+    protected AbstractPluginLoader(PluginEventService pluginEventService) :
+        this(Log.ForContext<AbstractPluginLoader<TMeta, TAPlugin>>(), pluginEventService)
     {
     }
+
     /// <summary>
     /// All Plugins
     /// </summary>
@@ -90,7 +99,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="dir">The Plugin Folder</param>
     protected virtual List<string> GetAllPathAsync(DirectoryInfo dir)
     {
-        var pls = dir.GetFiles(PluginJson,SearchOption.AllDirectories);
+        var pls = dir.GetFiles(PluginJson, SearchOption.AllDirectories);
         return pls.Select(x => x.FullName).ToList();
     }
 
@@ -110,6 +119,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             // The Folder Containing The Plugin Dll Not Found
             throw new PluginImportException($"Dir Not Found: {dirPath}");
         }
+
         var pluginFilePath = Path.Combine(dirPath, meta!.DllName + ".dll");
         if (!File.Exists(pluginFilePath)) throw new PluginImportException($"Not Found {pluginFilePath}");
         await CheckPluginMetaDataAsync(meta!, pluginFilePath);
@@ -130,6 +140,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         instance.IsEnabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
         Logger?.Information("{Pre}{ID}: Load Success!",
             LoggerPrefix, meta.Id);
+        if (instance.IsEnabled) instance.Loaded();
         PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
     }
 
@@ -150,8 +161,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="meta">PluginMetaData</param>
     protected virtual void CheckPluginMetaData(TMeta meta)
     {
-
     }
+
     /// <summary>
     /// LoadPlugin From SortedPluginTypes
     /// </summary>
@@ -172,8 +183,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <exception cref="PluginImportException">PluginMetaData Type Is Null</exception>
     protected virtual TMeta GetAndCheckPluginMetaData(Type plugin)
     {
-        var meta = plugin.GetPluginMetaData<TMeta>() 
-            ?? throw new PluginImportException($"{plugin.FullName}: MetaData Not Found");
+        var meta = plugin.GetPluginMetaData<TMeta>()
+                   ?? throw new PluginImportException($"{plugin.FullName}: MetaData Not Found");
         CheckPluginMetaData(meta);
         return meta;
     }
@@ -227,9 +238,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// Register Plugin DI
     /// </summary>
-    protected virtual void LoadPluginDi(Type tPlugin,TAPlugin aPlugin ,TMeta meta)
+    protected virtual void LoadPluginDi(Type tPlugin, TAPlugin aPlugin, TMeta meta)
     {
-
     }
 
     /// <summary>
@@ -241,7 +251,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     {
         using FileStream zipToOpen = new(zipPath, FileMode.Open);
         using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Update);
-        var jsonEntry = archive.GetEntry(PluginJson) ?? throw new PluginImportException($"Not Found {PluginJson} in zip {zipPath}");
+        var jsonEntry = archive.GetEntry(PluginJson) ??
+                        throw new PluginImportException($"Not Found {PluginJson} in zip {zipPath}");
     }
 
     /// <summary>
@@ -249,7 +260,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     protected virtual string UnZip(string zipPath, string outputPath)
     {
-        ZipFile.ExtractToDirectory(zipPath,outputPath,true);
+        ZipFile.ExtractToDirectory(zipPath, outputPath, true);
         return outputPath;
     }
 }
