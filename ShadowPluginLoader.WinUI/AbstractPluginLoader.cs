@@ -137,11 +137,13 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         var instance = RegisterPluginMain(plugin!, meta);
         LoadPluginDi(plugin!, instance, meta);
         _plugins[meta.Id] = instance;
-        instance.IsEnabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
-        Logger?.Information("{Pre}{ID}: Load Success!",
-            LoggerPrefix, meta.Id);
-        if (instance.IsEnabled) instance.Loaded();
+        var enabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
+        instance.Loaded();
         PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
+        Logger.Information("{Pre}{ID}: Load Success!",
+            LoggerPrefix, meta.Id);
+        if (!enabled) return;
+        instance.IsEnabled = enabled;
     }
 
 

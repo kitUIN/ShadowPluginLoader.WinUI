@@ -22,6 +22,14 @@ public enum PluginStatus
     /// </summary>
     Upgraded,
     /// <summary>
+    /// Plan Upgrade
+    /// </summary>
+    PlanUpgrade,
+    /// <summary>
+    /// Plan Remove
+    /// </summary>
+    PlanRemove,
+    /// <summary>
     /// Removed
     /// </summary>
     Removed
