@@ -1,4 +1,6 @@
 ﻿using Windows.Storage;
+using DryIoc;
+using Serilog;
 
 namespace ShadowPluginLoader.WinUI.Helpers;
 
@@ -53,5 +55,7 @@ public static class SettingsHelper
             ApplicationData.Current.LocalSettings.CreateContainer(container,
                 ApplicationDataCreateDisposition.Always);
         coreSettings.Values[key] = value;
+        DiFactory.Services.Resolve<ILogger>().Debug("Container: {container} | [{key}] {value}",
+            container, key, value);
     }
 }
