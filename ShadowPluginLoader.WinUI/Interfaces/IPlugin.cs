@@ -22,4 +22,9 @@ internal interface IPlugin
     /// </remarks>
     /// </summary>
     bool IsEnabled { get; set; }
+
+    /// <summary>
+    /// Plugin Loaded (Before Plugin Loaded Event) (After Plugin Enable Event)
+    /// </summary>
+    void Loaded();
 }
