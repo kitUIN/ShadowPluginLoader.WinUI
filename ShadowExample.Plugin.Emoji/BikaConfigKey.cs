@@ -2,11 +2,16 @@
 
 namespace ShadowExample.Plugin.Emoji;
 
-[ShadowPluginSettingClass("EmojiPlugin","ShadowExample.Plugin.Emoji")]
+[ShadowPluginSettingClass(typeof(EmojiPlugin), "Setting")]
+[ShadowSettingClass("ShadowExample.Plugin.Emoji","EmojiSetting")]
 public enum BikaConfigKey
 {
-    [ShadowSetting("int","1","Api分流")]
+    [ShadowSetting(typeof(int), "1", "Api分流")]
     ApiShunt,
-    [ShadowSetting("bool","true","登陆后记住我")]
-    RememberMe
+
+    [ShadowSetting(typeof(bool), "true", "登陆后记住我")]
+    RememberMe,
+
+    [ShadowSetting(typeof(string), "tt",comment: "测试名称")]
+    TestName
 }

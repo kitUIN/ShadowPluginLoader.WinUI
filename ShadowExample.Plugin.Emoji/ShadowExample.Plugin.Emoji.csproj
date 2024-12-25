@@ -39,7 +39,9 @@
     </ItemGroup>
 
 	<ItemGroup>
+        <PackageReference Include="ShadowPluginLoader.MetaAttributes" Version="1.2.2" />
 		<PackageReference Include="ShadowExample.Core" Version="1.0.5.1" />
+		<PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.4.10" />
     </ItemGroup>
 
     <ItemGroup>

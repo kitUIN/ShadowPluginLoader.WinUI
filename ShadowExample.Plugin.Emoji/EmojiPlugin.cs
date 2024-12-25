@@ -26,7 +26,6 @@ namespace ShadowExample.Plugin.Emoji
         public override FrameworkElement GetControl()
         {
             return new UserControl1();
-
         }
 
         public override string GetEmoji()
