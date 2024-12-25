@@ -8,7 +8,9 @@ using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
 using ShadowPluginLoader.MetaAttributes;
 using Microsoft.UI.Xaml;
+using Serilog;
 using ShadowExample.Plugin.Emoji.Controls;
+using ShadowPluginLoader.WinUI;
 
 
 namespace ShadowExample.Plugin.Emoji
@@ -16,6 +18,11 @@ namespace ShadowExample.Plugin.Emoji
     [AutoPluginMeta]
     public partial class EmojiPlugin : PluginBase
     {
+        /// <inheritdoc />
+        public EmojiPlugin(ILogger logger, PluginEventService pluginEventService) : base(logger, pluginEventService)
+        {
+        }
+
         public override FrameworkElement GetControl()
         {
             return new UserControl1();
