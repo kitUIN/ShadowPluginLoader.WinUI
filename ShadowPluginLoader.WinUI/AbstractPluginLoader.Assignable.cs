@@ -31,9 +31,10 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         }
         catch (PluginImportException e)
         {
-            Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
+            Logger.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
     }
+
     /// <summary>
     /// <inheritdoc />
     /// </summary>
@@ -60,12 +61,14 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         try
         {
-            CheckPluginInZip(zipPath);
-            await ImportFromDirAsync(UnZip(PluginFolder, zipPath));
+            var meta = await CheckPluginInZip(zipPath);
+            var outPath = Path.Combine(PluginFolder, meta!.DllName);
+            Logger.Information("{t}",outPath);
+            await ImportFromDirAsync(await UnZip(zipPath, outPath));
         }
         catch (PluginImportException e)
         {
-            Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
+            Logger.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
     }
 
@@ -195,6 +198,4 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         // TODO
     }
-
- 
 }

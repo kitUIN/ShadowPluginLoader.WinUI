@@ -14,6 +14,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Enums;
+using SharpCompress.Archives;
+using SharpCompress.IO;
 using Path = System.IO.Path;
 
 namespace ShadowPluginLoader.WinUI;
@@ -249,20 +251,28 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="zipPath">plugin zip path</param>
     /// <exception cref="PluginImportException">Not Found plugin.json in zip</exception>
-    protected virtual void CheckPluginInZip(string zipPath)
+    protected virtual async Task<TMeta?> CheckPluginInZip(string zipPath)
     {
-        using FileStream zipToOpen = new(zipPath, FileMode.Open);
+        await using FileStream zipToOpen = new(zipPath, FileMode.Open);
         using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Update);
         var jsonEntry = archive.GetEntry(PluginJson) ??
                         throw new PluginImportException($"Not Found {PluginJson} in zip {zipPath}");
+        using var reader = new StreamReader(jsonEntry.Open());
+        var jsonContent = await reader.ReadToEndAsync();
+        Logger.Information("{Pre} plugin.json content: {Content}",
+            LoggerPrefix, jsonContent);
+        return JsonSerializer.Deserialize<TMeta>(jsonContent);
     }
 
     /// <summary>
     /// UnZip
     /// </summary>
-    protected virtual string UnZip(string zipPath, string outputPath)
+    protected virtual async Task<string> UnZip(string zipPath, string outputPath)
     {
-        ZipFile.ExtractToDirectory(zipPath, outputPath, true);
+        await using var fStream = File.OpenRead(zipPath);
+        await using var stream = NonDisposingStream.Create(fStream);
+        using var archive = ArchiveFactory.Open(stream);
+        archive.ExtractToDirectory(outputPath);
         return outputPath;
     }
 }

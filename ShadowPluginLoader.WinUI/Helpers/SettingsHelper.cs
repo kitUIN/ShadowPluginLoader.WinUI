@@ -55,7 +55,6 @@ public static class SettingsHelper
             ApplicationData.Current.LocalSettings.CreateContainer(container,
                 ApplicationDataCreateDisposition.Always);
         coreSettings.Values[key] = value;
-        DiFactory.Services.Resolve<ILogger>().Debug("Container: {container} | [{key}] {value}",
-            container, key, value);
+        Log.Debug("Container: {container} | [{key}] {value}", container, key, value);
     }
 }
