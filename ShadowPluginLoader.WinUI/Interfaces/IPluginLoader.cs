@@ -78,14 +78,15 @@ public partial interface IPluginLoader<TAPlugin>
     void DisablePlugin(string id);
     
     /// <summary>
-    /// Delete Plugin
+    /// Remove Plugin
     /// </summary>
     /// <param name="id">Plugin Id</param>
-    void DeletePlugin(string id);
+    void RemovePlugin(string id);
     
     /// <summary>
     /// Upgrade Plugin
     /// </summary>
     /// <param name="id">Plugin Id</param>
-    void UpgradePlugin(string id);
+    /// <param name="newVersionZip">new Version Zip Path (Uri)</param>
+    Task UpgradePlugin(string id, string newVersionZip);
 }

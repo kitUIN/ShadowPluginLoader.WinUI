@@ -16,12 +16,15 @@ using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Enums;
 using SharpCompress.Archives;
 using SharpCompress.IO;
+using SharpCompress.Readers;
 using Path = System.IO.Path;
 
 namespace ShadowPluginLoader.WinUI;
 
 public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 {
+    protected virtual bool CleanBeforeUpgrade => false;
+
     /// <summary>
     /// Logger Print With Prefix
     /// </summary>
@@ -36,6 +39,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// Plugins Folder
     /// </summary>
     protected abstract string PluginFolder { get; }
+
+    /// <summary>
+    /// Temp File Folder
+    /// </summary>
+    protected abstract string TempFolder { get; }
 
     /// <summary>
     /// Logger
@@ -144,6 +152,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
         Logger.Information("{Pre}{ID}: Load Success!",
             LoggerPrefix, meta.Id);
+        if (PluginSettingsHelper.GetPluginUpgradePaths().ContainsKey(meta.Id))
+        {
+            instance.PlanUpgrade = false;
+            PluginSettingsHelper.DeletePluginPath(meta.Id);
+        }
+
         if (!enabled) return;
         instance.IsEnabled = enabled;
     }

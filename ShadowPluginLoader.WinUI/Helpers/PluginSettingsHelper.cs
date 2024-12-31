@@ -8,30 +8,19 @@ namespace ShadowPluginLoader.WinUI.Helpers;
 public static class PluginSettingsHelper
 {
     private const string Container = "ShadowPluginLoader";
+    private const string EnabledPluginsKey = "EnabledPluginsKey";
+    private const string UpgradePathKey = "UpgradePathKey";
+    private const string RemovePathKey = "RemovePathKey";
 
     /// <summary>
     /// Get Plugin Setting
     /// </summary>
-    /// <param name="key">Plugin Id</param>
     /// <returns></returns>
     private static ApplicationDataCompositeValue GetPluginSetting(string key)
     {
-        ApplicationDataCompositeValue composite;
-        if (SettingsHelper.Contains(Container, key))
-        {
-            composite = SettingsHelper.Get<ApplicationDataCompositeValue>(Container, key)!;
-        }
-        else
-        {
-            composite = new ApplicationDataCompositeValue
-            {
-                ["enable"] = true,
-                ["wait"] = 0, // 0:None, 1:update, 2:delete
-                ["path"] = "",
-            };
-        }
-
-        return composite;
+        return SettingsHelper.Contains(Container, key)
+            ? SettingsHelper.Get<ApplicationDataCompositeValue>(Container, key)!
+            : new ApplicationDataCompositeValue();
     }
 
     /// <summary>
@@ -51,7 +40,9 @@ public static class PluginSettingsHelper
     /// <returns></returns>
     public static bool GetPluginIsEnabled(string key)
     {
-        return (bool)GetPluginSetting(key)["enable"];
+        var settings = GetPluginSetting(EnabledPluginsKey);
+        if (settings.TryGetValue(key, out var setting)) return (bool)setting;
+        return false;
     }
 
     /// <summary>
@@ -61,8 +52,60 @@ public static class PluginSettingsHelper
     /// <param name="value">Is Enabled</param>
     public static void SetPluginEnabled(string key, bool value)
     {
-        var config = GetPluginSetting(key);
-        config["enable"] = value;
-        SetPluginSetting(key, config);
+        var settings = GetPluginSetting(EnabledPluginsKey);
+        settings[key] = value;
+        SetPluginSetting(EnabledPluginsKey, settings);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    public static void SetPluginPlanRemove(string key, string value)
+    {
+        var settings = GetPluginSetting(RemovePathKey);
+        settings[key] = value;
+        SetPluginSetting(RemovePathKey, settings);
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public static ApplicationDataCompositeValue GetPluginRemovePaths()
+    {
+        return GetPluginSetting(RemovePathKey);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public static ApplicationDataCompositeValue GetPluginUpgradePaths()
+    {
+        return GetPluginSetting(UpgradePathKey);
+    }
+
+    /// <summary>
+    /// Set Plugin Upgrade File Path
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <param name="value">Path</param>
+    public static void SetPluginUpgradePath(string key, string value)
+    {
+        var settings = GetPluginSetting(UpgradePathKey);
+        settings[key] = value;
+        SetPluginSetting(UpgradePathKey, settings);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    public static void DeletePluginPath(string key)
+    {
+        var settings = GetPluginSetting(UpgradePathKey);
+        settings.Remove(key);
+        SetPluginSetting(UpgradePathKey, settings);
     }
 }

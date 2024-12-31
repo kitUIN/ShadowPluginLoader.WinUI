@@ -63,13 +63,25 @@ public abstract class AbstractPlugin : IPlugin
     /// </summary>
     private bool _isEnabled;
 
+    /// <summary>
+    /// Upgrade Plan
+    /// </summary>
+    private bool _planUpgrade;
+
+    /// <summary>
+    /// Remove Plan
+    /// </summary>
+    private bool _planRemove;
+
     /// <inheritdoc/>
     public bool IsEnabled
     {
         get => _isEnabled;
         set
         {
+            PluginSettingsHelper.SetPluginEnabled(Id, _isEnabled);
             if (_isEnabled == value) return;
+            _isEnabled = value;
             if (value)
             {
                 Enabled();
@@ -82,9 +94,41 @@ public abstract class AbstractPlugin : IPlugin
                 PluginEventService.InvokePluginDisabled(this,
                     new Args.PluginEventArgs(Id, Enums.PluginStatus.Disabled));
             }
+        }
+    }
 
-            _isEnabled = value;
-            PluginSettingsHelper.SetPluginEnabled(Id, _isEnabled);
+    /// <inheritdoc/>
+    public bool PlanUpgrade
+    {
+        get => _planUpgrade;
+        set
+        {
+            _planUpgrade = value;
+            if (value)
+            {
+                PluginEventService.InvokePluginPlanUpgrade(this,
+                    new Args.PluginEventArgs(Id, Enums.PluginStatus.PlanUpgrade));
+            }
+            else
+            {
+                PluginEventService.InvokePluginUpgraded(this,
+                    new Args.PluginEventArgs(Id, Enums.PluginStatus.Upgraded));
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public bool PlanRemove
+    {
+        get => _planRemove;
+        set
+        {
+            _planRemove = value;
+            if (value)
+            {
+                PluginEventService.InvokePluginPlanRemove(this,
+                    new Args.PluginEventArgs(Id, Enums.PluginStatus.PlanRemove));
+            }
         }
     }
 

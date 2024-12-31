@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Helpers;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -63,12 +65,42 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         {
             var meta = await CheckPluginInZip(zipPath);
             var outPath = Path.Combine(PluginFolder, meta!.DllName);
-            Logger.Information("{t}",outPath);
+            Logger.Information("{t}", outPath);
             await ImportFromDirAsync(await UnZip(zipPath, outPath));
         }
         catch (PluginImportException e)
         {
             Logger.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Check Any Plugin Plan To Upgrade
+    /// </summary>
+    protected async Task CheckUpgrade()
+    {
+        var settings = PluginSettingsHelper.GetPluginUpgradePaths();
+        foreach (var setting in settings)
+        {
+            var zipPath = (string)setting.Value;
+            var meta = await CheckPluginInZip(zipPath);
+            var outPath = Path.Combine(PluginFolder, meta!.DllName);
+            await UnZip(zipPath, outPath);
+        }
+    }
+
+    /// <summary>
+    /// Check Any Plugin Plan To Remove
+    /// </summary>
+    protected void CheckRemove()
+    {
+        var settings = PluginSettingsHelper.GetPluginRemovePaths();
+        foreach (var setting in settings)
+        {
+            var path = (string)setting.Value;
+            if (Directory.Exists(path)) Directory.Delete(path, true);
+            PluginEventService.InvokePluginRemoved(this,
+                new Args.PluginEventArgs(setting.Key, Enums.PluginStatus.Removed));
         }
     }
 
@@ -79,6 +111,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         try
         {
+            CheckRemove();
+            await CheckUpgrade();
             _tempSortPlugins.Clear();
             _sortLoader.Clear();
             await CheckPluginMetaDataFromJson(new DirectoryInfo(pluginPath));
@@ -138,7 +172,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     public TAPlugin? GetEnabledPlugin(string id)
     {
         if (GetPlugin(id) is { IsEnabled: true } plugin) return plugin;
-        return default;
+        return null;
     }
 
     /// <summary>
@@ -166,36 +200,71 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public void DeletePlugin(string id)
+    public void RemovePlugin(string id)
     {
-        // TODO
-        /*        try
-                {
-                    if (GetPlugin(id) is { } plugin)
-                    {
-                        var file = await plugin.GetType().Assembly.Location.GetFile();
-                        var folder = await file.GetParentAsync();
-                        plugin.IsEnabled = false;
-                        plugin.PluginDeleting();
-                        Instances.Remove(plugin);
-                        //ApplicationExtensionHost.Current.
-                        await folder.DeleteAsync();
-                        return true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("删除插件错误:{E}", ex);
-                }
+        var plugin = GetPlugin(id);
+        if (plugin == null) throw new PluginRemoveException($"{id} Plugin Not Found");
+        var path = Path.GetDirectoryName(plugin.GetType().Assembly.Location);
+        if (path == null) throw new PluginRemoveException($"{id} Plugin Path Not Found");
+        plugin.PlanRemove = true;
+        PluginSettingsHelper.SetPluginPlanRemove(id, path);
+    }
 
-                return false;*/
+    /// <summary>
+    /// If local uri , return local uri. If http uri , download and return local uri
+    /// </summary>
+    /// <param name="newVersionZip"></param>
+    /// <returns></returns>
+    protected async Task<string> DownloadNewVersionZip(string newVersionZip)
+    {
+        var fileName = Path.GetFileName(newVersionZip);
+        var destinationPath = Path.Combine(TempFolder, fileName);
+        if (!Directory.Exists(TempFolder)) Directory.CreateDirectory(TempFolder);
+        Logger.Information("Download File {httpPath} To {destinationPath}",
+            newVersionZip, destinationPath);
+        using var client = new HttpClient();
+        using var response = await client.GetAsync(new Uri(newVersionZip), HttpCompletionOption.ResponseHeadersRead);
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        await using var fileStream = File.Create(destinationPath);
+        await stream.CopyToAsync(fileStream);
+        return destinationPath;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="meta"></param>
+    /// <param name="pluginMetaData"></param>
+    /// <exception cref="PluginUpgradeException"></exception>
+    protected void CheckNewVersionMeta(TMeta meta, TMeta pluginMetaData)
+    {
+        if (new Version(meta.Version) <= new Version(pluginMetaData.Version))
+        {
+            throw new PluginUpgradeException($"The upgraded version ({meta.Version}) " +
+                                             $"should be larger than the current " +
+                                             $"version ({pluginMetaData.Version})");
+        }
     }
 
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public void UpgradePlugin(string id)
+    public async Task UpgradePlugin(string id, string newVersionZip)
     {
-        // TODO
+        if (newVersionZip.StartsWith("http"))
+        {
+            newVersionZip = await DownloadNewVersionZip(newVersionZip);
+        }
+
+        var plugin = GetPlugin(id);
+        if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
+        var meta = await CheckPluginInZip(newVersionZip);
+        if (meta is null) throw new PluginUpgradeException($"Not Found `plugin.json` File In {newVersionZip}");
+        var pluginMetaData = plugin.GetType().GetPluginMetaData<TMeta>()
+                             ?? throw new PluginUpgradeException($"{plugin.Id}: MetaData Not Found");
+        CheckNewVersionMeta(meta, pluginMetaData);
+
+        plugin.PlanUpgrade = true;
+        PluginSettingsHelper.SetPluginUpgradePath(id, newVersionZip);
     }
 }
