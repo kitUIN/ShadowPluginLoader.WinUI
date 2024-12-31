@@ -48,5 +48,6 @@
 - 🛠️[ShadowPluginLoader.SourceGenerator](https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowPluginLoader.SourceGenerator) 自动生成帮助类
 - 🎉[winui-extensions](https://github.com/dnchattan/winui-extensions) 开创了WinUI3中加载插件的先河
 - 📦[DryIoc](https://github.com/dadhi/DryIoc) 提供灵活的依赖注入
+- 🛠️[SharpCompress](https://github.com/adamhathcock/sharpcompress) - 提供压缩解压支持  
 - 📃[Serilog](https://serilog.net/) 提供开箱即用的日志
 - 💡[WindowsAppSDK](https://github.com/microsoft/WindowsAppSDK) 提供框架支持
