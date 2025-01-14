@@ -63,6 +63,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         try
         {
+            zipPath = await DownloadZipFromPath(zipPath);
             var meta = await CheckPluginInZip(zipPath);
             var outPath = Path.Combine(PluginFolder, meta!.DllName);
             Logger.Information("{t}", outPath);
@@ -215,18 +216,21 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// </summary>
     /// <param name="newVersionZip"></param>
     /// <returns></returns>
-    protected async Task<string> DownloadNewVersionZip(string newVersionZip)
+    protected async Task<string> DownloadZipFromPath(string newVersionZip)
     {
+        if (!newVersionZip.StartsWith("http")) return newVersionZip;
         var fileName = Path.GetFileName(newVersionZip);
         var destinationPath = Path.Combine(TempFolder, fileName);
         if (!Directory.Exists(TempFolder)) Directory.CreateDirectory(TempFolder);
-        Logger.Information("Download File {httpPath} To {destinationPath}",
+        Logger.Information("Downloading File {httpPath} To {destinationPath}",
             newVersionZip, destinationPath);
         using var client = new HttpClient();
         using var response = await client.GetAsync(new Uri(newVersionZip), HttpCompletionOption.ResponseHeadersRead);
         await using var stream = await response.Content.ReadAsStreamAsync();
         await using var fileStream = File.Create(destinationPath);
         await stream.CopyToAsync(fileStream);
+        Logger.Information("DownloadFile {httpPath} To {destinationPath} Success",
+            newVersionZip, destinationPath);
         return destinationPath;
     }
 
@@ -251,11 +255,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// </summary>
     public async Task UpgradePlugin(string id, string newVersionZip)
     {
-        if (newVersionZip.StartsWith("http"))
-        {
-            newVersionZip = await DownloadNewVersionZip(newVersionZip);
-        }
-
+        newVersionZip = await DownloadZipFromPath(newVersionZip);
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
         var meta = await CheckPluginInZip(newVersionZip);
