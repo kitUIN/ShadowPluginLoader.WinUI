@@ -66,7 +66,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             zipPath = await DownloadZipFromPath(zipPath);
             var meta = await CheckPluginInZip(zipPath);
             var outPath = Path.Combine(PluginFolder, meta!.DllName);
-            Logger.Information("{t}", outPath);
+            Logger.Debug("Plugin OutPath: {t}", outPath);
             await ImportFromDirAsync(await UnZip(zipPath, outPath));
         }
         catch (PluginImportException e)

@@ -23,6 +23,9 @@ namespace ShadowPluginLoader.WinUI;
 
 public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 {
+    /// <summary>
+    /// Clean Folder Before Upgrade
+    /// </summary>
     protected virtual bool CleanBeforeUpgrade => false;
 
     /// <summary>

@@ -42,7 +42,7 @@ public static class PluginSettingsHelper
     {
         var settings = GetPluginSetting(EnabledPluginsKey);
         if (settings.TryGetValue(key, out var setting)) return (bool)setting;
-        return false;
+        return true;
     }
 
     /// <summary>
