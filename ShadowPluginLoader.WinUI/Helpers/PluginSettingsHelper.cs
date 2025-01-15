@@ -102,10 +102,20 @@ public static class PluginSettingsHelper
     /// 
     /// </summary>
     /// <param name="key"></param>
-    public static void DeletePluginPath(string key)
+    public static void DeleteUpgradePluginPath(string key)
     {
         var settings = GetPluginSetting(UpgradePathKey);
         settings.Remove(key);
         SetPluginSetting(UpgradePathKey, settings);
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    public static void DeleteRemovePluginPath(string key)
+    {
+        var settings = GetPluginSetting(RemovePathKey);
+        settings.Remove(key);
+        SetPluginSetting(RemovePathKey, settings);
     }
 }

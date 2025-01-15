@@ -87,6 +87,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             var meta = await CheckPluginInZip(zipPath);
             var outPath = Path.Combine(PluginFolder, meta!.DllName);
             await UnZip(zipPath, outPath);
+            PluginSettingsHelper.DeleteUpgradePluginPath(meta.Id);
         }
     }
 
@@ -100,6 +101,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         {
             var path = (string)setting.Value;
             if (Directory.Exists(path)) Directory.Delete(path, true);
+            PluginSettingsHelper.DeleteRemovePluginPath(setting.Key);
             PluginEventService.InvokePluginRemoved(this,
                 new Args.PluginEventArgs(setting.Key, Enums.PluginStatus.Removed));
         }
