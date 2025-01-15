@@ -79,7 +79,7 @@ public abstract class AbstractPlugin : IPlugin
         get => _isEnabled;
         set
         {
-            PluginSettingsHelper.SetPluginEnabled(Id, _isEnabled);
+            PluginSettingsHelper.SetPluginEnabled(Id, value);
             if (_isEnabled == value) return;
             _isEnabled = value;
             if (value)
