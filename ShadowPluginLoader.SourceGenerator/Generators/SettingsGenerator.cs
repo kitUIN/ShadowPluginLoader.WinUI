@@ -47,16 +47,39 @@ public class SettingsGenerator : ISourceGenerator
                 typeFullName = typeSettingNamespace + "." + typeFullName;
                 var defaultVal = member.GetAttributeConstructorArgument<string?>(context, attributeName, 1);
                 var comment = member.GetAttributeConstructorArgument<string?>(context, attributeName, 2);
-
+                var isPath = member.GetAttributeConstructorArgument<bool>(context, attributeName, 3);
                 if (defaultVal != null)
                 {
                     if (typeFullName == "System.String") defaultVal = "\"" + defaultVal + "\"";
+                    inits.Add(isPath
+                        ? $$"""
+                                    if(!SettingsHelper.Contains(Container, "{{member.Name}}"))
+                                    {
+                                        {{member.Name}} = System.IO.Path.Combine(defaultPath, {{defaultVal}});
+                                    }
+                                    if (!System.IO.Directory.Exists({{member.Name}}))
+                                    {
+                                        System.IO.Directory.CreateDirectory({{member.Name}});
+                                    }
+                            """
+                        : $$"""
+                                    if(!SettingsHelper.Contains(Container, "{{member.Name}}"))
+                                    {
+                                        {{member.Name}} = {{defaultVal}};
+                                    }
+                            """);
+                }else if (isPath)
+                {
                     inits.Add($$"""
                                         if(!SettingsHelper.Contains(Container, "{{member.Name}}"))
                                         {
-                                            {{member.Name}} = {{defaultVal}};
+                                            {{member.Name}} = System.IO.Path.Combine(defaultPath, "{{member.Name}}");
                                         }
-                                """);
+                                        if (!System.IO.Directory.Exists({{member.Name}}))
+                                        {
+                                            System.IO.Directory.CreateDirectory({{member.Name}});
+                                        }
+                                """); 
                 }
 
                 keys.Add($$"""
@@ -90,7 +113,8 @@ public class SettingsGenerator : ISourceGenerator
                                  public partial class {{settingsClassName}}
                                  {
                                      const string Container = "{{topLevelNamespace}}";
-                                    
+                                     private string defaultPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+                                         
                                  {{string.Join("\n", keys)}}
                                     
                                      public {{settingsClassName}}()
@@ -101,6 +125,7 @@ public class SettingsGenerator : ISourceGenerator
                                      }
                                      private void Init()
                                      {
+                                             
                                  {{string.Join("\n", inits)}}
                                      }
                                      partial void BeforeInit();

@@ -13,5 +13,8 @@ public enum BikaConfigKey
     RememberMe,
 
     [ShadowSetting(typeof(string), "tt",comment: "测试名称")]
-    TestName
+    TestName,
+    
+    [ShadowSetting(typeof(string), "Temp",  "测试名称", true)]
+    TempPath,
 }
