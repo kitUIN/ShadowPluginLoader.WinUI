@@ -6,7 +6,7 @@
         <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
         <UseWinUI>true</UseWinUI>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<NoWarn>MSB3277</NoWarn>
+        <NoWarn>MSB3277</NoWarn>
         <!-- Nuget && Plugin Meta -->
         <PackageId>ShadowExample.Plugin.Emoji</PackageId>
         <Version>1.0.1.1</Version>
@@ -17,37 +17,38 @@
         <Description>✨ ShadowExample.Plugin.Emoji | WinUI3✨</Description>
         <Copyright>Copyright 2024</Copyright>
         <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-		<PluginMeta>
-			<Id>Emoji</Id>
-			<Name>emoji</Name>
-			<Version>$(Version)</Version>
-			<Authors>
-				<Item>kitUIN</Item>
-				<Item>Hello</Item> 
-			</Authors>
-			<PackageLicenseExpression>MIT</PackageLicenseExpression>
-			<PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
-			<RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
-			<Description>✨ ShadowExample.Plugin.Emoji | WinUI3✨</Description>
-			<Copyright>Copyright 2024</Copyright>
-			<PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-		</PluginMeta>
-		<LangVersion>12</LangVersion>
+        <PluginMeta>
+            <Id>Emoji</Id>
+            <Name>emoji</Name>
+            <Version>$(Version)</Version>
+            <Authors>
+                <Item>kitUIN</Item>
+                <Item>Hello</Item>
+            </Authors>
+            <PackageLicenseExpression>MIT</PackageLicenseExpression>
+            <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
+            <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
+            <Description>✨ ShadowExample.Plugin.Emoji | WinUI3✨</Description>
+            <Copyright>Copyright 2024</Copyright>
+            <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
+        </PluginMeta>
+        <LangVersion>12</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-      <None Remove="Controls\UserControl1.xaml" />
-    </ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="ShadowExample.Core" Version="1.0.5.1" />
-        <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.5.4" />
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.4.12.1" />
+        <None Remove="Controls\UserControl1.xaml"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Page Update="Controls\UserControl1.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <PackageReference Include="ShadowExample.Core" Version="1.0.5.1"/>
+        <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.5.4"/>
+        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.4.15"/>
+        <PackageReference Include="ShadowPluginLoader.MetaAttributes" Version="1.2.4"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Page Update="Controls\UserControl1.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
 
 </Project>

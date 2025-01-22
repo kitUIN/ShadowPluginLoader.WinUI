@@ -48,14 +48,38 @@ public class SettingsGenerator : ISourceGenerator
                 var defaultVal = member.GetAttributeConstructorArgument<string?>(context, attributeName, 1);
                 var comment = member.GetAttributeConstructorArgument<string?>(context, attributeName, 2);
                 var isPath = member.GetAttributeConstructorArgument<bool>(context, attributeName, 3);
+                var baseFolder = member.GetAttributeConstructorArgument<int>(context, attributeName, 4);
+                var baseFolderName = "";
+                switch (baseFolder)
+                {
+                    case 0:
+                        baseFolderName = "Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path";
+                        break;
+                    case 1:
+                        baseFolderName = "Windows.Storage.ApplicationData.Current.LocalFolder.Path";
+                        break;
+                    case 2:
+                        baseFolderName = "Windows.Storage.ApplicationData.Current.RoamingFolder.Path";
+                        break;
+                    case 3:
+                        baseFolderName = "Windows.Storage.ApplicationData.Current.SharedLocalFolder.Path";
+                        break;
+                    case 4:
+                        baseFolderName = "Windows.Storage.ApplicationData.Current.TemporaryFolder.Path";
+                        break;
+                    default:
+                        break;
+                }
+
                 if (defaultVal != null)
                 {
                     if (typeFullName == "System.String") defaultVal = "\"" + defaultVal + "\"";
+                    
                     inits.Add(isPath
                         ? $$"""
                                     if(!SettingsHelper.Contains(Container, "{{member.Name}}"))
                                     {
-                                        {{member.Name}} = System.IO.Path.Combine(defaultPath, {{defaultVal}});
+                                        {{member.Name}} = System.IO.Path.Combine({{baseFolderName}}, {{defaultVal}});
                                     }
                                     if (!System.IO.Directory.Exists({{member.Name}}))
                                     {
@@ -68,18 +92,19 @@ public class SettingsGenerator : ISourceGenerator
                                         {{member.Name}} = {{defaultVal}};
                                     }
                             """);
-                }else if (isPath)
+                }
+                else if (isPath)
                 {
                     inits.Add($$"""
                                         if(!SettingsHelper.Contains(Container, "{{member.Name}}"))
                                         {
-                                            {{member.Name}} = System.IO.Path.Combine(defaultPath, "{{member.Name}}");
+                                            {{member.Name}} = System.IO.Path.Combine({{baseFolderName}}, "{{member.Name}}");
                                         }
                                         if (!System.IO.Directory.Exists({{member.Name}}))
                                         {
                                             System.IO.Directory.CreateDirectory({{member.Name}});
                                         }
-                                """); 
+                                """);
                 }
 
                 keys.Add($$"""
@@ -113,7 +138,6 @@ public class SettingsGenerator : ISourceGenerator
                                  public partial class {{settingsClassName}}
                                  {
                                      const string Container = "{{topLevelNamespace}}";
-                                     private string defaultPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
                                          
                                  {{string.Join("\n", keys)}}
                                     
