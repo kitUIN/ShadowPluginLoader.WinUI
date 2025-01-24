@@ -32,7 +32,7 @@ namespace ShadowExample.Plugin.Emoji
         {
             return "💡😭";
         }
-
+ 
         public override string DisplayName => "";
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ShadowPluginLoader.SourceGenerator.Receivers;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
 
@@ -191,15 +191,3 @@ public class SettingsGenerator : ISourceGenerator
     }
 }
 
-public class EnumSyntaxReceiver : ISyntaxReceiver
-{
-    public List<EnumDeclarationSyntax> Enums { get; } = [];
-
-    public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-    {
-        if (syntaxNode is EnumDeclarationSyntax enumDeclaration)
-        {
-            Enums.Add(enumDeclaration);
-        }
-    }
-}
