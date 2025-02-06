@@ -2,6 +2,7 @@
 using ShadowPluginLoader.WinUI.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -224,14 +225,14 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         var fileName = Path.GetFileName(newVersionZip);
         var destinationPath = Path.Combine(TempFolder, fileName);
         if (!Directory.Exists(TempFolder)) Directory.CreateDirectory(TempFolder);
-        Logger.Information("Downloading File {httpPath} To {destinationPath}",
+        Logger.Information("Start To Download File {httpPath} To {destinationPath}",
             newVersionZip, destinationPath);
         using var client = new HttpClient();
         using var response = await client.GetAsync(new Uri(newVersionZip), HttpCompletionOption.ResponseHeadersRead);
         await using var stream = await response.Content.ReadAsStreamAsync();
         await using var fileStream = File.Create(destinationPath);
         await stream.CopyToAsync(fileStream);
-        Logger.Information("DownloadFile {httpPath} To {destinationPath} Success",
+        Logger.Information("Download File {httpPath} To {destinationPath} Success",
             newVersionZip, destinationPath);
         return destinationPath;
     }

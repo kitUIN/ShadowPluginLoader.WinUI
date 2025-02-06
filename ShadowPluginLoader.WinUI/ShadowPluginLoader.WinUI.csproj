@@ -11,7 +11,7 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <!-- Nuget -->
-        <Version>1.5.7</Version>
+        <Version>1.5.8</Version>
 		<PackageId>ShadowPluginLoader.WinUI</PackageId>
 		<Owner>kitUIN</Owner>
 		<Authors>kitUIN</Authors>

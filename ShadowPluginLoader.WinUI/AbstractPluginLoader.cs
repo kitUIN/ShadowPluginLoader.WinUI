@@ -7,6 +7,7 @@ using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -145,18 +146,34 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="plugin">Plugin Type</param>
     protected virtual void LoadPlugin(Type? plugin)
     {
-        CheckPluginType(plugin);
-        var meta = GetAndCheckPluginMetaData(plugin!);
-        var instance = RegisterPluginMain(plugin!, meta);
-        LoadPluginDi(plugin!, instance, meta);
-        _plugins[meta.Id] = instance;
-        var enabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
-        instance.Loaded();
-        PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
-        Logger.Information("{Pre}{ID}({isEnabled}): Load Success!",
-            LoggerPrefix, meta.Id, enabled);
-        if (!enabled) return;
-        instance.IsEnabled = enabled;
+        var stopwatch = new Stopwatch();
+        try
+        {
+            stopwatch.Start();
+            CheckPluginType(plugin);
+            var meta = GetAndCheckPluginMetaData(plugin!);
+            var instance = RegisterPluginMain(plugin!, meta);
+            LoadPluginDi(plugin!, instance, meta);
+            _plugins[meta.Id] = instance;
+            var enabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
+            instance.Loaded();
+            PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
+            stopwatch.Stop();
+            Logger.Information("{Pre}{ID}({isEnabled}): Load Success! Used: {mi} ms",
+                LoggerPrefix, meta.Id, enabled, stopwatch.ElapsedMilliseconds);
+            if (!enabled) return;
+            instance.IsEnabled = enabled;
+        }
+        finally
+        {
+            if (stopwatch.IsRunning)
+            {
+                stopwatch.Stop();
+                Logger.Information("{Pre}Plugin Load Failed! Used: {mi} ms",
+                    LoggerPrefix, stopwatch.ElapsedMilliseconds);
+            }
+        }
+        
     }
 
 
