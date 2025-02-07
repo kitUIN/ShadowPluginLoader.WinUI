@@ -134,7 +134,10 @@ public class SettingsGenerator : ISourceGenerator
                                  using ShadowPluginLoader.WinUI.Helpers;
 
                                  namespace {{namespaceName}};
-
+                                 
+                                 /// <summary>
+                                 /// 
+                                 /// </summary>
                                  public partial class {{settingsClassName}}
                                  {
                                      const string Container = "{{topLevelNamespace}}";
@@ -176,7 +179,7 @@ public class SettingsGenerator : ISourceGenerator
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator
 
                          namespace {{pluginNamespace}};
-
+                         
                          public partial class {{pluginName}}
                          {
                              /// <summary>

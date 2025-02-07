@@ -124,6 +124,9 @@ public class AutowiredGenerator : ISourceGenerator
 
                          public partial class {{classClassName}}
                          {
+                             /// <summary>
+                             /// 
+                             /// </summary>
                              public {{classClassName}}({{string.Join(", ", constructors)}}){{baseConstructorString}}
                              {
                                 {{string.Join("\n", assignments)}}

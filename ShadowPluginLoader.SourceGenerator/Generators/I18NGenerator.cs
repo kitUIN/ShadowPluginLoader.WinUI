@@ -46,6 +46,7 @@ internal class I18NGenerator : ISourceGenerator
         context.AnalyzerConfigOptions.GlobalOptions.TryGetValue($"build_property.RootNamespace",
             out var currentNamespace);
         if (currentNamespace is null) return;
+        var assemblyName = context.Compilation.Assembly.Name;
         var isPlugin = context.CheckAttribute("ShadowPluginLoader.MetaAttributes.AutoPluginMetaAttribute");
         var isPluginLoader = context.CheckAttribute("ShadowPluginLoader.MetaAttributes.ExportMetaAttribute");
 
@@ -91,9 +92,12 @@ internal class I18NGenerator : ISourceGenerator
         i18ns = string.Join("", i18NList);
         var reswEnumCode = $$"""
                              // Automatic Generate From ShadowPluginLoader.SourceGenerator
-                             namespace {{currentNamespace}}.Enums
+                             namespace {{currentNamespace}}.I18n
                              {
-                                 internal enum ResourceKey
+                                 /// <summary>
+                                 /// Resource Key
+                                 /// </summary>
+                                 public enum ResourceKey
                                  {
                                      {{keys}}
                                  }
@@ -105,18 +109,29 @@ internal class I18NGenerator : ISourceGenerator
         {
             resourcesHelperCode = $$"""
                                     // Automatic Generate From ShadowPluginLoader.SourceGenerator
-                                    using {{currentNamespace}}.Enums;
                                     using Microsoft.Windows.ApplicationModel.Resources;
 
-                                    namespace {{currentNamespace}}.Helpers
+                                    namespace {{currentNamespace}}.I18n
                                     {
-                                        internal static class ResourcesHelper
+                                        /// <summary>
+                                        /// Resource Helper
+                                        /// </summary>
+                                        public static class ResourcesHelper
                                         {
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             private static readonly ResourceManager resourceManager = new();
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             public static string GetString(string key)
                                             {
-                                                return resourceManager.MainResourceMap.GetValue("{{currentNamespace}}/Resources/" + key).ValueAsString;
+                                                return resourceManager.MainResourceMap.GetValue("{{assemblyName}}/Resources/" + key).ValueAsString;
                                             }
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             public static string GetString(ResourceKey key)
                                             {
                                                 return GetString(key.ToString());
@@ -130,19 +145,26 @@ internal class I18NGenerator : ISourceGenerator
             resourcesHelperCode = $$"""
                                     // Automatic Generate From ShadowPluginLoader.SourceGenerator
                                     using CustomExtensions.WinUI;
-                                    using {{currentNamespace}}.Enums;
                                     using Windows.ApplicationModel.Resources.Core;
 
-                                    namespace {{currentNamespace}}.Helpers
+                                    namespace {{currentNamespace}}.I18n
                                     {
-                                        internal static class ResourcesHelper
+                                        /// <summary>
+                                        /// Resource Helper
+                                        /// </summary>
+                                        public static class ResourcesHelper
                                         {
-                                            // private static readonly ResourceMap resourceManager = ApplicationExtensionHost.GetResourceMapForAssembly();
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             public static string GetString(string key) 
                                             {
                                                 var resourceManager = ApplicationExtensionHost.GetResourceMapForAssembly();
                                                 return resourceManager.GetValue(key).ValueAsString;
                                             }
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             public static string GetString(ResourceKey key)
                                             {
                                                 return GetString(key.ToString());
@@ -155,18 +177,29 @@ internal class I18NGenerator : ISourceGenerator
         {
             resourcesHelperCode = $$"""
                                     // Automatic Generate From ShadowPluginLoader.SourceGenerator
-                                    using {{currentNamespace}}.Enums;
                                     using Microsoft.Windows.ApplicationModel.Resources;
 
-                                    namespace {{currentNamespace}}.Helpers
+                                    namespace {{currentNamespace}}.I18n
                                     {
-                                        internal static class ResourcesHelper
+                                        /// <summary>
+                                        /// Resources Helper
+                                        /// </summary>
+                                        public static class ResourcesHelper
                                         {
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             private static readonly ResourceLoader resourceLoader = new ResourceLoader();
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             public static string GetString(string key)
                                             {
                                                 return resourceLoader.GetString(key);
                                             }
+                                            /// <summary>
+                                            /// 
+                                            /// </summary>
                                             public static string GetString(ResourceKey key)
                                             {
                                                 return GetString(key.ToString());
@@ -179,13 +212,13 @@ internal class I18NGenerator : ISourceGenerator
         context.AddSource($"ResourcesHelper.g.cs", resourcesHelperCode);
         var i18NCode = $$"""
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator
-                         using {{currentNamespace}}.Enums;
-                         namespace {{currentNamespace}}.Helpers
+
+                         namespace {{currentNamespace}}.I18n
                          {
                              /// <summary>
                              /// I18N
                              /// </summary>
-                             internal static class I18N
+                             public static class I18N
                              {
                                  {{i18ns}}
                              }
@@ -196,15 +229,14 @@ internal class I18NGenerator : ISourceGenerator
         var localeExtensionCode = $$"""
                                     // Automatic Generate From ShadowPluginLoader.SourceGenerator
                                     using Microsoft.UI.Xaml.Markup;
-                                    using {{currentNamespace}}.Helpers;
-                                    using {{currentNamespace}}.Enums;
-                                    namespace {{currentNamespace}}.Extensions
+
+                                    namespace {{currentNamespace}}.I18n
                                     {
                                         /// <summary>
                                         /// I18N Xaml Extension
                                         /// </summary>
                                         [MarkupExtensionReturnType(ReturnType = typeof(string))]
-                                        internal sealed class LocaleExtension : MarkupExtension
+                                        public sealed class LocaleExtension : MarkupExtension
                                         {
                                             
                                             /// <summary>
