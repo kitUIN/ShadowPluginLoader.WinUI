@@ -22,11 +22,31 @@
 	<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
 	<PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
 	<!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <LangVersion>12</LangVersion>
   </PropertyGroup>
  
 
   <ItemGroup>
       <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.4.0" />
+      <PackageReference Include="ShadowPluginLoader.MetaAttributes" Version="1.4.0" />
+
+  </ItemGroup>
+ 
+
+  <ItemGroup>
+	  <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.json.cs" />
+    <AdditionalFiles Remove="D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\ShadowExample.Core\Strings\Resources.resw" />
+  </ItemGroup>
+ 
+
+  <ItemGroup>
+    <PRIResource Include="D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\ShadowExample.Core\Strings\zh-CN\Resources.resw" />
+  </ItemGroup>
+ 
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShadowPluginLoader.SourceGenerator\ShadowPluginLoader.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
  
 	
