@@ -9,6 +9,9 @@ namespace ShadowExample.Core
     {
         protected override string PluginFolder => "plugins";
 
+        /// <inheritdoc />
+        protected override string TempFolder => "temps";
+
         public ShadowExamplePluginLoader(ILogger logger, PluginEventService pluginEventService) : base(logger,
             pluginEventService)
         {

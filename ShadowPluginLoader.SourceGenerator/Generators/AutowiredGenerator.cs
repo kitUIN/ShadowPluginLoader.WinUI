@@ -12,7 +12,7 @@ namespace ShadowPluginLoader.SourceGenerator.Generators;
 public class AutowiredGenerator : ISourceGenerator
 {
     private Dictionary<string, List<BaseConstructor>> BaseConstructors { get; } = new();
-
+    
     private static string ToLowerFirst(string input)
     {
         if (string.IsNullOrEmpty(input) || char.IsLower(input[0]))
@@ -51,11 +51,13 @@ public class AutowiredGenerator : ISourceGenerator
             .OfType<INamedTypeSymbol>());
         foreach (var classSymbol in sortedClasses)
         {
+            var needCheck =
+                classSymbol.HasAttribute(context, "ShadowPluginLoader.MetaAttributes.CheckAutowiredAttribute");
             var properties = classSymbol.GetMembers()
                 .OfType<IPropertySymbol>().Where(p => p.HasAttribute(context,
                     "ShadowPluginLoader.MetaAttributes.AutowiredAttribute"));
             var propertySymbols = properties as IPropertySymbol[] ?? properties.ToArray();
-            if (!propertySymbols.Any()) continue;
+            if (!needCheck && !propertySymbols.Any()) continue;
             var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
             var classClassName = classSymbol.Name;
 
@@ -114,7 +116,7 @@ public class AutowiredGenerator : ISourceGenerator
             }
 
 
-            if (constructors.Count == 0 || assignments.Count == 0) continue;
+            if (constructors.Count == 0) continue;
             var baseConstructorsKey = classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             BaseConstructors[baseConstructorsKey] = constructorRecord;
             var code = $$"""
@@ -130,7 +132,14 @@ public class AutowiredGenerator : ISourceGenerator
                              public {{classClassName}}({{string.Join(", ", constructors)}}){{baseConstructorString}}
                              {
                                 {{string.Join("\n", assignments)}}
+                                ConstructorInit();
                              }
+                             
+                             /// <summary>
+                             /// Constructor Init
+                             /// </summary>
+                             partial void ConstructorInit();
+                              
                          }
                          """;
             context.AddSource($"{classClassName}_Autowired.g.cs", code);

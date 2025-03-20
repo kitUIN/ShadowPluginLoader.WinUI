@@ -49,27 +49,15 @@ public class SettingsGenerator : ISourceGenerator
                 var comment = member.GetAttributeConstructorArgument<string?>(context, attributeName, 2);
                 var isPath = member.GetAttributeConstructorArgument<bool>(context, attributeName, 3);
                 var baseFolder = member.GetAttributeConstructorArgument<int>(context, attributeName, 4);
-                var baseFolderName = "";
-                switch (baseFolder)
+                var baseFolderName = baseFolder switch
                 {
-                    case 0:
-                        baseFolderName = "Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path";
-                        break;
-                    case 1:
-                        baseFolderName = "Windows.Storage.ApplicationData.Current.LocalFolder.Path";
-                        break;
-                    case 2:
-                        baseFolderName = "Windows.Storage.ApplicationData.Current.RoamingFolder.Path";
-                        break;
-                    case 3:
-                        baseFolderName = "Windows.Storage.ApplicationData.Current.SharedLocalFolder.Path";
-                        break;
-                    case 4:
-                        baseFolderName = "Windows.Storage.ApplicationData.Current.TemporaryFolder.Path";
-                        break;
-                    default:
-                        break;
-                }
+                    0 => "Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path",
+                    1 => "Windows.Storage.ApplicationData.Current.LocalFolder.Path",
+                    2 => "Windows.Storage.ApplicationData.Current.RoamingFolder.Path",
+                    3 => "Windows.Storage.ApplicationData.Current.SharedLocalFolder.Path",
+                    4 => "Windows.Storage.ApplicationData.Current.TemporaryFolder.Path",
+                    _ => ""
+                };
 
                 if (defaultVal != null)
                 {
@@ -150,13 +138,24 @@ public class SettingsGenerator : ISourceGenerator
                                          Init();
                                          AfterInit();
                                      }
+                                     
+                                     /// <summary>
+                                     /// Init
+                                     /// </summary>
                                      private void Init()
                                      {
                                              
                                  {{string.Join("\n", inits)}}
                                      }
+                                     
+                                     /// <summary>
+                                     /// BeforeInit
+                                     /// </summary>
                                      partial void BeforeInit();
                                       
+                                     /// <summary>
+                                     /// AfterInit
+                                     /// </summary>
                                      partial void AfterInit();
                                  }
 

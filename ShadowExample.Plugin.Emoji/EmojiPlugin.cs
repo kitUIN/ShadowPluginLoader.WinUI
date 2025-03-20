@@ -16,13 +16,10 @@ using ShadowPluginLoader.WinUI;
 namespace ShadowExample.Plugin.Emoji
 {
     [AutoPluginMeta]
+    [CheckAutowired]
     public partial class EmojiPlugin : PluginBase
     {
-        /// <inheritdoc />
-        public EmojiPlugin(ILogger logger, PluginEventService pluginEventService) : base(logger, pluginEventService)
-        {
-        }
-
+         
         public override FrameworkElement GetControl()
         {
             return new UserControl1();
