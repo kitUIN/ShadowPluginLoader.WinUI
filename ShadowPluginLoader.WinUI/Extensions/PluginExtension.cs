@@ -1,6 +1,6 @@
-﻿using ShadowPluginLoader.WinUI.Interfaces;
-using System;
-using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Text.Json;
 
 namespace ShadowPluginLoader.WinUI.Extensions;
 
@@ -15,8 +15,8 @@ public static class PluginExtension
     /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
     /// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
     /// <returns>Your Custom Interface IMetaData</returns>
-    public static TMeta? GetPluginMetaData<TMeta, TAPlugin>() 
-        where TAPlugin: AbstractPlugin
+    public static TMeta? GetPluginMetaData<TMeta, TAPlugin>()
+        where TAPlugin : AbstractPlugin
         where TMeta : AbstractPluginMetaData
     {
         return typeof(TAPlugin).GetPluginMetaData<TMeta>();
@@ -31,7 +31,8 @@ public static class PluginExtension
     public static TMeta? GetPluginMetaData<TMeta>(this Type plugin)
         where TMeta : AbstractPluginMetaData
     {
-        var meta = plugin.GetTypeInfo().GetCustomAttribute<TMeta>();
-        return meta;
+        var dir = plugin.Assembly.Location[..^".dll".Length];
+        var metaPath = Path.Combine(dir, "Assets", "plugin.json");
+        return !File.Exists(metaPath) ? null : JsonSerializer.Deserialize<TMeta>(File.ReadAllText(metaPath));
     }
 }

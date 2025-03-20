@@ -128,10 +128,17 @@ public class SettingsGenerator : ISourceGenerator
                                  /// </summary>
                                  public partial class {{settingsClassName}}
                                  {
+                                 
+                                     /// <summary>
+                                     /// 
+                                     /// </summary>
                                      const string Container = "{{topLevelNamespace}}";
                                          
                                  {{string.Join("\n", keys)}}
                                     
+                                     /// <summary>
+                                     /// 
+                                     /// </summary>
                                      public {{settingsClassName}}()
                                      {
                                          BeforeInit();

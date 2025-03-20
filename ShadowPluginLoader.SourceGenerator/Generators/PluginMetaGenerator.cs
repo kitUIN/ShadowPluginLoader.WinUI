@@ -91,8 +91,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                     // Check if the class has the Serializable attribute
                     if (!classSymbol!.GetAttributes().Any(a =>
                             a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default))) continue;
-                    var np = _pluginDNode!.Value<string>("Namespace");
-                    var metaType = _pluginDNode!.Value<string>("Type");
+                    var metaType = _pluginDNode!.Value<string>("MetaDataType");
                     // var props = _pluginDNode!.Value<JObject>("Properties")!;
                     var attrs = new List<string>();
                     var pluginId = "";
@@ -101,16 +100,14 @@ internal class PluginMetaGenerator : ISourceGenerator
                         if (attr.Key == "Id") pluginId = GetValue(attr.Value!);
                         attrs.Add($"{attr.Key} = {GetValue(attr.Value!)}");
                     } 
-                    var meta = $"{metaType}({string.Join(", ", attrs)})";
                     var meta2 = string.Join(",\n            ", attrs);
                     // Generate a Hello method with the class name
                     var code = $$"""
                                  // Automatic Generate From ShadowPluginLoader.SourceGenerator
-                                 using {{np}};
+                                 
 
                                  namespace {{classSymbol.ContainingNamespace.ToDisplayString()}}
                                  {
-                                     [{{meta}}]
                                      public partial class {{classSymbol.Name}}
                                      {
                                          /// <inheritdoc/>

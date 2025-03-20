@@ -11,7 +11,7 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <!-- Nuget -->
-        <Version>1.6.4</Version>
+        <Version>2.0.0.1</Version>
 		<PackageId>ShadowPluginLoader.WinUI</PackageId>
 		<Owner>kitUIN</Owner>
 		<Authors>kitUIN</Authors>
@@ -20,7 +20,7 @@
 		<PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
 		<Description>✨ ShadowPluginLoader | WinUI3✨</Description>
-		<Copyright>Copyright 2024</Copyright>
+		<Copyright>Copyright 2024-2025</Copyright>
 		<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
 		<PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -31,9 +31,9 @@
         <PackageReference Include="Serilog" Version="4.2.0" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.241107002" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.5.4" />
+        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="2.0.0.0" />
         <PackageReference Include="kitUIN.CustomExtensions.WinUI" Version="0.6.4" />
-        <PackageReference Include="ShadowPluginLoader.Tool" Version="1.4.4" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.0.0.1" />
         <PackageReference Include="SharpCompress" Version="0.39.0" />
     </ItemGroup>
     <ItemGroup>
