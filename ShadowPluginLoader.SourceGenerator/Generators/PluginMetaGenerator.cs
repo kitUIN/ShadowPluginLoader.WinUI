@@ -54,6 +54,7 @@ internal class PluginMetaGenerator : ISourceGenerator
     {
         return token.Type switch
         {
+            JTokenType.Boolean => token.Value<bool>().ToString().ToLower(),
             JTokenType.String => $"\"{token.Value<string>()}\"",
             JTokenType.Array => "[" + string.Join(",", token.Values().Select(GetValue).ToList()) + "]",
             _ => $"{token}",
