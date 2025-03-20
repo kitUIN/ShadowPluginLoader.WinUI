@@ -11,7 +11,7 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <!-- Nuget -->
-        <Version>2.0.0.1</Version>
+        <Version>2.0.1</Version>
 		<PackageId>ShadowPluginLoader.WinUI</PackageId>
 		<Owner>kitUIN</Owner>
 		<Authors>kitUIN</Authors>
@@ -33,7 +33,7 @@
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
         <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="2.0.0.0" />
         <PackageReference Include="kitUIN.CustomExtensions.WinUI" Version="0.6.4" />
-        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.0.0.1" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.0.1" />
         <PackageReference Include="SharpCompress" Version="0.39.0" />
     </ItemGroup>
     <ItemGroup>
