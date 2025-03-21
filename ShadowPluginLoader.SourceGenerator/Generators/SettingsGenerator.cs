@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
@@ -30,9 +30,7 @@ public class SettingsGenerator : ISourceGenerator
                 continue;
 
             var namespaceName = enumSymbol.ContainingNamespace.ToDisplayString();
-            var enumClassName = enumSymbol.Name;
             const string attributeName = "ShadowPluginLoader.Attributes.ShadowSettingAttribute";
-            const string attributeClassName = "ShadowPluginLoader.Attributes.ShadowPluginSettingClassAttribute";
             const string attributeClassAliasName =
                 "ShadowPluginLoader.Attributes.ShadowSettingClassAttribute";
             var keys = new List<string>();

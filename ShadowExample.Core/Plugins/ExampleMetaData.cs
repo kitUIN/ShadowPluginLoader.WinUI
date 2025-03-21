@@ -1,4 +1,4 @@
-﻿using ShadowPluginLoader.Attributes;
+using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI;
 
 namespace ShadowExample.Core.Plugins;
@@ -13,8 +13,7 @@ public class ExampleMetaData : AbstractPluginMetaData
     public string Url { get; init; }
 
     [Meta(Required = false)]
-    public double? D { get; init; }
+    public double D { get; init; }
 
-    [Meta(Required = false)]
-    public float[]? F { get; init; }
+    [Meta(Required = false)] public float[] F { get; init; } = [];
 }

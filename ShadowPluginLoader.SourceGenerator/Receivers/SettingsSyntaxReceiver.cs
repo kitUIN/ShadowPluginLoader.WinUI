@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ShadowPluginLoader.SourceGenerator.Receivers;
@@ -9,7 +9,7 @@ namespace ShadowPluginLoader.SourceGenerator.Receivers;
 public class SettingsSyntaxReceiver : ISyntaxReceiver
 {
     public List<EnumDeclarationSyntax> Enums { get; } = [];
-    public ClassDeclarationSyntax Plugin { get; private set; }
+    public ClassDeclarationSyntax Plugin { get; private set; } = null!;
 
     public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
     {
@@ -24,7 +24,7 @@ public class SettingsSyntaxReceiver : ISyntaxReceiver
             var hasMainPluginAttribute = classDeclaration
                 .AttributeLists
                 .SelectMany(attributeList => attributeList.Attributes)
-                .Any(attribute => attribute.Name.ToString() == "MainPluginAttributes");
+                .Any(attribute => attribute.Name.ToString() == "MainPlugin");
             if (hasMainPluginAttribute)
             {
                 Plugin = classDeclaration;

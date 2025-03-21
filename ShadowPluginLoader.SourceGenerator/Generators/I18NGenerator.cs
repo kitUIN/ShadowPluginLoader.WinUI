@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Models;
 using System.Xml.Linq;
 

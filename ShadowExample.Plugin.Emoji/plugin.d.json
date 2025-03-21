@@ -1,0 +1,59 @@
+{
+  "MetaDataType": "ShadowExample.Core.Plugins.ExampleMetaData",
+  "Properties": {
+    "Authors": {
+      "Type": "System.String[]",
+      "Nullable": false,
+      "Required": false,
+      "PropertyGroupName": "Authors"
+    },
+    "Url": {
+      "Type": "System.String",
+      "Nullable": false,
+      "Required": false,
+      "PropertyGroupName": "Url"
+    },
+    "D": {
+      "Type": "System.Double",
+      "Nullable": false,
+      "Required": false,
+      "PropertyGroupName": "D"
+    },
+    "F": {
+      "Type": "System.Single[]",
+      "Nullable": false,
+      "Required": false,
+      "PropertyGroupName": "F"
+    },
+    "Id": {
+      "Type": "System.String",
+      "Nullable": false,
+      "Required": true,
+      "PropertyGroupName": "Id"
+    },
+    "Name": {
+      "Type": "System.String",
+      "Nullable": false,
+      "Required": true,
+      "PropertyGroupName": "Name"
+    },
+    "DllName": {
+      "Type": "System.String",
+      "Nullable": false,
+      "Required": false,
+      "PropertyGroupName": "DllName"
+    },
+    "Version": {
+      "Type": "System.String",
+      "Nullable": false,
+      "Required": true,
+      "PropertyGroupName": "Version"
+    },
+    "Dependencies": {
+      "Type": "System.String[]",
+      "Nullable": false,
+      "Required": true,
+      "PropertyGroupName": "Dependencies"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +15,7 @@ using ShadowPluginLoader.WinUI;
 
 namespace ShadowExample.Plugin.Emoji
 {
-    [AutoPluginMeta]
+    [MainPlugin]
     [CheckAutowired]
     public partial class EmojiPlugin : PluginBase
     {

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ShadowPluginLoader.SourceGenerator.Receivers;
@@ -14,7 +14,7 @@ public class PluginMetaSyntaxReceiver : ISyntaxReceiver
         var hasMainPluginAttribute = classDeclaration
             .AttributeLists
             .SelectMany(attributeList => attributeList.Attributes)
-            .Any(attribute => attribute.Name.ToString() == "MainPluginAttribute");
+            .Any(attribute => attribute.Name.ToString() == "MainPlugin");
         if (hasMainPluginAttribute)
         {
             Plugin = classDeclaration;

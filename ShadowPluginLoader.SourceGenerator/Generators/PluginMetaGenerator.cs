@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
@@ -68,6 +68,7 @@ internal class PluginMetaGenerator : ISourceGenerator
         {
             if (context.SyntaxReceiver is not PluginMetaSyntaxReceiver receiver) return;
             if (receiver.Plugin == null) return;
+
             var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
 
             if (model.GetDeclaredSymbol(receiver.Plugin) is not INamedTypeSymbol classSymbol)
@@ -84,6 +85,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                 if (attr.Key == "Id") pluginId = GetValue(attr.Value!);
                 attrs.Add($"{attr.Key} = {GetValue(attr.Value!)}");
             }
+
             var meta2 = string.Join(",\n            ", attrs);
             var code = $$"""
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator

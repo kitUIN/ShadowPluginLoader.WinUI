@@ -1,9 +1,8 @@
-﻿using ShadowPluginLoader.Attributes;
+using ShadowPluginLoader.Attributes;
 
 namespace ShadowExample.Plugin.Emoji;
 
-[ShadowPluginSettingClass(typeof(EmojiPlugin), "Setting")]
-[ShadowSettingClass("ShadowExample.Plugin.Emoji","EmojiSetting")]
+[ShadowSettingClass(Container = "ShadowExample.Plugin.Emoji", ClassName = "EmojiSetting")]
 public enum BikaConfigKey
 {
     [ShadowSetting(typeof(int), "1", "Api分流")]

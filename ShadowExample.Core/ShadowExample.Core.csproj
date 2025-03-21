@@ -10,7 +10,7 @@
 	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
 	<!-- Nuget -->
-	<Version>1.0.6</Version>
+	<Version>1.0.7</Version>
 	<PackageId>ShadowExample.Core</PackageId>
 	<Authors>kitUIN</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -21,12 +21,13 @@
 	<Copyright>Copyright 2024</Copyright>
 	<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
 	<PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
+	<LangVersion>latest</LangVersion>
 	<!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
   </PropertyGroup>
  
 
   <ItemGroup>
-      <PackageReference Include="ShadowPluginLoader.WinUI" Version="2.0.4" />
+      <PackageReference Include="ShadowPluginLoader.WinUI" Version="2.0.5" />
   </ItemGroup>
  
 	
