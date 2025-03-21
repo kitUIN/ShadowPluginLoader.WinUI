@@ -47,8 +47,8 @@ internal class I18NGenerator : ISourceGenerator
             out var currentNamespace);
         if (currentNamespace is null) return;
         var assemblyName = context.Compilation.Assembly.Name;
-        var isPlugin = context.CheckAttribute("ShadowPluginLoader.MetaAttributes.AutoPluginMetaAttribute");
-        var isPluginLoader = context.CheckAttribute("ShadowPluginLoader.MetaAttributes.ExportMetaAttribute");
+        var isPlugin = context.CheckAttribute("ShadowPluginLoader.Attributes.MainPluginAttribute");
+        var isPluginLoader = context.CheckAttribute("ShadowPluginLoader.Attributes.ExportMetaAttribute");
 
         var resws = GetReswData(context);
         if (resws.Count == 0)

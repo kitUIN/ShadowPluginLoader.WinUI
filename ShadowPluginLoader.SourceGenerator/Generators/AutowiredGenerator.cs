@@ -52,10 +52,10 @@ public class AutowiredGenerator : ISourceGenerator
         foreach (var classSymbol in sortedClasses)
         {
             var needCheck =
-                classSymbol.HasAttribute(context, "ShadowPluginLoader.MetaAttributes.CheckAutowiredAttribute");
+                classSymbol.HasAttribute(context, "ShadowPluginLoader.Attributes.CheckAutowiredAttribute");
             var properties = classSymbol.GetMembers()
                 .OfType<IPropertySymbol>().Where(p => p.HasAttribute(context,
-                    "ShadowPluginLoader.MetaAttributes.AutowiredAttribute"));
+                    "ShadowPluginLoader.Attributes.AutowiredAttribute"));
             var propertySymbols = properties as IPropertySymbol[] ?? properties.ToArray();
             if (!needCheck && !propertySymbols.Any()) continue;
             var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();

@@ -8,18 +8,18 @@ public class SettingsGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new EnumSyntaxReceiver());
+        context.RegisterForSyntaxNotifications(() => new SettingsSyntaxReceiver());
     }
 
     public void Execute(GeneratorExecutionContext context)
     {
         var logger = new Logger("SettingsGenerator", context);
-        if (context.SyntaxReceiver is not EnumSyntaxReceiver receiver)
+        if (context.SyntaxReceiver is not SettingsSyntaxReceiver receiver)
         {
             logger.Warning("SPLW002", "No Setting Enum file found, skip Settings generation.");
             return;
         }
-
+        
         var globalNamespace = context.Compilation.GlobalNamespace;
         var topLevelNamespace = globalNamespace.GetNamespaceMembers().FirstOrDefault()!.ToDisplayString();
         foreach (var enumDeclaration in receiver.Enums)
@@ -31,10 +31,10 @@ public class SettingsGenerator : ISourceGenerator
 
             var namespaceName = enumSymbol.ContainingNamespace.ToDisplayString();
             var enumClassName = enumSymbol.Name;
-            const string attributeName = "ShadowPluginLoader.MetaAttributes.ShadowSettingAttribute";
-            const string attributeClassName = "ShadowPluginLoader.MetaAttributes.ShadowPluginSettingClassAttribute";
+            const string attributeName = "ShadowPluginLoader.Attributes.ShadowSettingAttribute";
+            const string attributeClassName = "ShadowPluginLoader.Attributes.ShadowPluginSettingClassAttribute";
             const string attributeClassAliasName =
-                "ShadowPluginLoader.MetaAttributes.ShadowSettingClassAttribute";
+                "ShadowPluginLoader.Attributes.ShadowSettingClassAttribute";
             var keys = new List<string>();
             var inits = new List<string>();
             foreach (var member in enumSymbol.GetMembers().OfType<IFieldSymbol>())
@@ -62,7 +62,7 @@ public class SettingsGenerator : ISourceGenerator
                 if (defaultVal != null)
                 {
                     if (typeFullName == "System.String") defaultVal = "\"" + defaultVal + "\"";
-                    
+
                     inits.Add(isPath
                         ? $$"""
                                     if(!SettingsHelper.Contains(Container, "{{member.Name}}"))
@@ -108,21 +108,37 @@ public class SettingsGenerator : ISourceGenerator
             }
 
             var settingsClassName = "Settings";
+            var accessorClassName = "Settings";
             if (keys.Count == 0) continue;
-            if (enumSymbol.HasAttribute(context, attributeClassAliasName))
+            var container = topLevelNamespace;
+            var attributeClass = enumSymbol.GetAttribute(context, attributeClassAliasName);
+            if (attributeClass != null)
             {
-                settingsClassName =
-                    enumSymbol.GetAttributeConstructorArgument<string>(context, attributeClassAliasName, 1);
-                topLevelNamespace =
-                    enumSymbol.GetAttributeConstructorArgument<string>(context, attributeClassAliasName, 0);
+                foreach (var namedArgument in attributeClass.NamedArguments)
+                {
+                    var name = namedArgument.Key;
+                    if (namedArgument.Value.Value == null) continue;
+                    switch (name)
+                    {
+                        case "Container":
+                            container = (string)namedArgument.Value.Value;
+                            break;
+                        case "ClassName":
+                            settingsClassName = (string)namedArgument.Value.Value;
+                            break;
+                        case "PluginAccessorName":
+                            accessorClassName = (string)namedArgument.Value.Value;
+                            break;
+                    }
+                }
             }
-
+            
             var reswEnumCode = $$"""
                                  // Automatic Generate From ShadowPluginLoader.SourceGenerator
                                  using ShadowPluginLoader.WinUI.Helpers;
 
                                  namespace {{namespaceName}};
-                                 
+
                                  /// <summary>
                                  /// 
                                  /// </summary>
@@ -132,7 +148,7 @@ public class SettingsGenerator : ISourceGenerator
                                      /// <summary>
                                      /// 
                                      /// </summary>
-                                     const string Container = "{{topLevelNamespace}}";
+                                     const string Container = "{{container}}";
                                          
                                  {{string.Join("\n", keys)}}
                                     
@@ -168,24 +184,21 @@ public class SettingsGenerator : ISourceGenerator
 
                                  """;
             context.AddSource($"{settingsClassName}.g.cs", reswEnumCode);
-            if (!enumSymbol.HasAttribute(context, attributeClassName))
-            {
-                logger.Warning("SPLW003",
-                    $"No {attributeClassName} found on {enumClassName}, skip Plugin Settings generation.");
+            
+            
+            var pluginModel = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
+            if (pluginModel.GetDeclaredSymbol(receiver.Plugin) is not INamedTypeSymbol pluginSymbol)
                 continue;
-            }
-
-            var typeSymbol =
-                enumSymbol.GetAttributeConstructorArgument<INamedTypeSymbol>(context, attributeClassName, 0);
-            var pluginName = typeSymbol.Name;
-            var pluginNamespace = typeSymbol.ContainingNamespace.ToDisplayString();
-            var accessorClassName = enumSymbol.GetAttributeConstructorArgument<string>(context, attributeClassName, 1);
-
+            var pluginName = pluginSymbol.Name;
+            var pluginNamespace = pluginSymbol.ContainingNamespace.ToDisplayString();
             var code = $$"""
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator
 
                          namespace {{pluginNamespace}};
                          
+                         /// <summary>
+                         /// 
+                         /// </summary>
                          public partial class {{pluginName}}
                          {
                              /// <summary>
@@ -199,4 +212,3 @@ public class SettingsGenerator : ISourceGenerator
         }
     }
 }
-

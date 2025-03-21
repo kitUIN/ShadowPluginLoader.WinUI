@@ -39,15 +39,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ShadowExample.Core" Version="1.0.5.1"/>
-        <PackageReference Include="ShadowPluginLoader.WinUI" Version="1.6.3"/>
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="1.5.4"/>
+        <PackageReference Include="ShadowExample.Core" Version="1.0.6"/>
     </ItemGroup>
 
     <ItemGroup>
         <Page Update="Controls\UserControl1.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Remove="plugin.d.json" />
     </ItemGroup>
 
 </Project>

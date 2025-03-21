@@ -13,6 +13,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Enums;
 using SharpCompress.Archives;
@@ -173,7 +174,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
                     LoggerPrefix, stopwatch.ElapsedMilliseconds);
             }
         }
-        
     }
 
 
@@ -243,7 +243,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         // Load Asm From Dll
         var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(path);
         // Try Get First Exported Type AssignableTo TIPlugin
-        var t = asm.ForeignAssembly.GetExportedTypes().FirstOrDefault(x => x.IsAssignableTo(typeof(TAPlugin)));
+        var t = asm.ForeignAssembly.GetExportedTypes().FirstOrDefault(
+            x => x.IsAssignableTo(typeof(TAPlugin)) &&
+                 x.GetCustomAttributes(typeof(MainPluginAttribute), inherit: false).Any());
         CheckPluginType(t);
         sortData.PluginType = t;
         _sortLoader.Add(sortData);

@@ -10,7 +10,8 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      Solution_Name: ShadowPluginLoader.WinUI
+      Solution_Name: ShadowPluginLoader.SourceGenerator
+      Solution_Name2: ShadowPluginLoader.WinUI
     steps:
       - uses: mickem/clean-after-action@v1
 
@@ -37,9 +38,12 @@ jobs:
         run: |
           dotnet restore $env:Solution_Name/$env:Solution_Name.csproj
           dotnet build $env:Solution_Name/$env:Solution_Name.csproj -p:Configuration=Release
-
+          dotnet restore $env:Solution_Name2/$env:Solution_Name2.csproj
+          dotnet build $env:Solution_Name2/$env:Solution_Name2.csproj -p:Configuration=Release
       - name: Push package to Nuget registry
         run: |
-          dotnet nuget push "..\NugetPackages\*.nupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY 
+          cd ..\NugetPackages
+          ls
+          dotnet nuget push "*.nupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY --skip-duplicate        
         env:
           NUGET_KEY: ${{ secrets.NUGET_KEY }}

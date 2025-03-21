@@ -34,7 +34,13 @@ internal static class GeneratorExtension
         return symbol.GetAttributes()
             .Any(a => a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default));
     }
-
+    public static AttributeData? GetAttribute(this ISymbol symbol, GeneratorExecutionContext context, string attributeName)
+    {
+        var serializableSymbol =
+            context.Compilation.GetTypeByMetadataName(attributeName);
+        return symbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default));
+    }
     public static T GetAttributeConstructorArgument<T>(this ISymbol symbol,  GeneratorExecutionContext context, string attributeName, int argumentIndex)
     {
         var serializableSymbol =

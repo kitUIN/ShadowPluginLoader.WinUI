@@ -1,5 +1,5 @@
 ﻿using ShadowExample.Core;
-using ShadowPluginLoader.MetaAttributes;
+using ShadowPluginLoader.Attributes;
 
 namespace ShadowExample.Plugin.Emoji.ViewModels;
 

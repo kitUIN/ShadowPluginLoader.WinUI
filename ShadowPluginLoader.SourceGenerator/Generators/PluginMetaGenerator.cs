@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ShadowPluginLoader.SourceGenerator.Receivers;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
 
@@ -60,79 +60,59 @@ internal class PluginMetaGenerator : ISourceGenerator
             _ => $"{token}",
         };
     }
+
     public void Execute(GeneratorExecutionContext context)
     {
-
         var logger = new Logger("PluginMetaGenerator", context);
         try
         {
-            // Get the compilation object
-            var compilation = context.Compilation;
+            if (context.SyntaxReceiver is not PluginMetaSyntaxReceiver receiver) return;
+            if (receiver.Plugin == null) return;
+            var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
 
-            // Get the symbol for the Serializable attribute
-            var serializableSymbol =
-                compilation.GetTypeByMetadataName("ShadowPluginLoader.MetaAttributes.AutoPluginMetaAttribute");
-            
+            if (model.GetDeclaredSymbol(receiver.Plugin) is not INamedTypeSymbol classSymbol)
+                return;
+
+            if (!classSymbol.HasAttribute(context,
+                    "ShadowPluginLoader.Attributes.MainPluginAttribute")) return;
             GetJson(context);
-            // Loop through the syntax trees in the compilation
-            foreach (var tree in compilation.SyntaxTrees)
+            var metaType = _pluginDNode!.Value<string>("MetaDataType");
+            var attrs = new List<string>();
+            var pluginId = "";
+            foreach (var attr in _pluginNode!)
             {
-                // Get the semantic model for the syntax tree
-                var model = compilation.GetSemanticModel(tree);
-
-                // Find all the class declarations in the syntax tree
-                var classes = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
-                // Loop through the class declarations
-                
-                foreach (var cls in classes)
-                {
-                    // Get the symbol for the class declaration
-                    var classSymbol = model.GetDeclaredSymbol(cls);
-
-                    // Check if the class has the Serializable attribute
-                    if (!classSymbol!.GetAttributes().Any(a =>
-                            a.AttributeClass!.Equals(serializableSymbol, SymbolEqualityComparer.Default))) continue;
-                    var metaType = _pluginDNode!.Value<string>("MetaDataType");
-                    // var props = _pluginDNode!.Value<JObject>("Properties")!;
-                    var attrs = new List<string>();
-                    var pluginId = "";
-                    foreach (var attr in _pluginNode!)
-                    {
-                        if (attr.Key == "Id") pluginId = GetValue(attr.Value!);
-                        attrs.Add($"{attr.Key} = {GetValue(attr.Value!)}");
-                    } 
-                    var meta2 = string.Join(",\n            ", attrs);
-                    // Generate a Hello method with the class name
-                    var code = $$"""
-                                 // Automatic Generate From ShadowPluginLoader.SourceGenerator
-                                 
-
-                                 namespace {{classSymbol.ContainingNamespace.ToDisplayString()}}
-                                 {
-                                     public partial class {{classSymbol.Name}}
-                                     {
-                                         /// <inheritdoc/>
-                                         public override string Id => {{pluginId}};
-                                 
-                                         /// <summary>
-                                         /// PluginMetaData
-                                         /// </summary>
-                                         public static {{metaType}} Meta { get; } = new {{metaType}}
-                                         {
-                                             {{meta2}}
-                                         };
-                                     }
-                                 }
-                                 """;
-                    // Add the generated code to the compilation
-                    context.AddSource($"{classSymbol.Name}.g.cs", code);
-                    
-                }
+                if (attr.Key == "Id") pluginId = GetValue(attr.Value!);
+                attrs.Add($"{attr.Key} = {GetValue(attr.Value!)}");
             }
+            var meta2 = string.Join(",\n            ", attrs);
+            var code = $$"""
+                         // Automatic Generate From ShadowPluginLoader.SourceGenerator
+
+
+                         namespace {{classSymbol.ContainingNamespace.ToDisplayString()}}
+                         {
+                             /// <summary>
+                             /// 
+                             /// </summary>
+                             public partial class {{classSymbol.Name}}
+                             {
+                                 /// <inheritdoc/>
+                                 public override string Id => {{pluginId}};
+                         
+                                 /// <summary>
+                                 /// PluginMetaData
+                                 /// </summary>
+                                 public static {{metaType}} Meta { get; } = new {{metaType}}
+                                 {
+                                     {{meta2}}
+                                 };
+                             }
+                         }
+                         """;
+            context.AddSource($"{classSymbol.Name}.g.cs", code);
         }
         catch (Exception e)
         {
-
             logger.Error("SPLE000", e.Message);
             throw e;
         }
@@ -140,6 +120,6 @@ internal class PluginMetaGenerator : ISourceGenerator
 
     public void Initialize(GeneratorInitializationContext context)
     {
-        // No initialization required for this one
+        context.RegisterForSyntaxNotifications(() => new PluginMetaSyntaxReceiver());
     }
 }

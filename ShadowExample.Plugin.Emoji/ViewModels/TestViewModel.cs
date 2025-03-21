@@ -1,4 +1,4 @@
-﻿using ShadowPluginLoader.MetaAttributes;
+﻿using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI;
 
 namespace ShadowExample.Plugin.Emoji.ViewModels;

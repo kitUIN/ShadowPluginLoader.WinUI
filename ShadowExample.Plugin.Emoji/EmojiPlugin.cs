@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ShadowExample.Core.Plugins;
 using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
-using ShadowPluginLoader.MetaAttributes;
+using ShadowPluginLoader.Attributes;
 using Microsoft.UI.Xaml;
 using Serilog;
 using ShadowExample.Plugin.Emoji.Controls;
