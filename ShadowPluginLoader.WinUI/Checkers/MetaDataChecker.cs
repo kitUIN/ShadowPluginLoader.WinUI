@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -59,9 +60,12 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
 
     public void CheckMetaDataValid(TMeta meta)
     {
-        throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    /// <exception cref="PluginImportException"></exception>
     public async Task<Type> GetMainPluginType(TMeta meta)
     {
         if (!DllFiles.TryGetValue(meta.Id, out var path))
@@ -69,13 +73,27 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
             throw new PluginImportException($"{meta.Id} Dll Path Not Found");
         }
 
-        var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(path);
-        if (!EntryPoints.TryGetValue("MainPlugin", out var mainTypeName) || mainTypeName == null)
+        var assemblyName = Path.GetFileNameWithoutExtension(path);
+        var assembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(assembly => assembly.GetName().Name == assemblyName);
+        if (assembly == null)
+        {
+            var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(path);
+            assembly = asm.ForeignAssembly;
+        }
+
+        if (!EntryPoints.TryGetValue(meta.Id, out var entryPoints) || entryPoints == null)
+        {
+            throw new PluginImportException($"{meta.Id} EntryPoints Not Found");
+        }
+
+        if (!entryPoints.AsObject()
+                .TryGetPropertyValue("MainPlugin", out var mainTypeName) || mainTypeName == null)
         {
             throw new PluginImportException($"{meta.Id} MainPlugin(EntryPoint) Not Found");
         }
 
-        var mainType = asm.ForeignAssembly.GetType(mainTypeName.GetValue<string>());
+        var mainType = assembly.GetType(mainTypeName.GetValue<string>());
         if (mainType == null)
         {
             throw new PluginImportException($"{meta.Id} MainPlugin(Type) Not Found");
