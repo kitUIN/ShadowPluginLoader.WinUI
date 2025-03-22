@@ -1,4 +1,4 @@
-﻿using ShadowPluginLoader.WinUI.Extensions;
+using ShadowPluginLoader.WinUI.Extensions;
 using ShadowPluginLoader.WinUI.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -21,34 +22,33 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     where TMeta : AbstractPluginMetaData
     where TAPlugin : AbstractPlugin
 {
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    public void Import(Type type)
-    {
-        try
-        {
-            if (!type.IsAssignableTo(typeof(TAPlugin)))
-                throw new PluginImportException($"{type.FullName} is not assignable to {typeof(TAPlugin).FullName}");
-            LoadPlugin(type);
-        }
-        catch (PluginImportException e)
-        {
-            Logger.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
-        }
-    }
 
     /// <summary>
     /// <inheritdoc />
     /// </summary>
+    /// <exception cref="PluginImportException"></exception>
+    public void Import(Type type)
+    {
+        var dir = type.Assembly.Location[..^".dll".Length];
+        var metaPath = Path.Combine(dir, "Assets", "plugin.json");
+        Import(new FileInfo(metaPath));
+    }
+
+
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    /// <exception cref="PluginImportException"></exception>
     public void Import<TPlugin>()
     {
         Import(typeof(TPlugin));
     }
 
+
     /// <summary>
     /// <inheritdoc />
     /// </summary>
+    /// <exception cref="PluginImportException"></exception>
     public void Import(IEnumerable<Type> types)
     {
         foreach (var type in types)
@@ -60,7 +60,40 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public async Task ImportFromZipAsync(string zipPath)
+    /// <exception cref="PluginImportException"></exception>
+    public void Import(DirectoryInfo dir)
+    {
+        foreach (var pluginJson in dir.GetFiles("**/Assets/plugin.json", SearchOption.AllDirectories))
+        {
+            Import(pluginJson);
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    /// <exception cref="PluginImportException"></exception>
+    public void Import(FileInfo pluginJson)
+    {
+        SortPluginMetaData.Add(new SortPluginData<TMeta>(MetaDataChecker.LoadMetaData(pluginJson)));
+    }
+
+    public async Task Load()
+    {
+        // 排序
+        var afterSort = DependencyChecker.DetermineLoadOrder(SortPluginMetaData);
+        SortPluginMetaData.Clear();
+        foreach (var sortPluginData in afterSort)
+        {
+            var mainPluginType = await MetaDataChecker.GetMainPluginType(sortPluginData.MetaData);
+            LoadPlugin(mainPluginType, sortPluginData.MetaData);
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    public async Task ImportAsync(string zipPath)
     {
         try
         {
@@ -68,7 +101,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             var meta = await CheckPluginInZip(zipPath);
             var outPath = Path.Combine(PluginFolder, meta!.DllName);
             Logger.Debug("Plugin OutPath: {t}", outPath);
-            await ImportFromDirAsync(await UnZip(zipPath, outPath));
+            var dir = await UnZip(zipPath, outPath);
+            Import(new DirectoryInfo(dir));
         }
         catch (PluginImportException e)
         {
@@ -105,27 +139,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             PluginSettingsHelper.DeleteRemovePluginPath(setting.Key);
             PluginEventService.InvokePluginRemoved(this,
                 new Args.PluginEventArgs(setting.Key, Enums.PluginStatus.Removed));
-        }
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    public async Task ImportFromDirAsync(string pluginPath)
-    {
-        try
-        {
-            CheckRemove();
-            await CheckUpgrade();
-            _tempSortPlugins.Clear();
-            _sortLoader.Clear();
-            await CheckPluginMetaDataFromJson(new DirectoryInfo(pluginPath));
-            var sorted = PluginSortExtension.SortPlugin(_sortLoader, x => x.Dependencies, _tempSortPlugins);
-            LoadPluginType(sorted);
-        }
-        catch (PluginImportException e)
-        {
-            Logger?.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
         }
     }
 

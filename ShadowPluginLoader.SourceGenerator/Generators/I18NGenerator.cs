@@ -1,5 +1,7 @@
 using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Models;
+using ShadowPluginLoader.SourceGenerator.Receivers;
+using System.ComponentModel;
 using System.Xml.Linq;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
@@ -43,12 +45,49 @@ internal class I18NGenerator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         var logger = new Logger("I18nGenerator", context);
-        context.AnalyzerConfigOptions.GlobalOptions.TryGetValue($"build_property.RootNamespace",
+        context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
             out var currentNamespace);
         if (currentNamespace is null) return;
+        var receiver = context.SyntaxReceiver as I18nSyntaxReceiver;
         var assemblyName = context.Compilation.Assembly.Name;
-        var isPlugin = context.CheckAttribute("ShadowPluginLoader.Attributes.MainPluginAttribute");
-        var isPluginLoader = context.CheckAttribute("ShadowPluginLoader.Attributes.ExportMetaAttribute");
+        var isPlugin = false;
+        var isPluginLoader = false;
+        var builtIn = false;
+        if (receiver != null)
+        {
+            if (receiver.Plugin != null)
+            {
+                var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
+
+                if (model.GetDeclaredSymbol(receiver.Plugin) is INamedTypeSymbol mainPluginSymbol)
+                {
+                    var mainPluginAttribute =
+                        mainPluginSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute");
+                    if (mainPluginAttribute != null)
+                    {
+                        isPlugin = true;
+                        foreach (var namedArgument in mainPluginAttribute.NamedArguments)
+                        {
+                            var name = namedArgument.Key;
+                            if (namedArgument.Value.Value == null) continue;
+                            if (name == "BuiltIn") builtIn = (bool)namedArgument.Value.Value;
+                        }
+                    }
+                }
+            }
+
+            if (receiver.ExportMeta != null)
+            {
+                var model = context.Compilation.GetSemanticModel(receiver.ExportMeta.SyntaxTree);
+
+                if (model.GetDeclaredSymbol(receiver.ExportMeta) is INamedTypeSymbol metaSymbol &&
+                    metaSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.ExportMetaAttribute") != null
+                   )
+                {
+                    isPluginLoader = true;
+                }
+            }
+        }
 
         var resws = GetReswData(context);
         if (resws.Count == 0)
@@ -105,7 +144,7 @@ internal class I18NGenerator : ISourceGenerator
                              """;
         context.AddSource($"ResourceKey.g.cs", reswEnumCode);
         string? resourcesHelperCode;
-        if (isPluginLoader)
+        if (isPluginLoader || builtIn)
         {
             resourcesHelperCode = $$"""
                                     // Automatic Generate From ShadowPluginLoader.SourceGenerator
@@ -257,5 +296,6 @@ internal class I18NGenerator : ISourceGenerator
 
     public void Initialize(GeneratorInitializationContext context)
     {
+        context.RegisterForSyntaxNotifications(() => new I18nSyntaxReceiver());
     }
 }

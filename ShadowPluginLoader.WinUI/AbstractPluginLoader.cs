@@ -1,4 +1,4 @@
-﻿using CustomExtensions.WinUI;
+using CustomExtensions.WinUI;
 using DryIoc;
 using Serilog;
 using ShadowPluginLoader.WinUI.Exceptions;
@@ -12,10 +12,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Args;
+using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
+using ShadowPluginLoader.WinUI.Interfaces;
 using SharpCompress.Archives;
 using SharpCompress.IO;
 using SharpCompress.Readers;
@@ -51,6 +54,16 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     protected abstract string TempFolder { get; }
 
     /// <summary>
+    /// DependencyChecker
+    /// </summary>
+    protected virtual IDependencyChecker<TMeta> DependencyChecker { get; } = new DependencyChecker<TMeta>();
+
+    /// <summary>
+    /// MetaDataChecker
+    /// </summary>
+    protected virtual IMetaDataChecker<TMeta> MetaDataChecker { get; } = new MetaDataChecker<TMeta>();
+
+    /// <summary>
     /// Logger
     /// </summary>
     protected ILogger Logger { get; }
@@ -59,6 +72,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// PluginEventService
     /// </summary>
     protected PluginEventService PluginEventService { get; }
+
 
     /// <summary>
     /// Default
@@ -83,78 +97,28 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// All Plugins
     /// </summary>
     private readonly Dictionary<string, TAPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
-
     /// <summary>
-    /// Temp Sort
+    /// Sort Plugin MetaData
     /// </summary>
-    private readonly Dictionary<string, SortPluginData> _tempSortPlugins = new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Sort Loader
-    /// </summary>
-    private readonly List<SortPluginData> _sortLoader = new();
-
-
-    /// <summary>
-    /// Check PluginMetaData From Json
-    /// </summary>
-    /// <param name="dir">Plugin Dir</param>
-    protected virtual async Task CheckPluginMetaDataFromJson(DirectoryInfo dir)
-    {
-        var result = GetAllPathAsync(dir);
-        foreach (var pluginFilePath in result)
-        {
-            await PreOnePluginAsync(pluginFilePath);
-        }
-    }
-
-    /// <summary>
-    /// Get All Plugin JSON Paths From The Plugin Folder
-    /// </summary>
-    /// <param name="dir">The Plugin Folder</param>
-    protected virtual List<string> GetAllPathAsync(DirectoryInfo dir)
-    {
-        var pls = dir.GetFiles(PluginJson, SearchOption.AllDirectories);
-        return pls.Select(x => x.FullName).ToList();
-    }
-
-    /// <summary>
-    /// Pre-operation For Loading Plugin
-    /// </summary>
-    /// <param name="pluginJsonFilePath">The Plugin Json Path</param>
-    /// <exception cref="PluginImportException">Not Found Dll Or folder Or `plugin.json`</exception>
-    protected virtual async Task PreOnePluginAsync(string pluginJsonFilePath)
-    {
-        if (!File.Exists(pluginJsonFilePath)) throw new PluginImportException($"Not Found {pluginJsonFilePath}");
-        // Load Json From plugin.json
-        var meta = JsonSerializer.Deserialize<TMeta>(await File.ReadAllTextAsync(pluginJsonFilePath));
-        var dirPath = Path.GetDirectoryName(pluginJsonFilePath);
-        if (dirPath is null || !Directory.Exists(dirPath))
-        {
-            // The Folder Containing The Plugin Dll Not Found
-            throw new PluginImportException($"Dir Not Found: {dirPath}");
-        }
-
-        var pluginFilePath = Path.Combine(dirPath, meta!.DllName + ".dll");
-        if (!File.Exists(pluginFilePath)) throw new PluginImportException($"Not Found {pluginFilePath}");
-        await CheckPluginMetaDataAsync(meta!, pluginFilePath);
-    }
+    protected List<SortPluginData<TMeta>> SortPluginMetaData { get; } = new();
 
 
     /// <summary>
     /// Load Plugin From Type
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
-    protected virtual void LoadPlugin(Type? plugin)
+    /// <param name="meta">Plugin MetaData</param>
+    protected virtual void LoadPlugin(Type plugin, TMeta meta)
     {
         var stopwatch = new Stopwatch();
         try
         {
             stopwatch.Start();
-            CheckPluginType(plugin);
-            var meta = GetAndCheckPluginMetaData(plugin!);
-            var instance = RegisterPluginMain(plugin!, meta);
-            LoadPluginDi(plugin!, instance, meta);
+            // CheckPluginType(plugin);
+            MetaDataChecker.CheckMetaDataValid(meta);
+            BeforeLoadPlugin(plugin, meta);
+            var instance = LoadMainPlugin(plugin, meta);
+            AfterLoadPlugin(plugin, instance, meta);
             _plugins[meta.Id] = instance;
             var enabled = PluginSettingsHelper.GetPluginIsEnabled(meta.Id);
             instance.Loaded();
@@ -178,79 +142,14 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 
 
     /// <summary>
-    /// Check Plugin Type Not Null
+    /// 
     /// </summary>
-    /// <param name="plugin">Plugin Type</param>
-    /// <exception cref="PluginImportException">Plugin Type Is Null</exception>
-    protected virtual void CheckPluginType(Type? plugin)
-    {
-        if (plugin is null) throw new PluginImportException("Plugin Type Not Found");
-    }
-
-    /// <summary>
-    /// Check PluginMetaData(Default: No Check)
-    /// </summary>
-    /// <param name="meta">PluginMetaData</param>
-    protected virtual void CheckPluginMetaData(TMeta meta)
+    /// <param name="plugin"></param>
+    /// <param name="meta"></param>
+    protected virtual void BeforeLoadPlugin(Type plugin, TMeta meta)
     {
     }
 
-    /// <summary>
-    /// LoadPlugin From SortedPluginTypes
-    /// </summary>
-    /// <param name="sortPlugins">SortedPluginData</param>
-    protected virtual void LoadPluginType(IEnumerable<SortPluginData> sortPlugins)
-    {
-        foreach (var data in sortPlugins)
-        {
-            LoadPlugin(data.PluginType);
-        }
-    }
-
-    /// <summary>
-    /// Get And Check PluginMetaData
-    /// </summary>
-    /// <param name="plugin">PluginMetaData</param>
-    /// <returns>PluginMetaData</returns>
-    /// <exception cref="PluginImportException">PluginMetaData Type Is Null</exception>
-    protected virtual TMeta GetAndCheckPluginMetaData(Type plugin)
-    {
-        var meta = plugin.GetPluginMetaData<TMeta>()
-                   ?? throw new PluginImportException($"{plugin.FullName}: MetaData Not Found");
-        CheckPluginMetaData(meta);
-        return meta;
-    }
-
-    /// <summary>
-    /// Check PluginMetaData (Async From Path)
-    /// </summary>
-    /// <param name="meta">PluginMetaData</param>
-    /// <param name="path">Plugin Dll Path</param>
-    /// <exception cref="PluginImportException">PluginMetaData Is Null</exception>
-    protected virtual async Task CheckPluginMetaDataAsync(TMeta meta, string path)
-    {
-        if (meta is null) throw new PluginImportException($"MetaData Not Found: {path}");
-        CheckPluginMetaData(meta);
-        var sortData = new SortPluginData(meta.Id, meta.Dependencies);
-        if (_tempSortPlugins.ContainsKey(meta.Id) || _plugins.ContainsKey(meta.Id))
-        {
-            // If Loaded, Next One
-            Logger?.Warning("{Pre}{ID}: Exists, Continue",
-                LoggerPrefix, meta.Id);
-            return;
-        }
-
-        // Load Asm From Dll
-        var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(path);
-        // Try Get First Exported Type AssignableTo TIPlugin
-        var t = asm.ForeignAssembly.GetExportedTypes().FirstOrDefault(
-            x => x.IsAssignableTo(typeof(TAPlugin)) &&
-                 x.GetCustomAttributes(typeof(MainPluginAttribute), inherit: false).Any());
-        CheckPluginType(t);
-        sortData.PluginType = t;
-        _sortLoader.Add(sortData);
-        _tempSortPlugins[sortData.Id] = sortData;
-    }
 
     /// <summary>
     /// Register Plugin Main
@@ -259,20 +158,20 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="meta">PluginMetaData</param>
     /// <returns>Plugin Instance</returns>
     /// <exception cref="PluginImportException">Can't Register Plugin</exception>
-    protected virtual TAPlugin RegisterPluginMain(Type plugin, TMeta meta)
+    protected virtual TAPlugin LoadMainPlugin(Type plugin, TMeta meta)
     {
-        DiFactory.Services.Register(typeof(TAPlugin), plugin, Reuse.Singleton);
-        var instance = DiFactory.Services.ResolveMany<TAPlugin>()
-            .FirstOrDefault(x => meta.Id == x.Id);
+        DiFactory.Services.Register(typeof(TAPlugin), plugin, reuse: Reuse.Singleton,
+            serviceKey: meta.Id);
+        var instance = DiFactory.Services.Resolve<TAPlugin>(serviceKey: meta.Id);
         if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
         Logger?.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
         return instance;
     }
 
     /// <summary>
-    /// Register Plugin DI
+    /// After Load Plugin
     /// </summary>
-    protected virtual void LoadPluginDi(Type tPlugin, TAPlugin aPlugin, TMeta meta)
+    protected virtual void AfterLoadPlugin(Type tPlugin, TAPlugin aPlugin, TMeta meta)
     {
     }
 
@@ -285,8 +184,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     {
         await using FileStream zipToOpen = new(zipPath, FileMode.Open);
         using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Update);
-        var jsonEntry = archive.GetEntry(PluginJson) ??
-                        throw new PluginImportException($"Not Found {PluginJson} in zip {zipPath}");
+        var jsonEntry = archive.Entries.FirstOrDefault(entry =>
+            entry.FullName.EndsWith("/Assets/plugin.json", StringComparison.OrdinalIgnoreCase));
+        if (jsonEntry == null) throw new PluginImportException($"Not Found plugin.json in zip {zipPath}");
         using var reader = new StreamReader(jsonEntry.Open());
         var jsonContent = await reader.ReadToEndAsync();
         Logger.Information("{Pre} plugin.json content: {Content}",

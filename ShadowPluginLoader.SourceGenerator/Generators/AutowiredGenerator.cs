@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Helpers;
 using ShadowPluginLoader.SourceGenerator.Models;
 using ShadowPluginLoader.SourceGenerator.Receivers;
@@ -131,7 +131,7 @@ public class AutowiredGenerator : ISourceGenerator
                              /// </summary>
                              public {{classClassName}}({{string.Join(", ", constructors)}}){{baseConstructorString}}
                              {
-                                {{string.Join("\n", assignments)}}
+                                {{string.Join("\n        ", assignments)}}
                                 ConstructorInit();
                              }
                              
@@ -139,7 +139,6 @@ public class AutowiredGenerator : ISourceGenerator
                              /// Constructor Init
                              /// </summary>
                              partial void ConstructorInit();
-                              
                          }
                          """;
             context.AddSource($"{classClassName}_Autowired.g.cs", code);
