@@ -41,6 +41,19 @@
 由于特殊的加载模式,我们需要遵循一些代码准则
 - [关于准则](https://plugin-loader.kituin.fun/zh/plugin/)
 
+## 加载流程
+
+```mermaid
+graph TD;
+    A[Zip]-->D[Load MetaData];
+    B[Type]-->D;
+    C[Dir]-->D;
+    D-->E[Check if MetaData is valid];
+    E-->F[Before Load Plugin];
+    F-->G[Load Main Plugin];
+    G-->H[After Load Plugin];
+```
+
 ## 🥰特别鸣谢
 
 - 📦[kitUIN.CustomExtensions.WinUI](https://github.com/kitUIN/CustomExtensions.WinUI) 提供插件加载支持
