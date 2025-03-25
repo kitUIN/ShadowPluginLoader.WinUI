@@ -9,7 +9,7 @@ namespace ShadowPluginLoader.SourceGenerator.Receivers;
 public class SettingsSyntaxReceiver : ISyntaxReceiver
 {
     public List<EnumDeclarationSyntax> Enums { get; } = [];
-    public ClassDeclarationSyntax Plugin { get; private set; } = null!;
+    public ClassDeclarationSyntax? Plugin { get; private set; }
 
     public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
     {

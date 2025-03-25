@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
+using Newtonsoft.Json;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
@@ -50,16 +51,37 @@ internal class PluginMetaGenerator : ISourceGenerator
         }
     }
 
-    private static string GetValue(JToken token)
+    private string GetValue(JObject dNode, JToken? pluginNode, bool pluginTokenIsObject)
     {
-        return token.Type switch
+        if (pluginNode == null) return "null";
+        if (!pluginTokenIsObject)
+            return pluginNode.Type switch
+            {
+                JTokenType.Boolean => pluginNode.Value<bool>().ToString().ToLower(),
+                JTokenType.String => $"\"{pluginNode.Value<string>()}\"",
+                JTokenType.Array => "[" + string.Join(",",
+                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject)).ToList()) + "]",
+                _ => $"{pluginNode}",
+            };
+        var attrs = new List<string>();
+        foreach (var item in dNode.Value<JObject>("Properties")!)
         {
-            JTokenType.Boolean => token.Value<bool>().ToString().ToLower(),
-            JTokenType.String => $"\"{token.Value<string>()}\"",
-            JTokenType.Array => "[" + string.Join(",", token.Values().Select(GetValue).ToList()) + "]",
-            _ => $"{token}",
-        };
+            var dObj = item.Value!.Value<JObject>()!;
+            var pluginObj = pluginNode.Value<JObject>()!;
+            var name = dObj.Value<string>("PropertyGroupName");
+            if (name == null || !pluginObj.ContainsKey(name)) continue;
+            var pluginValue = pluginObj.GetValue(name);
+            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"));
+            attrs.Add($"{name} = {token}");
+            if (name == "Id" && _pluginId == "") _pluginId = token;
+        }
+
+        var meta2 = string.Join(",\n            ", attrs);
+        var newType = dNode.Value<string>("Type")!;
+        return $"new {newType} {{\n            {meta2} }}";
     }
+
+    private string _pluginId = "";
 
     public void Execute(GeneratorExecutionContext context)
     {
@@ -68,7 +90,6 @@ internal class PluginMetaGenerator : ISourceGenerator
         {
             if (context.SyntaxReceiver is not PluginMetaSyntaxReceiver receiver) return;
             if (receiver.Plugin == null) return;
-
             var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
 
             if (model.GetDeclaredSymbol(receiver.Plugin) is not INamedTypeSymbol classSymbol)
@@ -77,16 +98,10 @@ internal class PluginMetaGenerator : ISourceGenerator
             if (!classSymbol.HasAttribute(context,
                     "ShadowPluginLoader.Attributes.MainPluginAttribute")) return;
             GetJson(context);
-            var metaType = _pluginDNode!.Value<string>("MetaDataType");
-            var attrs = new List<string>();
-            var pluginId = "";
-            foreach (var attr in _pluginNode!)
-            {
-                if (attr.Key == "Id") pluginId = GetValue(attr.Value!);
-                attrs.Add($"{attr.Key} = {GetValue(attr.Value!)}");
-            }
-
-            var meta2 = string.Join(",\n            ", attrs);
+            var metaType = _pluginDNode!.Value<string>("Type");
+            var dNode = _pluginDNode;
+            var pluginNode = _pluginNode;
+            var meta2 = GetValue(dNode, pluginNode, true);
             var code = $$"""
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator
 
@@ -99,15 +114,12 @@ internal class PluginMetaGenerator : ISourceGenerator
                              public partial class {{classSymbol.Name}}
                              {
                                  /// <inheritdoc/>
-                                 public override string Id => {{pluginId}};
+                                 public override string Id => {{_pluginId}};
                          
                                  /// <summary>
                                  /// PluginMetaData
                                  /// </summary>
-                                 public static {{metaType}} Meta { get; } = new {{metaType}}
-                                 {
-                                     {{meta2}}
-                                 };
+                                 public static {{metaType}} Meta { get; } = {{meta2}};
                              }
                          }
                          """;
@@ -115,7 +127,7 @@ internal class PluginMetaGenerator : ISourceGenerator
         }
         catch (Exception e)
         {
-            logger.Error("SPLE000", e.Message);
+            logger.Error("SPLE000", $"{e}");
             throw e;
         }
     }
