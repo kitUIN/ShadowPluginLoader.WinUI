@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
@@ -51,6 +52,36 @@ internal class PluginMetaGenerator : ISourceGenerator
         }
     }
 
+    private Dictionary<string, List<string>> EntryPoints { get; } = new();
+
+    private void GetEntryPoints(GeneratorExecutionContext context, PluginMetaSyntaxReceiver receiver, Logger logger)
+    {
+        var compilation = context.Compilation;
+        var entryPointAttributeSymbol =
+            compilation.GetTypeByMetadataName("ShadowPluginLoader.Attributes.EntryPointAttribute");
+
+        if (entryPointAttributeSymbol == null) return;
+
+        foreach (var classDeclaration in receiver.CandidateClasses)
+        {
+            var semanticModel = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
+            var classSymbol1 = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+            if (classSymbol1 == null) continue;
+            foreach (var attributeData in classSymbol1.GetAttributes())
+            {
+                var attributeClass = attributeData.AttributeClass;
+                if (attributeClass == null ||
+                    (!attributeClass.Equals(entryPointAttributeSymbol, SymbolEqualityComparer.Default) &&
+                     !InheritsFrom(attributeClass, entryPointAttributeSymbol))) continue;
+                var name = GetNameValue(attributeData);
+                if (name == null) continue;
+                if (!EntryPoints.ContainsKey(name)) EntryPoints.Add(name, []);
+                EntryPoints[name].Add(classSymbol1.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+            }
+        }
+    }
+
+
     private string GetValue(JObject dNode, JToken? pluginNode, bool pluginTokenIsObject)
     {
         if (pluginNode == null) return "null";
@@ -69,6 +100,18 @@ internal class PluginMetaGenerator : ISourceGenerator
             var dObj = item.Value!.Value<JObject>()!;
             var pluginObj = pluginNode.Value<JObject>()!;
             var name = dObj.Value<string>("PropertyGroupName");
+            var entryPointName = dObj.Value<string>("EntryPointName");
+            if (entryPointName != null && EntryPoints.ContainsKey(entryPointName) &&
+                EntryPoints[entryPointName].Count > 0)
+            {
+                var subType = dNode.Value<string>("Type")!;
+                if (subType.EndsWith("[]"))
+                    attrs.Add($"{name} = [" +
+                              string.Join(",", EntryPoints[entryPointName].Select(x => $"typeof({x})")) + "]");
+                else attrs.Add($"{name} = typeof({EntryPoints[entryPointName][0]})");
+                continue;
+            }
+
             if (name == null || !pluginObj.ContainsKey(name)) continue;
             var pluginValue = pluginObj.GetValue(name);
             var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"));
@@ -83,12 +126,41 @@ internal class PluginMetaGenerator : ISourceGenerator
 
     private string _pluginId = "";
 
+    private static bool InheritsFrom(INamedTypeSymbol symbol, INamedTypeSymbol baseType)
+    {
+        // 遍历基类链，检查是否匹配
+        while (symbol.BaseType != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(symbol.BaseType, baseType))
+                return true;
+
+            symbol = symbol.BaseType;
+        }
+
+        return false;
+    }
+
+    private string? GetNameValue(AttributeData attributeData)
+    {
+        // 1. 首先检查具名参数 (用于 EntryPointAttribute)
+        var nameArgument = attributeData.NamedArguments
+            .FirstOrDefault(kv => kv.Key == "Name").Value;
+
+        if (nameArgument.Value is string namedValue && !string.IsNullOrEmpty(namedValue))
+        {
+            return namedValue; // 直接返回具名参数值
+        }
+
+        return null;
+    }
+
     public void Execute(GeneratorExecutionContext context)
     {
         var logger = new Logger("PluginMetaGenerator", context);
         try
         {
             if (context.SyntaxReceiver is not PluginMetaSyntaxReceiver receiver) return;
+            GetEntryPoints(context, receiver, logger);
             if (receiver.Plugin == null) return;
             var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
 
