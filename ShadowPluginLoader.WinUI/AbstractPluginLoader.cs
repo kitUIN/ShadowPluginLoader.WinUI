@@ -29,6 +29,11 @@ namespace ShadowPluginLoader.WinUI;
 public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 {
     /// <summary>
+    /// 
+    /// </summary>
+    protected readonly Queue<FileInfo> ScanQueue = new();
+
+    /// <summary>
     /// Clean Folder Before Upgrade
     /// </summary>
     protected virtual bool CleanBeforeUpgrade => false;
@@ -97,12 +102,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// All Plugins
     /// </summary>
     private readonly Dictionary<string, TAPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
-    /// <summary>
-    /// Sort Plugin MetaData
-    /// </summary>
-    protected List<SortPluginData<TMeta>> SortPluginMetaData { get; } = new();
-
-
+ 
     /// <summary>
     /// Load Plugin From Type
     /// </summary>

@@ -14,35 +14,35 @@ public partial interface IPluginLoader<TAPlugin>
     where TAPlugin : AbstractPlugin
 {
     /// <summary>
-    /// Import Plugin From Type<br/>
-    /// After Import You Need Calling <see cref="Load"/>
+    /// Scan Plugin From Type<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="type">Plugin Type</param>
-    void Import(Type type);
+    void Scan(Type type);
 
     /// <summary>
-    /// Import Plugin From Type<br/>
-    /// After Import You Need Calling <see cref="Load"/>
+    /// Scan Plugin From Type<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
-    void Import<TPlugin>();
+    void Scan<TPlugin>();
 
     /// <summary>
-    /// Import Plugins From Type<br/>
-    /// After Import You Need Calling <see cref="Load"/>
+    /// Scan Plugins From Type<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="types">Plugin Type List</param>
-    void Import(IEnumerable<Type> types);
+    void Scan(IEnumerable<Type> types);
 
     /// <summary>
-    /// Import Plugin From Plugin Path<br/>
-    /// After Import You Need Calling <see cref="Load"/>
+    /// Scan Plugin From Plugin Path<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="pluginPath">Plugin Path</param>
-    void Import(DirectoryInfo pluginPath);
+    void Scan(DirectoryInfo pluginPath);
 
     /// <summary>
-    /// Import Plugin From plugin.json<br/>
-    /// After Import You Need Calling <see cref="Load"/>
+    /// Scan Plugin From plugin.json<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <example>
     /// <code>
@@ -51,14 +51,14 @@ public partial interface IPluginLoader<TAPlugin>
     /// </code>
     /// </example>
     /// <param name="pluginJson">plugin.json</param>
-    void Import(FileInfo pluginJson);
+    void Scan(FileInfo pluginJson);
 
     /// <summary>
-    /// Import Plugin From Plugin Zip Path<br/>
-    /// After Import You Need Calling <see cref="Load"/>
+    /// Scan Plugin From Plugin Zip Path<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="zipPath">Plugin Zip Path</param>
-    Task ImportAsync(string zipPath);
+    Task ScanAsync(string zipPath);
 
     /// <summary>
     /// Start Load Plugin

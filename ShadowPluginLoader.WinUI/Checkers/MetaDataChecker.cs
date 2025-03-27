@@ -32,12 +32,12 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public TMeta LoadMetaData(FileInfo pluginJson)
+    public async Task<TMeta> LoadMetaData(FileInfo pluginJson)
     {
         if (!pluginJson.Exists) throw new PluginImportException($"Not Found {pluginJson.FullName}");
         // Load Json From plugin.json
 
-        var content = File.ReadAllText(pluginJson.FullName);
+        var content = await File.ReadAllTextAsync(pluginJson.FullName);
         var meta = JsonSerializer.Deserialize<TMeta>(content);
         EntryPoints[meta!.Id] = meta.EntryPoints;
         var dirPath = Path.GetFullPath(pluginJson.Directory!.FullName + "/../../");
@@ -53,11 +53,22 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
         return meta;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="zip"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public TMeta LoadMetaData(string zip)
     {
+        // TODO
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="meta"></param>
     public void CheckMetaDataValid(TMeta meta)
     {
     }

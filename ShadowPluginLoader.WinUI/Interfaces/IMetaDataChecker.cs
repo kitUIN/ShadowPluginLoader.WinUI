@@ -28,14 +28,7 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// </summary>
     /// <param name="pluginJson"></param>
     /// <returns></returns>
-    public TMeta LoadMetaData(FileInfo pluginJson);
-
-    /// <summary>
-    /// Load MetaData From Zip
-    /// </summary>
-    /// <param name="zip"></param>
-    /// <returns></returns>
-    public TMeta LoadMetaData(string zip);
+    public Task<TMeta> LoadMetaData(FileInfo pluginJson);
 
     /// <summary>
     /// Check if MetaData is valid
