@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
@@ -10,7 +11,17 @@ public class SettingsGenerator : ISourceGenerator
     {
         context.RegisterForSyntaxNotifications(() => new SettingsSyntaxReceiver());
     }
+    public string ToLowerFirstChar(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
 
+        var builder = new StringBuilder(input);
+        builder[0] = char.ToLower(builder[0]);
+        return builder.ToString();
+    }
     public void Execute(GeneratorExecutionContext context)
     {
         var logger = new Logger("SettingsGenerator", context);
@@ -22,8 +33,9 @@ public class SettingsGenerator : ISourceGenerator
 
         try
         {
-            var globalNamespace = context.Compilation.GlobalNamespace;
-            var topLevelNamespace = globalNamespace.GetNamespaceMembers().FirstOrDefault()!.ToDisplayString();
+            context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
+                out var topLevelNamespace);
+            if (topLevelNamespace is null) return;
             foreach (var enumDeclaration in receiver.Enums)
             {
                 var model = context.Compilation.GetSemanticModel(enumDeclaration.SyntaxTree);
@@ -31,7 +43,7 @@ public class SettingsGenerator : ISourceGenerator
                 if (model.GetDeclaredSymbol(enumDeclaration) is not INamedTypeSymbol enumSymbol)
                     continue;
 
-                var namespaceName = enumSymbol.ContainingNamespace.ToDisplayString();
+                // var namespaceName = enumSymbol.ContainingNamespace.ToDisplayString();
                 const string attributeName = "ShadowPluginLoader.Attributes.ShadowSettingAttribute";
                 const string attributeClassAliasName =
                     "ShadowPluginLoader.Attributes.ShadowSettingClassAttribute";
@@ -61,6 +73,7 @@ public class SettingsGenerator : ISourceGenerator
                         _ => ""
                     };
 
+                    var smallName = ToLowerFirstChar(member.Name);
                     if (defaultVal != null)
                     {
                         if (typeFullName == "System.String") defaultVal = "\"" + defaultVal + "\"";
@@ -96,16 +109,32 @@ public class SettingsGenerator : ISourceGenerator
                                             }
                                     """);
                     }
-
                     keys.Add($$"""
+                               
+                                   private {{typeFullName}} {{smallName}} = SettingsHelper.Get<{{typeFullName}}>(Container, "{{member.Name}}")!;
+                                   
                                    /// <summary>
                                    /// {{comment ?? ""}}
                                    /// </summary>
                                    public {{typeFullName}} {{member.Name}}
                                    {
-                                       get => SettingsHelper.Get<{{typeFullName}}>(Container, "{{member.Name}}")!;
-                                       set => SettingsHelper.Set(Container, "{{member.Name}}", value);
+                                       get => {{smallName}};
+                                       set {
+                                           if (!global::System.Collections.Generic.EqualityComparer<{{typeFullName}}>.Default.Equals({{smallName}}, value))
+                                           {
+                                               SettingsHelper.Set(Container, "{{member.Name}}", value);
+                                               {{smallName}} = value;
+                                               OnPropertyChanged("{{member.Name}}");
+                                               {{member.Name}}Changed(value);
+                                               SettingsHelper.InvokeSettingChanged(this, new SettingChangedArgs(Container, "{{member.Name}}", value));
+                                           }
+                                       }
                                    }
+                                   
+                                   /// <summary>
+                                   /// 
+                                   /// </summary>
+                                   partial void {{member.Name}}Changed({{typeFullName}} newValue);
                                """);
                 }
 
@@ -138,15 +167,17 @@ public class SettingsGenerator : ISourceGenerator
                 var reswEnumCode = $$"""
                                      // Automatic Generate From ShadowPluginLoader.SourceGenerator
                                      using ShadowPluginLoader.WinUI.Helpers;
-
-                                     namespace {{namespaceName}};
+                                     using System.ComponentModel;
+                                     using ShadowPluginLoader.WinUI.Args;
+                                     using System.Runtime.CompilerServices;
+                                     
+                                     namespace {{topLevelNamespace}}.Settings;
 
                                      /// <summary>
                                      /// 
                                      /// </summary>
-                                     public partial class {{settingsClassName}}
+                                     public partial class {{settingsClassName}}: INotifyPropertyChanged
                                      {
-                                     
                                          /// <summary>
                                          /// 
                                          /// </summary>
@@ -182,6 +213,19 @@ public class SettingsGenerator : ISourceGenerator
                                          /// AfterInit
                                          /// </summary>
                                          partial void AfterInit();
+                                         
+                                         /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged"/>
+                                         public event PropertyChangedEventHandler PropertyChanged;
+                                         
+                                         /// <summary>
+                                         /// Raises the <see cref="PropertyChanged"/> event.
+                                         /// </summary>
+                                         /// <param name="propertyName">(optional) The name of the property that changed.</param>
+                                         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+                                         {
+                                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                                         }
+                                         
                                      }
 
                                      """;
@@ -206,7 +250,7 @@ public class SettingsGenerator : ISourceGenerator
                                  /// <summary>
                                  /// Settings
                                  /// </summary>
-                                 public static {{namespaceName}}.{{settingsClassName}} {{accessorClassName}} { get; } = new {{namespaceName}}.{{settingsClassName}}();
+                                 public static {{topLevelNamespace}}.Settings.{{settingsClassName}} {{accessorClassName}} { get; } = new {{topLevelNamespace}}.Settings.{{settingsClassName}}();
                              }
 
                              """;
