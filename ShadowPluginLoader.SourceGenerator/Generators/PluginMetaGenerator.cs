@@ -82,7 +82,8 @@ internal class PluginMetaGenerator : ISourceGenerator
     }
 
 
-    private string GetValue(JObject dNode, JToken? pluginNode, bool pluginTokenIsObject)
+    
+    private string GetValue(JObject dNode, JToken? pluginNode, bool pluginTokenIsObject, int depth = 0)
     {
         if (pluginNode == null) return "null";
         if (!pluginTokenIsObject)
@@ -98,31 +99,36 @@ internal class PluginMetaGenerator : ISourceGenerator
         foreach (var item in dNode.Value<JObject>("Properties")!)
         {
             var dObj = item.Value!.Value<JObject>()!;
-            var pluginObj = pluginNode.Value<JObject>()!;
+
             var name = dObj.Value<string>("PropertyGroupName");
             var entryPointName = dObj.Value<string>("EntryPointName");
             if (entryPointName != null && EntryPoints.ContainsKey(entryPointName) &&
                 EntryPoints[entryPointName].Count > 0)
             {
-                var subType = dNode.Value<string>("Type")!;
-                if (subType.EndsWith("[]"))
+                if (dNode.ContainsKey("Item"))
                     attrs.Add($"{name} = [" +
                               string.Join(",", EntryPoints[entryPointName].Select(x => $"typeof({x})")) + "]");
                 else attrs.Add($"{name} = typeof({EntryPoints[entryPointName][0]})");
                 continue;
             }
 
-            if (name == null || !pluginObj.ContainsKey(name)) continue;
-            var pluginValue = pluginObj.GetValue(name);
-            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"));
+            var pluginObj = pluginNode.Value<JObject>()!;
+            if (name == null) continue;
+            var pluginValue = pluginObj.ContainsKey(name) ? pluginObj.GetValue(name) : new JObject();
+            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"), depth + 1);
+            if (token == "{}") continue;
             attrs.Add($"{name} = {token}");
             if (name == "Id" && _pluginId == "") _pluginId = token;
         }
 
-        var meta2 = string.Join(",\n            ", attrs);
+        var indent = "\n\t\t\t" + new string('\t', depth + 1);
+        var resultIndent = "\n\t\t\t" + new string('\t', depth);
+        var result = string.Join(",", attrs.Select(attr => indent + attr));
         var newType = dNode.Value<string>("Type")!;
-        return $"new {newType} {{\n            {meta2} }}";
+        return $"new {newType}{resultIndent}{{{result}{resultIndent}}}";
     }
+
+    
 
     private string _pluginId = "";
 
