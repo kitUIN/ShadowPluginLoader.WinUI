@@ -1,6 +1,7 @@
-﻿using Windows.Storage;
-using DryIoc;
+﻿using System;
+using Windows.Storage;
 using Serilog;
+using ShadowPluginLoader.WinUI.Args;
 
 namespace ShadowPluginLoader.WinUI.Helpers;
 
@@ -9,6 +10,20 @@ namespace ShadowPluginLoader.WinUI.Helpers;
 /// </summary>
 public static class SettingsHelper
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public static event EventHandler<SettingChangedArgs>? SettingChanged;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    public static void InvokeSettingChanged(object? sender, SettingChangedArgs e)
+    {
+        SettingChanged?.Invoke(sender, e);
+    }
     /// <summary>
     /// Determines whether a specific key exists in the specified application data container.
     /// </summary>
@@ -40,6 +55,11 @@ public static class SettingsHelper
             return default;
         }
 
+        if (value is Enum)
+        {
+            return (T)Enum.Parse(typeof(T), value.ToString()!);
+        }
+
         return (T)value;
     }
 
@@ -54,6 +74,7 @@ public static class SettingsHelper
         var coreSettings =
             ApplicationData.Current.LocalSettings.CreateContainer(container,
                 ApplicationDataCreateDisposition.Always);
+        if (value is Enum) value = value.ToString()!;
         coreSettings.Values[key] = value;
         Log.Debug("Container: {container} | [{key}] {value}", container, key, value);
     }
