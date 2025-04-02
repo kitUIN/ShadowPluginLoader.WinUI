@@ -7,7 +7,7 @@ namespace ShadowPluginLoader.WinUI;
 /// <summary>
 /// Abstract PluginMetaData
 /// </summary>
-public abstract class AbstractPluginMetaData : IPluginMetaData
+public abstract record AbstractPluginMetaData : IPluginMetaData
 {
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Id"/>
@@ -20,6 +20,12 @@ public abstract class AbstractPluginMetaData : IPluginMetaData
     /// </summary>
     [Meta(Required = true)]
     public string Name { get; init; } = null!;
+
+    /// <summary>
+    /// <inheritdoc cref="IPluginMetaData.BuiltIn"/>
+    /// </summary>
+    [Meta(Exclude = true)]
+    public bool BuiltIn { get; init; }
 
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.DllName"/>
@@ -42,8 +48,8 @@ public abstract class AbstractPluginMetaData : IPluginMetaData
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Dependencies"/>
     /// </summary>
-    [Meta(Required = true)]
-    public string[] Dependencies { get; init; } = null!;
+    [Meta(Required = false)]
+    public string[] Dependencies { get; init; } = [];
 
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.EntryPoints"/>

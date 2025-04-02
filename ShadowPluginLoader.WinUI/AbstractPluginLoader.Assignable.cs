@@ -13,13 +13,11 @@ using ShadowPluginLoader.WinUI.Models;
 namespace ShadowPluginLoader.WinUI;
 
 /// <summary>
-/// Abstract PluginLoader
+/// <inheritdoc />
 /// </summary>
-/// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
-public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoader<TAPlugin>
+public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoader<TMeta, TAPlugin>
+    where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
-    where TAPlugin : AbstractPlugin
 {
     /// <summary>
     /// <inheritdoc />

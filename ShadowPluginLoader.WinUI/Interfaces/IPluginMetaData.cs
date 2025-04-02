@@ -41,4 +41,9 @@ internal interface IPluginMetaData
     /// EntryPoints
     /// </summary>
     JsonNode? EntryPoints { get; init; }
+
+    /// <summary>
+    /// BuiltIn Plugin
+    /// </summary>
+    bool BuiltIn { get; init; }
 }

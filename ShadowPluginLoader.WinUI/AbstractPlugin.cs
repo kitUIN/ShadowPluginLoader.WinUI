@@ -11,10 +11,14 @@ namespace ShadowPluginLoader.WinUI;
 /// <summary>
 /// Abstract Plugin
 /// </summary>
-public abstract class AbstractPlugin : IPlugin
+public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
+    where TMeta : AbstractPluginMetaData
 {
     /// <inheritdoc />
     public abstract string DisplayName { get; }
+
+    /// <inheritdoc />
+    public abstract TMeta MetaData { get; }
 
     /// <summary>
     /// Logger

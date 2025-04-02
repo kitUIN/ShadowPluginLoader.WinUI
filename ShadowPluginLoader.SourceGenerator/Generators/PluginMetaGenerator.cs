@@ -82,8 +82,8 @@ internal class PluginMetaGenerator : ISourceGenerator
     }
 
 
-    
-    private string GetValue(JObject dNode, JToken? pluginNode, bool pluginTokenIsObject, int depth = 0)
+    private string GetValue(JObject dNode, JToken? pluginNode,
+        bool pluginTokenIsObject, int depth = 0)
     {
         if (pluginNode == null) return "null";
         if (!pluginTokenIsObject)
@@ -92,7 +92,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                 JTokenType.Boolean => pluginNode.Value<bool>().ToString().ToLower(),
                 JTokenType.String => $"\"{pluginNode.Value<string>()}\"",
                 JTokenType.Array => "[" + string.Join(",",
-                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject)).ToList()) + "]",
+                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject, depth + 1)).ToList()) + "]",
                 _ => $"{pluginNode}",
             };
         var attrs = new List<string>();
@@ -123,12 +123,16 @@ internal class PluginMetaGenerator : ISourceGenerator
 
         var indent = "\n\t\t\t" + new string('\t', depth + 1);
         var resultIndent = "\n\t\t\t" + new string('\t', depth);
+        if (_buildIn && depth == 0)
+        {
+            attrs.Add($"BuiltIn = {_buildIn.ToString().ToLower()}");
+        }
+
         var result = string.Join(",", attrs.Select(attr => indent + attr));
         var newType = dNode.Value<string>("Type")!;
         return $"new {newType}{resultIndent}{{{result}{resultIndent}}}";
     }
 
-    
 
     private string _pluginId = "";
 
@@ -160,6 +164,8 @@ internal class PluginMetaGenerator : ISourceGenerator
         return null;
     }
 
+    private bool _buildIn;
+
     public void Execute(GeneratorExecutionContext context)
     {
         var logger = new Logger("PluginMetaGenerator", context);
@@ -175,6 +181,15 @@ internal class PluginMetaGenerator : ISourceGenerator
 
             if (!classSymbol.HasAttribute(context,
                     "ShadowPluginLoader.Attributes.MainPluginAttribute")) return;
+            var mainAtrr = classSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute")
+            var nameArgument = mainAtrr?.NamedArguments
+                .FirstOrDefault(kv => kv.Key == "BuiltIn").Value;
+
+            if (nameArgument?.Value is bool namedValue)
+            {
+                _buildIn = namedValue;
+            }
+
             GetJson(context);
             var metaType = _pluginDNode!.Value<string>("Type");
             var dNode = _pluginDNode;
@@ -193,7 +208,10 @@ internal class PluginMetaGenerator : ISourceGenerator
                              {
                                  /// <inheritdoc/>
                                  public override string Id => {{_pluginId}};
-                         
+                                 
+                                 /// <inheritdoc/>
+                                 public override {{metaType}} MetaData => Meta;
+                                 
                                  /// <summary>
                                  /// PluginMetaData
                                  /// </summary>

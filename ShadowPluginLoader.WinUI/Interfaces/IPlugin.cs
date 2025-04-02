@@ -5,8 +5,13 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 /// <summary>
 /// Default Plugin Interface
 /// </summary>
-internal interface IPlugin
+internal interface IPlugin<TMeta> where TMeta : AbstractPluginMetaData
 {
+    /// <summary>
+    /// Plugin Meta Data
+    /// </summary>
+    TMeta MetaData { get; }
+
     /// <summary>
     /// Get identifier of this plugin 
     /// </summary>

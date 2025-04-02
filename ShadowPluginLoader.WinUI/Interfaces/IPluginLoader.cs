@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
 /// <summary>
-/// PluginLoader Interface
+/// PluginLoader
 /// </summary>
-/// <typeparam name="TAPlugin">Plugin Base Interface, Default: <see cref="AbstractPlugin"/></typeparam>
-public partial interface IPluginLoader<TAPlugin>
-    where TAPlugin : AbstractPlugin
+/// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
+/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
+public partial interface IPluginLoader<TMeta, TAPlugin>
+    where TAPlugin : AbstractPlugin<TMeta>
+    where TMeta : AbstractPluginMetaData
 {
     /// <summary>
     /// Scan Plugin From Type<br/>
@@ -65,6 +67,7 @@ public partial interface IPluginLoader<TAPlugin>
     /// </summary>
     /// <returns></returns>
     Task Load();
+
     /// <summary>
     /// Get Enabled Plugins
     /// </summary>
