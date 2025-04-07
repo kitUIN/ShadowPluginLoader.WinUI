@@ -215,7 +215,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         if (!_plugins.TryGetValue(id, out var plugin)) return;
         plugin.IsEnabled = true;
-        Logger?.Information("{Pre}{Id}: Enabled",
+        Logger.Information("{Pre}{Id}: Enabled",
             LoggerPrefix, id);
     }
 
@@ -226,7 +226,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         if (!_plugins.TryGetValue(id, out var plugin)) return;
         plugin.IsEnabled = false;
-        Logger?.Information("{Pre}{Id}: Disabled",
+        Logger.Information("{Pre}{Id}: Disabled",
             LoggerPrefix, id);
     }
 

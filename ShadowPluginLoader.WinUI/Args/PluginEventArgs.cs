@@ -1,25 +1,20 @@
 ﻿using ShadowPluginLoader.WinUI.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShadowPluginLoader.WinUI.Args;
 
 /// <summary>
 /// Plugin Event Args
 /// </summary>
-public class PluginEventArgs
+public record PluginEventArgs
 {
     /// <summary>
     /// Plugin Id
     /// </summary>
-    public string PluginId { get; set; }
+    public string PluginId { get; init; }
     /// <summary>
     /// Plugin Status
     /// </summary>
-    public PluginStatus Status { get; set; }
+    public PluginStatus Status { get; init; }
     /// <summary>
     /// 
     /// </summary>

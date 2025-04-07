@@ -1,11 +1,9 @@
-﻿using ShadowPluginLoader.WinUI.Models;
-
-namespace ShadowPluginLoader.WinUI.Interfaces;
+﻿namespace ShadowPluginLoader.WinUI.Interfaces;
 
 /// <summary>
 /// Default Plugin Interface
 /// </summary>
-internal interface IPlugin<TMeta> where TMeta : AbstractPluginMetaData
+internal interface IPlugin<out TMeta> where TMeta : AbstractPluginMetaData
 {
     /// <summary>
     /// Plugin Meta Data

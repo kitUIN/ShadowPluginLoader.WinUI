@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
@@ -10,8 +9,8 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 /// PluginLoader
 /// </summary>
 /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
-public partial interface IPluginLoader<TMeta, TAPlugin>
+/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin{TMeta}"/></typeparam>
+public interface IPluginLoader<TMeta, TAPlugin>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
