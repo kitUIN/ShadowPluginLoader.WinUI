@@ -1,7 +1,5 @@
 using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
@@ -181,7 +179,7 @@ internal class PluginMetaGenerator : ISourceGenerator
 
             if (!classSymbol.HasAttribute(context,
                     "ShadowPluginLoader.Attributes.MainPluginAttribute")) return;
-            var mainAtrr = classSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute")
+            var mainAtrr = classSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute");
             var nameArgument = mainAtrr?.NamedArguments
                 .FirstOrDefault(kv => kv.Key == "BuiltIn").Value;
 
@@ -224,7 +222,6 @@ internal class PluginMetaGenerator : ISourceGenerator
         catch (Exception e)
         {
             logger.Error("SPLE000", $"{e}");
-            throw e;
         }
     }
 
