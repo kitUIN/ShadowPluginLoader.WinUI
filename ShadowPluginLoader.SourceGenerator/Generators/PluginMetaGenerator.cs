@@ -103,7 +103,7 @@ internal class PluginMetaGenerator : ISourceGenerator
             if (entryPointName != null && EntryPoints.ContainsKey(entryPointName) &&
                 EntryPoints[entryPointName].Count > 0)
             {
-                if (dNode.ContainsKey("Item"))
+                if (dObj.ContainsKey("Item"))
                     attrs.Add($"{name} = [" +
                               string.Join(",", EntryPoints[entryPointName].Select(x => $"typeof({x})")) + "]");
                 else attrs.Add($"{name} = typeof({EntryPoints[entryPointName][0]})");
