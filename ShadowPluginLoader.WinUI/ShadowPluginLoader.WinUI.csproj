@@ -12,7 +12,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12</LangVersion>
         <!-- Nuget -->
-        <Version>2.4.10</Version>
+        <Version>2.4.11</Version>
 		<PackageId>ShadowPluginLoader.WinUI</PackageId>
 		<Owner>kitUIN</Owner>
 		<Authors>kitUIN</Authors>

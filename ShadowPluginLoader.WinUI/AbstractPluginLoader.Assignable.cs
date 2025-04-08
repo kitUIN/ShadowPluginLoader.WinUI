@@ -59,7 +59,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <exception cref="PluginImportException"></exception>
     public void Scan(DirectoryInfo dir)
     {
-        foreach (var pluginJson in dir.GetFiles("**/Assets/plugin.json", SearchOption.AllDirectories))
+        foreach (var pluginJson in dir.GetDirectories("Assets", SearchOption.AllDirectories)
+                     .Select(assetDir => new FileInfo(Path.Combine(assetDir.FullName, "plugin.json")))
+                     .Where(file => file.Exists))
         {
             Scan(pluginJson);
         }
