@@ -1,10 +1,7 @@
-using CustomExtensions.WinUI;
 using DryIoc;
 using Serilog;
 using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Extensions;
 using ShadowPluginLoader.WinUI.Helpers;
-using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,17 +9,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Interfaces;
 using SharpCompress.Archives;
 using SharpCompress.IO;
-using SharpCompress.Readers;
-using Path = System.IO.Path;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -165,7 +158,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             serviceKey: meta.Id);
         var instance = DiFactory.Services.Resolve<TAPlugin>(serviceKey: meta.Id);
         if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
-        Logger?.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
+        Logger.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
         return instance;
     }
 

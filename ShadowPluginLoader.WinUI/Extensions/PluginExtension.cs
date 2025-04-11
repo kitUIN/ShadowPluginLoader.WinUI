@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Extensions;
 
@@ -14,10 +13,10 @@ public static class PluginExtension
     /// Get PluginMetaData
     /// </summary>
     /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-    /// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
+    /// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin{TMeta}"/></typeparam>
     /// <returns>Your Custom Interface IMetaData</returns>
     public static TMeta? GetPluginMetaData<TMeta, TAPlugin>()
-        where TAPlugin : AbstractPlugin
+        where TAPlugin : AbstractPlugin<TMeta>
         where TMeta : AbstractPluginMetaData
     {
         return typeof(TAPlugin).GetPluginMetaData<TMeta>();

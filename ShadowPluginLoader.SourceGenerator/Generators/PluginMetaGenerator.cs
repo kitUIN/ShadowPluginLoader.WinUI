@@ -1,7 +1,5 @@
 using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
 using ShadowPluginLoader.SourceGenerator.Receivers;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
@@ -51,22 +49,24 @@ internal class PluginMetaGenerator : ISourceGenerator
             }
         }
     }
-
-    private Dictionary<string, List<string>> EntryPoints { get; } = new();
-
-    private void GetEntryPoints(GeneratorExecutionContext context, PluginMetaSyntaxReceiver receiver, Logger logger)
+ 
+    private Dictionary<string, HashSet<string>> GetEntryPoints(GeneratorExecutionContext context, PluginMetaSyntaxReceiver receiver, Logger logger)
     {
+        var entryPoints = new Dictionary<string, HashSet<string>>();
         var compilation = context.Compilation;
         var entryPointAttributeSymbol =
             compilation.GetTypeByMetadataName("ShadowPluginLoader.Attributes.EntryPointAttribute");
 
-        if (entryPointAttributeSymbol == null) return;
+        if (entryPointAttributeSymbol == null) return entryPoints;
 
         foreach (var classDeclaration in receiver.CandidateClasses)
         {
+
             var semanticModel = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
             var classSymbol1 = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
             if (classSymbol1 == null) continue;
+            if (!SymbolEqualityComparer.Default.Equals(classSymbol1.ContainingAssembly, compilation.Assembly))
+                continue;
             foreach (var attributeData in classSymbol1.GetAttributes())
             {
                 var attributeClass = attributeData.AttributeClass;
@@ -75,15 +75,17 @@ internal class PluginMetaGenerator : ISourceGenerator
                      !InheritsFrom(attributeClass, entryPointAttributeSymbol))) continue;
                 var name = GetNameValue(attributeData);
                 if (name == null) continue;
-                if (!EntryPoints.ContainsKey(name)) EntryPoints.Add(name, []);
-                EntryPoints[name].Add(classSymbol1.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                if (!entryPoints.ContainsKey(name)) entryPoints.Add(name, []);
+                entryPoints[name].Add(classSymbol1.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
             }
         }
+
+        return entryPoints;
     }
 
 
     private string GetValue(JObject dNode, JToken? pluginNode,
-        bool pluginTokenIsObject, int depth = 0)
+        bool pluginTokenIsObject, Dictionary<string, HashSet<string>> entryPoints,int depth = 0)
     {
         if (pluginNode == null) return "null";
         if (!pluginTokenIsObject)
@@ -92,7 +94,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                 JTokenType.Boolean => pluginNode.Value<bool>().ToString().ToLower(),
                 JTokenType.String => $"\"{pluginNode.Value<string>()}\"",
                 JTokenType.Array => "[" + string.Join(",",
-                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject, depth + 1)).ToList()) + "]",
+                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject, entryPoints, depth + 1)).ToList()) + "]",
                 _ => $"{pluginNode}",
             };
         var attrs = new List<string>();
@@ -102,20 +104,20 @@ internal class PluginMetaGenerator : ISourceGenerator
 
             var name = dObj.Value<string>("PropertyGroupName");
             var entryPointName = dObj.Value<string>("EntryPointName");
-            if (entryPointName != null && EntryPoints.ContainsKey(entryPointName) &&
-                EntryPoints[entryPointName].Count > 0)
+            if (entryPointName != null && entryPoints.ContainsKey(entryPointName) &&
+                entryPoints[entryPointName].Count > 0)
             {
-                if (dNode.ContainsKey("Item"))
+                if (dObj.ContainsKey("Item"))
                     attrs.Add($"{name} = [" +
-                              string.Join(",", EntryPoints[entryPointName].Select(x => $"typeof({x})")) + "]");
-                else attrs.Add($"{name} = typeof({EntryPoints[entryPointName][0]})");
+                              string.Join(",", entryPoints[entryPointName].Select(x => $"typeof({x})")) + "]");
+                else attrs.Add($"{name} = typeof({string.Join("", entryPoints[entryPointName])})");
                 continue;
             }
 
             var pluginObj = pluginNode.Value<JObject>()!;
             if (name == null) continue;
             var pluginValue = pluginObj.ContainsKey(name) ? pluginObj.GetValue(name) : new JObject();
-            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"), depth + 1);
+            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"),entryPoints, depth + 1);
             if (token == "{}") continue;
             attrs.Add($"{name} = {token}");
             if (name == "Id" && _pluginId == "") _pluginId = token;
@@ -172,7 +174,7 @@ internal class PluginMetaGenerator : ISourceGenerator
         try
         {
             if (context.SyntaxReceiver is not PluginMetaSyntaxReceiver receiver) return;
-            GetEntryPoints(context, receiver, logger);
+            var entryPoints = GetEntryPoints(context, receiver, logger);
             if (receiver.Plugin == null) return;
             var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
 
@@ -181,7 +183,7 @@ internal class PluginMetaGenerator : ISourceGenerator
 
             if (!classSymbol.HasAttribute(context,
                     "ShadowPluginLoader.Attributes.MainPluginAttribute")) return;
-            var mainAtrr = classSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute")
+            var mainAtrr = classSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute");
             var nameArgument = mainAtrr?.NamedArguments
                 .FirstOrDefault(kv => kv.Key == "BuiltIn").Value;
 
@@ -194,7 +196,7 @@ internal class PluginMetaGenerator : ISourceGenerator
             var metaType = _pluginDNode!.Value<string>("Type");
             var dNode = _pluginDNode;
             var pluginNode = _pluginNode;
-            var meta2 = GetValue(dNode, pluginNode, true);
+            var meta2 = GetValue(dNode, pluginNode, true,entryPoints);
             var code = $$"""
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator
 
@@ -224,7 +226,6 @@ internal class PluginMetaGenerator : ISourceGenerator
         catch (Exception e)
         {
             logger.Error("SPLE000", $"{e}");
-            throw e;
         }
     }
 

@@ -49,7 +49,7 @@ graph TD;
     O[IEnumerable&lt;Type&gt;]-->A;
     C[DirectoryInfo]-->A;
     P[ZipFile]-->A;
-    A[FileInfo]-->D@{ shape: procs, label: "Load PluginMetaData"};
+    A[FileInfo]-->D@{ shape: procs, label: "Load And Sort PluginMetaData"};
     D-->E[Check if PluginMetaData is valid];
     E-->F@{ shape: rounded, label: "Before Load Plugin Event" };
     F-->G[Load Main Plugin];
