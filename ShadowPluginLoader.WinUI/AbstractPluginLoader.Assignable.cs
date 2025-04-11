@@ -23,11 +23,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public void Scan(Type type)
+    public IPluginLoader<TMeta, TAPlugin> Scan(Type type)
     {
         var dir = type.Assembly.Location[..^".dll".Length];
         var metaPath = Path.Combine(dir, "Assets", "plugin.json");
         Scan(new FileInfo(metaPath));
+        return this;
     }
 
 
@@ -35,9 +36,10 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public void Scan<TPlugin>()
+    public IPluginLoader<TMeta, TAPlugin> Scan<TPlugin>()
     {
         Scan(typeof(TPlugin));
+        return this;
     }
 
 
@@ -45,40 +47,47 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public void Scan(IEnumerable<Type> types)
+    public IPluginLoader<TMeta, TAPlugin> Scan(IEnumerable<Type> types)
     {
         foreach (var type in types)
         {
             Scan(type);
         }
+
+        return this;
     }
 
     /// <summary>
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public void Scan(DirectoryInfo dir)
+    public IPluginLoader<TMeta, TAPlugin> Scan(DirectoryInfo dir)
     {
         foreach (var pluginJson in dir.GetFiles("**/Assets/plugin.json", SearchOption.AllDirectories))
         {
             Scan(pluginJson);
         }
+
+        return this;
     }
 
     /// <summary>
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public void Scan(FileInfo pluginJson)
+    public IPluginLoader<TMeta, TAPlugin> Scan(FileInfo pluginJson)
     {
         ScanQueue.Enqueue(pluginJson);
+        return this;
     }
 
     /// <summary>
-    /// 
+    /// <inheritdoc />
     /// </summary>
     public async Task Load()
     {
+        if (!IsCheckUpgradeAndRemove)
+            throw new Exception("You need to try CheckUpgradeAndRemoveAsync before Load");
         List<SortPluginData<TMeta>> beforeSort = [];
         List<Task> beforeSortTasks = [];
         while (ScanQueue.Count > 0)
@@ -298,5 +307,13 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
 
         plugin.PlanUpgrade = true;
         PluginSettingsHelper.SetPluginUpgradePath(id, newVersionZip);
+    }
+
+    /// <inheritdoc />
+    public async Task CheckUpgradeAndRemoveAsync()
+    {
+        CheckRemove();
+        await CheckUpgrade();
+        IsCheckUpgradeAndRemove = true;
     }
 }

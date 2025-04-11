@@ -10,7 +10,7 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 /// PluginLoader
 /// </summary>
 /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
-/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin"/></typeparam>
+/// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin{TMeta}"/></typeparam>
 public partial interface IPluginLoader<TMeta, TAPlugin>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
@@ -20,40 +20,40 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="type">Plugin Type</param>
-    void Scan(Type type);
+    IPluginLoader<TMeta, TAPlugin> Scan(Type type);
 
     /// <summary>
     /// Scan Plugin From Type<br/>
     /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
-    void Scan<TPlugin>();
+    IPluginLoader<TMeta, TAPlugin> Scan<TPlugin>();
 
     /// <summary>
     /// Scan Plugins From Type<br/>
     /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="types">Plugin Type List</param>
-    void Scan(IEnumerable<Type> types);
+    IPluginLoader<TMeta, TAPlugin> Scan(IEnumerable<Type> types);
 
     /// <summary>
     /// Scan Plugin From Plugin Path<br/>
     /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="pluginPath">Plugin Path</param>
-    void Scan(DirectoryInfo pluginPath);
+    IPluginLoader<TMeta, TAPlugin> Scan(DirectoryInfo pluginPath);
 
     /// <summary>
     /// Scan Plugin From plugin.json<br/>
     /// After Scan You Need Calling <see cref="Load"/>
-    /// </summary>
     /// <example>
     /// <code>
-    /// loader.Import(pluginJson);
+    /// loader.Scan(pluginJson);
     /// await loader.Load();
     /// </code>
     /// </example>
+    /// </summary>
     /// <param name="pluginJson">plugin.json</param>
-    void Scan(FileInfo pluginJson);
+    IPluginLoader<TMeta, TAPlugin> Scan(FileInfo pluginJson);
 
     /// <summary>
     /// Scan Plugin From Plugin Zip Path<br/>
@@ -64,6 +64,12 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
 
     /// <summary>
     /// Start Load Plugin
+    /// <example>
+    /// <code>
+    /// loader.Scan(pluginJson);
+    /// await loader.Load();
+    /// </code>
+    /// </example>
     /// </summary>
     /// <returns></returns>
     Task Load();
@@ -123,4 +129,10 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// <param name="id">Plugin Id</param>
     /// <param name="newVersionZip">new Version Zip Path (Uri)</param>
     Task UpgradePlugin(string id, string newVersionZip);
+    
+    /// <summary>
+    /// Checked for updates and removed plugins
+    /// </summary>
+    /// <returns></returns>
+    Task CheckUpgradeAndRemoveAsync();
 }

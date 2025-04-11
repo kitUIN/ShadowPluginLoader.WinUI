@@ -29,6 +29,11 @@ namespace ShadowPluginLoader.WinUI;
 public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 {
     /// <summary>
+    /// checked for updates and removed plugins
+    /// </summary>
+    protected bool IsCheckUpgradeAndRemove = false;
+
+    /// <summary>
     /// 
     /// </summary>
     protected readonly Queue<FileInfo> ScanQueue = new();
@@ -43,10 +48,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     protected virtual string LoggerPrefix => "[PluginLoader] ";
 
-    /// <summary>
-    /// Plugin MetaData Json File Name
-    /// </summary>
-    protected virtual string PluginJson => "plugin.json";
 
     /// <summary>
     /// Plugins Folder
@@ -102,7 +103,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// All Plugins
     /// </summary>
     private readonly Dictionary<string, TAPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
- 
+
     /// <summary>
     /// Load Plugin From Type
     /// </summary>
