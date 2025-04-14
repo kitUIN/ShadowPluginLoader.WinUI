@@ -55,9 +55,10 @@ public static class SettingsHelper
             return default;
         }
 
-        if (value is Enum)
+        if (typeof(T).IsEnum)
         {
-            return (T)Enum.Parse(typeof(T), value.ToString()!);
+            Enum.TryParse(typeof(T), value.ToString()!,out var result);
+            return (T?)result;
         }
 
         return (T)value;
