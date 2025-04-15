@@ -44,15 +44,7 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
         Version = metaData.Version;
         foreach (var dep in metaData.Dependencies)
         {
-            var deps = dep.Split("=", 2);
-            if (deps.Length == 1)
-            {
-                Dependencies.Add(new PluginDependency(deps[0]));
-            }
-            else if (deps.Length == 2)
-            {
-                Dependencies.Add(new PluginDependency(deps[0], deps[1]));
-            }
+            Dependencies.Add(dep);
         }
     }
 }

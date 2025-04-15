@@ -54,10 +54,10 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
                 throw new PluginImportException($"Dependency Not Found: {dependency.Id}");
             }
 
-            if (!IsVersionSatisfied(dependentPlugin.Version, dependency.Version))
+            if (!IsVersionSatisfied(dependentPlugin.Version, dependency))
             {
                 throw new PluginImportException(
-                    $"Version Not Satisfied: {dependentPlugin.Id}, Need: {dependency.Version}, Actual: {dependentPlugin.Version}");
+                    $"Version Not Satisfied: {dependentPlugin.Id}, Need: {dependency.Need}, Actual: {dependentPlugin.Version}");
             }
 
             if (!visited.Contains(dependentPlugin.Id))
@@ -77,11 +77,15 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// Check Version Satisfied
     /// </summary>
     /// <param name="actualVersion"></param>
-    /// <param name="requiredVersion"></param>
+    /// <param name="dependency"></param>
     /// <returns></returns>
-    private bool IsVersionSatisfied(string actualVersion, string? requiredVersion)
+    private bool IsVersionSatisfied(string actualVersion, PluginDependency dependency)
     {
-        if (string.IsNullOrEmpty(requiredVersion) || requiredVersion == "*") return true;
-        return new Version(actualVersion) >= new Version(requiredVersion);
+        return dependency.Comparer switch
+        {
+            PluginDependencyComparer.Lesser => new Version(actualVersion) <= dependency.Version,
+            PluginDependencyComparer.Same => new Version(actualVersion) == dependency.Version,
+            _ => new Version(actualVersion) >= dependency.Version
+        };
     }
 }

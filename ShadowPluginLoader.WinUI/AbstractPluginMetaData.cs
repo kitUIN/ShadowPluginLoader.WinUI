@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -48,8 +49,9 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Dependencies"/>
     /// </summary>
-    [Meta(Required = false)]
-    public string[] Dependencies { get; init; } = [];
+    [Meta(Required = false, JsonType = typeof(string[]),
+        ConstructionTemplate = "new ShadowPluginLoader.WinUI.Models.PluginDependency(\"{RAW}\")")]
+    public PluginDependency[] Dependencies { get; init; } = [];
 
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.EntryPoints"/>

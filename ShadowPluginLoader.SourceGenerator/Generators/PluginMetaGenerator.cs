@@ -1,6 +1,8 @@
+using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
 using ShadowPluginLoader.SourceGenerator.Receivers;
+using SmartFormat;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
 
@@ -49,8 +51,9 @@ internal class PluginMetaGenerator : ISourceGenerator
             }
         }
     }
- 
-    private Dictionary<string, HashSet<string>> GetEntryPoints(GeneratorExecutionContext context, PluginMetaSyntaxReceiver receiver, Logger logger)
+
+    private Dictionary<string, HashSet<string>> GetEntryPoints(GeneratorExecutionContext context,
+        PluginMetaSyntaxReceiver receiver, Logger logger)
     {
         var entryPoints = new Dictionary<string, HashSet<string>>();
         var compilation = context.Compilation;
@@ -61,7 +64,6 @@ internal class PluginMetaGenerator : ISourceGenerator
 
         foreach (var classDeclaration in receiver.CandidateClasses)
         {
-
             var semanticModel = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
             var classSymbol1 = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
             if (classSymbol1 == null) continue;
@@ -84,20 +86,39 @@ internal class PluginMetaGenerator : ISourceGenerator
     }
 
 
-    private string GetValue(JObject dNode, JToken? pluginNode,
-        bool pluginTokenIsObject, Dictionary<string, HashSet<string>> entryPoints,int depth = 0)
+        private string GetValue(JObject dNode, JToken? pluginNode,
+        bool pluginTokenIsObject, Dictionary<string, HashSet<string>> entryPoints, int depth = 0)
     {
         if (pluginNode == null) return "null";
         if (!pluginTokenIsObject)
+        {
+            var template = dNode.ContainsKey("Item")
+                ? dNode.Value<JObject>("Item")?.Value<string>("ConstructionTemplate")
+                : dNode.Value<string>("ConstructionTemplate");
+            if (template != null && pluginNode.Type != JTokenType.Array)
+                return Smart.Format(template, new { RAW = pluginNode });
             return pluginNode.Type switch
             {
                 JTokenType.Boolean => pluginNode.Value<bool>().ToString().ToLower(),
                 JTokenType.String => $"\"{pluginNode.Value<string>()}\"",
                 JTokenType.Array => "[" + string.Join(",",
-                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject, entryPoints, depth + 1)).ToList()) + "]",
+                    pluginNode.Values().Select(x => GetValue(dNode, x, pluginTokenIsObject, entryPoints, depth + 1))
+                        .ToList()) + "]",
                 _ => $"{pluginNode}",
             };
+        }
+
         var attrs = new List<string>();
+        var constructionTemplate = dNode.ContainsKey("Item")
+            ? dNode.Value<JObject>("Item")?.Value<string>("ConstructionTemplate")
+            : dNode.Value<string>("ConstructionTemplate");
+
+        if (constructionTemplate != null && pluginNode is JObject plugin)
+        {
+            return Smart.Format(constructionTemplate, plugin.ToObject<ExpandoObject>());
+             
+        }
+
         foreach (var item in dNode.Value<JObject>("Properties")!)
         {
             var dObj = item.Value!.Value<JObject>()!;
@@ -117,7 +138,8 @@ internal class PluginMetaGenerator : ISourceGenerator
             var pluginObj = pluginNode.Value<JObject>()!;
             if (name == null) continue;
             var pluginValue = pluginObj.ContainsKey(name) ? pluginObj.GetValue(name) : new JObject();
-            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"),entryPoints, depth + 1);
+
+            var token = GetValue(dObj, pluginValue, dObj.ContainsKey("Properties"), entryPoints, depth + 1);
             if (token == "{}") continue;
             attrs.Add($"{name} = {token}");
             if (name == "Id" && _pluginId == "") _pluginId = token;
@@ -134,6 +156,7 @@ internal class PluginMetaGenerator : ISourceGenerator
         var newType = dNode.Value<string>("Type")!;
         return $"new {newType}{resultIndent}{{{result}{resultIndent}}}";
     }
+
 
 
     private string _pluginId = "";
@@ -196,7 +219,7 @@ internal class PluginMetaGenerator : ISourceGenerator
             var metaType = _pluginDNode!.Value<string>("Type");
             var dNode = _pluginDNode;
             var pluginNode = _pluginNode;
-            var meta2 = GetValue(dNode, pluginNode, true,entryPoints);
+            var meta2 = GetValue(dNode, pluginNode, true, entryPoints);
             var code = $$"""
                          // Automatic Generate From ShadowPluginLoader.SourceGenerator
 

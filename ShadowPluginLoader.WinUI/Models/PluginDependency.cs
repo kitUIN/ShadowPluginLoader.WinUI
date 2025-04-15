@@ -1,28 +1,90 @@
+using System;
+
 namespace ShadowPluginLoader.WinUI.Models;
 
 /// <summary>
-/// 
+/// Plugin Dependency Comparer
 /// </summary>
-public class PluginDependency
+public enum PluginDependencyComparer
+{
+    /// <summary>
+    /// =
+    /// </summary>
+    Same,
+    /// <summary>
+    /// &gt;=
+    /// </summary>
+    Greater,
+    /// <summary>
+    /// &lt;=
+    /// </summary>
+    Lesser,
+}
+
+/// <summary>
+/// Plugin Dependency
+/// </summary>
+public record PluginDependency
 {
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="version"></param>
-    public PluginDependency(string id, string? version=null)
+    public PluginDependency(string raw)
+    {
+        string comparer;
+        if (raw.Contains(">="))
+        {
+            comparer = ">=";
+        }else if (raw.Contains("<="))
+        {
+            comparer = "<=";
+        }
+        else
+        {
+            comparer = "=";
+        }
+        var rawParts = raw.Split(comparer);
+        if(rawParts.Length != 2) throw new Exception($"Invalid plugin dependency: {raw}");
+        Id = rawParts[0];
+        Version = new Version(rawParts[1]);
+        Need = comparer + rawParts[1];
+        Comparer = comparer switch
+        {
+            "=" => PluginDependencyComparer.Same,
+            "<=" => PluginDependencyComparer.Lesser,
+            _ => PluginDependencyComparer.Greater
+        };
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public PluginDependency(string id, string version, string comparer)
     {
         Id = id;
-        Version = version;
+        Version = new Version(version);
+        Need = comparer + version;
+        Comparer = comparer switch
+        {
+            "=" => PluginDependencyComparer.Same,
+            "<=" => PluginDependencyComparer.Lesser,
+            _ => PluginDependencyComparer.Greater
+        };
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Id { get; init; }    
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Need { get; init; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public Version Version { get; init; }
 
     /// <summary>
     /// 
     /// </summary>
-    public string Id { get; set; }
-    /// <summary>
-    /// 
-    /// </summary>
-    public string? Version { get; set; }
-
+    public PluginDependencyComparer Comparer { get; init; }
 }

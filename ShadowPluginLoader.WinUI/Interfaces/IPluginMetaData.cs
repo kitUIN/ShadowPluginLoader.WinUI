@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -30,7 +31,7 @@ internal interface IPluginMetaData
     /// <summary>
     /// Plugin Dependencies
     /// </summary>
-    string[] Dependencies { get; init; }
+    PluginDependency[] Dependencies { get; init; }
 
     /// <summary>
     /// Loading Order Priority
