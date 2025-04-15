@@ -1,8 +1,8 @@
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using Microsoft.CodeAnalysis;
+using Scriban;
 using ShadowPluginLoader.SourceGenerator.Receivers;
-using SmartFormat;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
 
@@ -96,7 +96,7 @@ internal class PluginMetaGenerator : ISourceGenerator
                 ? dNode.Value<JObject>("Item")?.Value<string>("ConstructionTemplate")
                 : dNode.Value<string>("ConstructionTemplate");
             if (template != null && pluginNode.Type != JTokenType.Array)
-                return Smart.Format(template, new { RAW = pluginNode });
+                return Template.Parse(template).Render(new { RAW = pluginNode  }, member => member.Name);
             return pluginNode.Type switch
             {
                 JTokenType.Boolean => pluginNode.Value<bool>().ToString().ToLower(),
@@ -115,8 +115,7 @@ internal class PluginMetaGenerator : ISourceGenerator
 
         if (constructionTemplate != null && pluginNode is JObject plugin)
         {
-            return Smart.Format(constructionTemplate, plugin.ToObject<ExpandoObject>());
-             
+            return Template.Parse(constructionTemplate).Render(plugin.ToObject<ExpandoObject>(), member => member.Name);
         }
 
         foreach (var item in dNode.Value<JObject>("Properties")!)
