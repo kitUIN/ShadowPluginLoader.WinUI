@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
-        <Version>2.3.0</Version>
+        <Version>2.3.1</Version>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <PackageId>ShadowPluginLoader.SourceGenerator</PackageId>
 		<Owner>kitUIN</Owner>
@@ -22,6 +22,7 @@
 		<NoWarn>MSB3277</NoWarn>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,7 +35,7 @@
     <ItemGroup>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" /> 
         <None Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
-        <None Include="$(PKGSmartFormat_NET)\lib\netstandard2.0\SmartFormat.*.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+        <None Include="$(OutputPath)\SmartFormat*.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
         <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
