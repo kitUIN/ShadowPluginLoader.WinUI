@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
-        <Version>2.3.3</Version>
+        <Version>2.3.4</Version>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <PackageId>ShadowPluginLoader.SourceGenerator</PackageId>
 		<Owner>kitUIN</Owner>
