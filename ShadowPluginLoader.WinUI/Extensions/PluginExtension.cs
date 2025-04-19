@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using ShadowPluginLoader.WinUI.Helpers;
 
 namespace ShadowPluginLoader.WinUI.Extensions;
 
@@ -33,7 +34,9 @@ public static class PluginExtension
     {
         var dir = plugin.Assembly.Location[..^".dll".Length];
         var metaPath = Path.Combine(dir, "Assets", "plugin.json");
-        return !File.Exists(metaPath) ? null : JsonSerializer.Deserialize<TMeta>(File.ReadAllText(metaPath));
+        var serializeOptions = new JsonSerializerOptions();
+        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
+        return !File.Exists(metaPath) ? null : JsonSerializer.Deserialize<TMeta>(File.ReadAllText(metaPath),serializeOptions);
     }
 
 }

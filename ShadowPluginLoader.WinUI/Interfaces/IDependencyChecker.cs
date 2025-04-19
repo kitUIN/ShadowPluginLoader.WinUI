@@ -10,6 +10,11 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 public interface IDependencyChecker<TMeta> where TMeta : AbstractPluginMetaData
 {
     /// <summary>
+    /// LoadedPluginDependencies
+    /// </summary>
+    Dictionary<string, string> LoadedPlugins { get; }
+
+    /// <summary>
     /// DetermineLoadOrder
     /// </summary>
     /// <param name="plugins"></param>

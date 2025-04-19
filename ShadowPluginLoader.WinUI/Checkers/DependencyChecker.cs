@@ -16,6 +16,11 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// <summary>
     /// <inheritdoc />
     /// </summary>
+    public Dictionary<string, string> LoadedPlugins { get; } = new();
+
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
     public List<SortPluginData<TMeta>> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins)
     {
         var sortedPlugins = new List<SortPluginData<TMeta>>();
@@ -51,7 +56,14 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
 
             if (dependentPlugin == null)
             {
-                throw new PluginImportException($"Dependency Not Found: {dependency.Id}");
+                if (!LoadedPlugins.TryGetValue(dependency.Id, out var loadedPlugin))
+                    throw new PluginImportException($"Dependency Not Found: {dependency.Id}");
+                if (!IsVersionSatisfied(loadedPlugin, dependency))
+                {
+                    throw new PluginImportException(
+                        $"Version Not Satisfied: {dependency.Id}, Need: {dependency.Need}, Actual: {loadedPlugin}");
+                }
+                continue;
             }
 
             if (!IsVersionSatisfied(dependentPlugin.Version, dependency))

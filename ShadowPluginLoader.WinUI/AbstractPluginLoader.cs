@@ -14,6 +14,7 @@ using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Models;
 using SharpCompress.Archives;
 using SharpCompress.IO;
 
@@ -120,6 +121,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             stopwatch.Stop();
             Logger.Information("{Pre}{ID}({isEnabled}): Load Success! Used: {mi} ms",
                 LoggerPrefix, meta.Id, enabled, stopwatch.ElapsedMilliseconds);
+            DependencyChecker.LoadedPlugins.Add(meta.DllName, meta.Version);
             if (!enabled) return;
             instance.IsEnabled = enabled;
         }
@@ -185,7 +187,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         var jsonContent = await reader.ReadToEndAsync();
         Logger.Information("{Pre} plugin.json content: {Content}",
             LoggerPrefix, jsonContent);
-        return JsonSerializer.Deserialize<TMeta>(jsonContent);
+        var serializeOptions = new JsonSerializerOptions();
+        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
+        return JsonSerializer.Deserialize<TMeta>(jsonContent, serializeOptions);
     }
 
     /// <summary>

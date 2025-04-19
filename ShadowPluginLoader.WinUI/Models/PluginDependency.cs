@@ -11,10 +11,12 @@ public enum PluginDependencyComparer
     /// =
     /// </summary>
     Same,
+
     /// <summary>
     /// &gt;=
     /// </summary>
     Greater,
+
     /// <summary>
     /// &lt;=
     /// </summary>
@@ -27,7 +29,7 @@ public enum PluginDependencyComparer
 public record PluginDependency
 {
     /// <summary>
-    /// 
+    ///  
     /// </summary>
     public PluginDependency(string raw)
     {
@@ -35,7 +37,8 @@ public record PluginDependency
         if (raw.Contains(">="))
         {
             comparer = ">=";
-        }else if (raw.Contains("<="))
+        }
+        else if (raw.Contains("<="))
         {
             comparer = "<=";
         }
@@ -43,8 +46,9 @@ public record PluginDependency
         {
             comparer = "=";
         }
+
         var rawParts = raw.Split(comparer);
-        if(rawParts.Length != 2) throw new Exception($"Invalid plugin dependency: {raw}");
+        if (rawParts.Length != 2) throw new Exception($"Invalid plugin dependency: {raw}");
         Id = rawParts[0];
         Version = new Version(rawParts[1]);
         Need = comparer + rawParts[1];
@@ -55,6 +59,7 @@ public record PluginDependency
             _ => PluginDependencyComparer.Greater
         };
     }
+
     /// <summary>
     /// 
     /// </summary>
@@ -70,14 +75,17 @@ public record PluginDependency
             _ => PluginDependencyComparer.Greater
         };
     }
+
     /// <summary>
     /// 
     /// </summary>
-    public string Id { get; init; }    
+    public string Id { get; init; }
+
     /// <summary>
     /// 
     /// </summary>
     public string Need { get; init; }
+
     /// <summary>
     /// 
     /// </summary>
@@ -87,4 +95,11 @@ public record PluginDependency
     /// 
     /// </summary>
     public PluginDependencyComparer Comparer { get; init; }
+
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return Id + Need;
+    }
 }

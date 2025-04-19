@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using CustomExtensions.WinUI;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Interfaces;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
@@ -38,7 +39,9 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
         // Load Json From plugin.json
 
         var content = await File.ReadAllTextAsync(pluginJson.FullName);
-        var meta = JsonSerializer.Deserialize<TMeta>(content);
+        var serializeOptions = new JsonSerializerOptions();
+        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
+        var meta = JsonSerializer.Deserialize<TMeta>(content, serializeOptions);
         EntryPoints[meta!.Id] = meta.EntryPoints;
         var dirPath = Path.GetFullPath(pluginJson.Directory!.FullName + "/../../");
         if (!Directory.Exists(dirPath))
