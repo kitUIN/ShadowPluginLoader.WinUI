@@ -15,12 +15,12 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// EntryPoints
     /// </summary>
-    public Dictionary<string, JsonNode?> EntryPoints { get; }
+    public ConcurrentDictionary<string, JsonNode?> EntryPoints { get; }
 
     /// <summary>
     /// DllFiles
     /// </summary>
-    public Dictionary<string, string> DllFiles { get; }
+    public ConcurrentDictionary<string, string> DllFiles { get; }
 
     /// <summary>
     /// Load MetaData From plugin.json
