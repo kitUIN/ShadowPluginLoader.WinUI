@@ -21,12 +21,12 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public Dictionary<string, JsonNode?> EntryPoints { get; } = new();
+    public ConcurrentDictionary<string, JsonNode?> EntryPoints { get; } = new();
 
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public Dictionary<string, string> DllFiles { get; } = new();
+    public ConcurrentDictionary<string, string> DllFiles { get; } = new();
 
 
     /// <summary>
