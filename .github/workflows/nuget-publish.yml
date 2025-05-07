@@ -36,13 +36,15 @@ jobs:
 
       - name: Build Packages
         run: |
-          dotnet pack $env:Solution_Name/$env:Solution_Name.csproj -c Release -o ../NugetPackages /p:IncludeSymbols=true /p:IncludeSource=true /p:SymbolPackageFormat=snupkg
-          dotnet pack $env:Solution_Name2/$env:Solution_Name2.csproj -c Release -o ../NugetPackages /p:IncludeSymbols=true /p:IncludeSource=true /p:SymbolPackageFormat=snupkg
+          dotnet restore $env:Solution_Name/$env:Solution_Name.csproj
+          dotnet build $env:Solution_Name/$env:Solution_Name.csproj -p:Configuration=Release
+          dotnet restore $env:Solution_Name2/$env:Solution_Name2.csproj
+          dotnet build $env:Solution_Name2/$env:Solution_Name2.csproj -p:Configuration=Release
       - name: Push package to Nuget registry
         run: |
-          cd NugetPackages
+          cd ..\NugetPackages
           ls
           dotnet nuget push "*.nupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY --skip-duplicate        
-          dotnet nuget push "*.snupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY --skip-duplicate
+          dotnet nuget push "*.snupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY --skip-duplicate        
         env:
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
