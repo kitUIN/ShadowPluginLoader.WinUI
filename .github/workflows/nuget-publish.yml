@@ -40,7 +40,7 @@ jobs:
           dotnet pack $env:Solution_Name2/$env:Solution_Name2.csproj -c Release -o ../NugetPackages /p:IncludeSymbols=true /p:IncludeSource=true /p:SymbolPackageFormat=snupkg
       - name: Push package to Nuget registry
         run: |
-          cd ..\NugetPackages
+          cd NugetPackages
           ls
           dotnet nuget push "*.nupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY --skip-duplicate        
           dotnet nuget push "*.snupkg" -s "https://api.nuget.org/v3/index.json" -k $env:NUGET_KEY --skip-duplicate
