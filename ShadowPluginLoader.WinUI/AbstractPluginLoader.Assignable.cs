@@ -93,6 +93,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         return this;
     }
 
+    /// <inheritdoc />
+    public void ScanClear()
+    {
+        ScanQueue.Clear();
+    }
+
     /// <summary>
     /// <inheritdoc />
     /// </summary>

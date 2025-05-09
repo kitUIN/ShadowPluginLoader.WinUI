@@ -71,6 +71,11 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     Task ScanAsync(string zipPath);
 
     /// <summary>
+    /// Clear Scan History
+    /// </summary>
+    void ScanClear();
+
+    /// <summary>
     /// Start Load Plugin
     /// <example>
     /// <code>
