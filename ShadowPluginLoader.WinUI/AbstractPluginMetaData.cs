@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Interfaces;
@@ -57,5 +58,5 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     /// <inheritdoc cref="IPluginMetaData.EntryPoints"/>
     /// </summary>
     [Meta(Exclude = true)]
-    public JsonNode? EntryPoints { get; init; } = null;
+    public PluginEntryPoint[] EntryPoints { get; init; } = [];
 }

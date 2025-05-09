@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent; 
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -9,6 +9,7 @@ using CustomExtensions.WinUI;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -21,7 +22,7 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public ConcurrentDictionary<string, JsonNode?> EntryPoints { get; } = new();
+    public ConcurrentDictionary<string, PluginEntryPoint[]> EntryPoints { get; } = new();
 
     /// <summary>
     /// <inheritdoc />
@@ -96,18 +97,17 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
             assembly = asm.ForeignAssembly;
         }
 
-        if (!EntryPoints.TryGetValue(meta.Id, out var entryPoints) || entryPoints == null)
+        if (!EntryPoints.TryGetValue(meta.Id, out var entryPoints) || entryPoints.Length == 0)
         {
             throw new PluginImportException($"{meta.Id} EntryPoints Not Found");
         }
 
-        if (!entryPoints.AsObject()
-                .TryGetPropertyValue("MainPlugin", out var mainTypeName) || mainTypeName == null)
+        if (entryPoints.FirstOrDefault(x => x.Name == "MainPlugin") is not { } pluginEntryPoint)
         {
             throw new PluginImportException($"{meta.Id} MainPlugin(EntryPoint) Not Found");
         }
 
-        var mainType = assembly.GetType(mainTypeName.GetValue<string>());
+        var mainType = assembly.GetType(pluginEntryPoint.Type);
         if (mainType == null)
         {
             throw new PluginImportException($"{meta.Id} MainPlugin(Type) Not Found");

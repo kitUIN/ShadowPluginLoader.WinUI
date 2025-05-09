@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using ShadowPluginLoader.WinUI.Models;
 
@@ -41,7 +42,7 @@ internal interface IPluginMetaData
     /// <summary>
     /// EntryPoints
     /// </summary>
-    JsonNode? EntryPoints { get; init; }
+    PluginEntryPoint[] EntryPoints { get; init; }
 
     /// <summary>
     /// BuiltIn Plugin

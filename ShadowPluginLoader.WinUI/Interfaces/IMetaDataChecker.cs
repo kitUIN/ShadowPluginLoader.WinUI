@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -15,7 +16,7 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// EntryPoints
     /// </summary>
-    public ConcurrentDictionary<string, JsonNode?> EntryPoints { get; }
+    public ConcurrentDictionary<string, PluginEntryPoint[]> EntryPoints { get; }
 
     /// <summary>
     /// DllFiles
