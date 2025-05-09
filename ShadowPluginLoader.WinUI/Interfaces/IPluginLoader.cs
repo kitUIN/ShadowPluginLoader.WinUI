@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -34,6 +35,13 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="types">Plugin Type List</param>
     IPluginLoader<TMeta, TAPlugin> Scan(IEnumerable<Type> types);
+
+    /// <summary>
+    /// Scan Plugin From Optional Package<br/>
+    /// After Scan You Need Calling <see cref="Load"/>
+    /// </summary>
+    /// <param name="package">Optional Package</param>
+    IPluginLoader<TMeta, TAPlugin> Scan(Package package);
 
     /// <summary>
     /// Scan Plugin From Plugin Path<br/>
@@ -129,7 +137,7 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// <param name="id">Plugin Id</param>
     /// <param name="newVersionZip">new Version Zip Path (Uri)</param>
     Task UpgradePlugin(string id, string newVersionZip);
-    
+
     /// <summary>
     /// Checked for updates and removed plugins
     /// </summary>

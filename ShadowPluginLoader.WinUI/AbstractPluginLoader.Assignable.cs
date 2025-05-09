@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
@@ -55,6 +56,15 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         }
 
         return this;
+    }
+
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    /// <exception cref="PluginImportException"></exception>
+    public IPluginLoader<TMeta, TAPlugin> Scan(Package package)
+    {
+        return Scan(new DirectoryInfo(package.InstalledLocation.Path));
     }
 
     /// <summary>
