@@ -64,7 +64,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <exception cref="PluginImportException"></exception>
     public IPluginLoader<TMeta, TAPlugin> Scan(Package package)
     {
-        return Scan(new DirectoryInfo(package.InstalledLocation.Path));
+        return Scan(new DirectoryInfo(package.InstalledPath));
     }
 
     /// <summary>
