@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using CustomExtensions.WinUI;
 using System;
 using Serilog;
+using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowPluginLoader.WinUI;
 

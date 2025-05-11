@@ -1,8 +1,8 @@
-﻿using ShadowPluginLoader.WinUI.Args;
-using System;
+﻿using System;
 using Serilog;
+using ShadowPluginLoader.WinUI.Args;
 
-namespace ShadowPluginLoader.WinUI;
+namespace ShadowPluginLoader.WinUI.Services;
 
 /// <summary>
 /// PluginEvent Service

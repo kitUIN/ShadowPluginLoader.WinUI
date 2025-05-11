@@ -15,6 +15,7 @@ using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
+using ShadowPluginLoader.WinUI.Services;
 using SharpCompress.Archives;
 using SharpCompress.IO;
 
@@ -26,11 +27,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// checked for updates and removed plugins
     /// </summary>
     protected bool IsCheckUpgradeAndRemove = false;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    protected readonly Queue<FileInfo> ScanQueue = new();
 
     /// <summary>
     /// Clean Folder Before Upgrade
@@ -72,6 +68,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// PluginEventService
     /// </summary>
     protected PluginEventService PluginEventService { get; }
+
+    /// <summary>
+    /// PluginInstallers
+    /// </summary>
+    protected IEnumerable<IPluginInstaller> PluginInstallers { get; }
 
 
     /// <summary>
@@ -169,38 +170,5 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     protected virtual void AfterLoadPlugin(Type tPlugin, TAPlugin aPlugin, TMeta meta)
     {
-    }
-
-    /// <summary>
-    /// Check plugin.json In Zip
-    /// </summary>
-    /// <param name="zipPath">plugin zip path</param>
-    /// <exception cref="PluginImportException">Not Found plugin.json in zip</exception>
-    protected virtual async Task<TMeta?> CheckPluginInZip(string zipPath)
-    {
-        await using FileStream zipToOpen = new(zipPath, FileMode.Open);
-        using ZipArchive archive = new(zipToOpen, ZipArchiveMode.Update);
-        var jsonEntry = archive.Entries.FirstOrDefault(entry =>
-            entry.FullName.EndsWith("/Assets/plugin.json", StringComparison.OrdinalIgnoreCase));
-        if (jsonEntry == null) throw new PluginImportException($"Not Found plugin.json in zip {zipPath}");
-        using var reader = new StreamReader(jsonEntry.Open());
-        var jsonContent = await reader.ReadToEndAsync();
-        Logger.Information("{Pre} plugin.json content: {Content}",
-            LoggerPrefix, jsonContent);
-        var serializeOptions = new JsonSerializerOptions();
-        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
-        return JsonSerializer.Deserialize<TMeta>(jsonContent, serializeOptions);
-    }
-
-    /// <summary>
-    /// UnZip
-    /// </summary>
-    protected virtual async Task<string> UnZip(string zipPath, string outputPath)
-    {
-        await using var fStream = File.OpenRead(zipPath);
-        await using var stream = NonDisposingStream.Create(fStream);
-        using var archive = ArchiveFactory.Open(stream);
-        archive.ExtractToDirectory(outputPath);
-        return outputPath;
     }
 }

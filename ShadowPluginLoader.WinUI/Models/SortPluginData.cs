@@ -19,6 +19,8 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
 
     /// <summary>
     /// Plugin Priority
+    /// Determines the execution order of the plugin. 
+    /// Plugins with lower values are executed earlier.
     /// </summary>
     public int Priority { get; }
 

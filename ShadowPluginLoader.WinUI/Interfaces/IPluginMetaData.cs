@@ -36,6 +36,8 @@ internal interface IPluginMetaData
 
     /// <summary>
     /// Loading Order Priority
+    /// Determines the execution order of the plugin. 
+    /// Plugins with lower values are executed earlier.
     /// </summary>
     int Priority { get; init; }
 

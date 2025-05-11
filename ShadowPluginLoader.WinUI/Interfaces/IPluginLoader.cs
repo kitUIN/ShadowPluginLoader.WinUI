@@ -62,13 +62,12 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="pluginJson">plugin.json</param>
     IPluginLoader<TMeta, TAPlugin> Scan(FileInfo pluginJson);
-
     /// <summary>
-    /// Scan Plugin From Plugin Zip Path<br/>
+    /// Scan Plugin From Uri<br/>
     /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
-    /// <param name="zipPath">Plugin Zip Path</param>
-    Task ScanAsync(string zipPath);
+    /// <param name="uri">Uri</param>
+    IPluginLoader<TMeta, TAPlugin> Scan(Uri uri);
 
     /// <summary>
     /// Clear Scan History

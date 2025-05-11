@@ -42,7 +42,7 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     public string Version { get; init; } = null!;
 
     /// <summary>
-    /// <inheritdoc cref="IPluginMetaData.Version"/>
+    /// <inheritdoc cref="IPluginMetaData.Priority"/>
     /// </summary>
     [Meta(Required = false)]
     public int Priority { get; init; }

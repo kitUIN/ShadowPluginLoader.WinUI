@@ -10,6 +10,7 @@ public static class PluginSettingsHelper
     private const string Container = "ShadowPluginLoader";
     private const string EnabledPluginsKey = "EnabledPluginsKey";
     private const string UpgradePathKey = "UpgradePathKey";
+    private const string UpgradeTargetPathKey = "UpgradeTargetPathKey";
     private const string RemovePathKey = "RemovePathKey";
 
     /// <summary>
@@ -68,6 +69,7 @@ public static class PluginSettingsHelper
         settings[key] = value;
         SetPluginSetting(RemovePathKey, settings);
     }
+
     /// <summary>
     /// 
     /// </summary>
@@ -87,15 +89,28 @@ public static class PluginSettingsHelper
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public static string? GetPluginUpgradeTargetPath(string key)
+    {
+        return GetPluginSetting(UpgradeTargetPathKey).TryGetValue(key, out var value) ? (string) value : null;
+    }
+
+    /// <summary>
     /// Set Plugin Upgrade File Path
     /// </summary>
     /// <param name="key">Plugin Id</param>
     /// <param name="value">Path</param>
-    public static void SetPluginUpgradePath(string key, string value)
+    /// <param name="targetPath">targetPath</param>
+    public static void SetPluginUpgradePath(string key, string value, string targetPath)
     {
         var settings = GetPluginSetting(UpgradePathKey);
         settings[key] = value;
         SetPluginSetting(UpgradePathKey, settings);
+        var settings2 = GetPluginSetting(UpgradeTargetPathKey);
+        settings2[key] = targetPath;
+        SetPluginSetting(UpgradeTargetPathKey, settings2);
     }
 
     /// <summary>
@@ -107,7 +122,11 @@ public static class PluginSettingsHelper
         var settings = GetPluginSetting(UpgradePathKey);
         settings.Remove(key);
         SetPluginSetting(UpgradePathKey, settings);
+        var settings2 = GetPluginSetting(UpgradeTargetPathKey);
+        settings2.Remove(key);
+        SetPluginSetting(UpgradeTargetPathKey, settings2);
     }
+
     /// <summary>
     /// 
     /// </summary>

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
@@ -20,6 +21,13 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
+    #region Scan
+
+    /// <summary>
+    /// ScanQueue
+    /// </summary>
+    protected readonly Queue<ScanTarget> ScanQueue = new();
+
     /// <summary>
     /// <inheritdoc />
     /// </summary>
@@ -89,7 +97,25 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <exception cref="PluginImportException"></exception>
     public IPluginLoader<TMeta, TAPlugin> Scan(FileInfo pluginJson)
     {
-        ScanQueue.Enqueue(pluginJson);
+        ScanQueue.Enqueue(new ScanTarget(ScanType.FileInfo, pluginJson));
+        return this;
+    }
+
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    /// <exception cref="PluginImportException"></exception>
+    public IPluginLoader<TMeta, TAPlugin> Scan(Uri uri)
+    {
+        if (uri.IsFile && Directory.Exists(uri.LocalPath))
+        {
+            Scan(new DirectoryInfo(uri.LocalPath));
+        }
+        else if (uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            ScanQueue.Enqueue(new ScanTarget(ScanType.Http, uri));
+        }
+
         return this;
     }
 
@@ -98,6 +124,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         ScanQueue.Clear();
     }
+
+    #endregion
 
     /// <summary>
     /// <inheritdoc />
@@ -112,10 +140,34 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         {
             try
             {
-                var pluginJson = ScanQueue.Dequeue();
+                var scanTarget = ScanQueue.Dequeue();
                 beforeSortTasks.Add(Task.Run(async () =>
-                    beforeSort.Add(new SortPluginData<TMeta>(await MetaDataChecker.LoadMetaData(pluginJson)))
+                    {
+                        FileInfo? target = null;
+                        if (scanTarget.Type == ScanType.Http)
+                        {
+                            var uri = (Uri)scanTarget.Target;
+                            foreach (var installer in PluginInstallers.OrderBy(x => x.Priority))
+                            {
+                                if (!installer.Check(uri)) continue;
+                                target = await installer.ScanAsync(uri, TempFolder, PluginFolder);
+                                break;
+                            }
+
+                            if (target is null) return;
+                        }
+                        else
+                        {
+                            target = (FileInfo)scanTarget.Target;
+                        }
+
+                        beforeSort.Add(new SortPluginData<TMeta>(await MetaDataChecker.LoadMetaData(target)));
+                    }
                 ));
+            }
+            catch (PluginImportException e)
+            {
+                Logger.Warning("Load:{Ex}", e);
             }
             catch (InvalidOperationException)
             {
@@ -134,26 +186,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     }
 
     /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    public async Task ScanAsync(string zipPath)
-    {
-        try
-        {
-            zipPath = await DownloadZipFromPath(zipPath);
-            var meta = await CheckPluginInZip(zipPath);
-            var outPath = Path.Combine(PluginFolder, meta!.DllName);
-            Logger.Debug("Plugin OutPath: {t}", outPath);
-            var dir = await UnZip(zipPath, outPath);
-            Scan(new DirectoryInfo(dir));
-        }
-        catch (PluginImportException e)
-        {
-            Logger.Warning("{Pre}{Message}", LoggerPrefix, e.Message);
-        }
-    }
-
-    /// <summary>
     /// Check Any Plugin Plan To Upgrade
     /// </summary>
     protected async Task CheckUpgrade()
@@ -161,11 +193,22 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         var settings = PluginSettingsHelper.GetPluginUpgradePaths();
         foreach (var setting in settings)
         {
-            var zipPath = (string)setting.Value;
-            var meta = await CheckPluginInZip(zipPath);
-            var outPath = Path.Combine(PluginFolder, meta!.DllName);
-            await UnZip(zipPath, outPath);
-            PluginSettingsHelper.DeleteUpgradePluginPath(meta.Id);
+            var uri = new Uri((string)setting.Value);
+            foreach (var installer in PluginInstallers.OrderBy(x => x.Priority))
+            {
+                try
+                {
+                    if (!installer.Check(uri)) continue;
+                    await installer.UpgradeAsync(setting.Key, uri, TempFolder, PluginFolder);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Logger.Warning("PluginInstaller CheckUpgrade: {Ex}", e);
+                }
+            }
+
+            PluginSettingsHelper.DeleteUpgradePluginPath(setting.Key);
         }
     }
 
@@ -270,28 +313,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         PluginSettingsHelper.SetPluginPlanRemove(id, path);
     }
 
-    /// <summary>
-    /// If local uri , return local uri. If http uri , download and return local uri
-    /// </summary>
-    /// <param name="newVersionZip"></param>
-    /// <returns></returns>
-    protected async Task<string> DownloadZipFromPath(string newVersionZip)
-    {
-        if (!newVersionZip.StartsWith("http")) return newVersionZip;
-        var fileName = Path.GetFileName(newVersionZip);
-        var destinationPath = Path.Combine(TempFolder, fileName);
-        if (!Directory.Exists(TempFolder)) Directory.CreateDirectory(TempFolder);
-        Logger.Information("Start To Download File {httpPath} To {destinationPath}",
-            newVersionZip, destinationPath);
-        using var client = new HttpClient();
-        using var response = await client.GetAsync(new Uri(newVersionZip), HttpCompletionOption.ResponseHeadersRead);
-        await using var stream = await response.Content.ReadAsStreamAsync();
-        await using var fileStream = File.Create(destinationPath);
-        await stream.CopyToAsync(fileStream);
-        Logger.Information("Download File {httpPath} To {destinationPath} Success",
-            newVersionZip, destinationPath);
-        return destinationPath;
-    }
 
     /// <summary>
     /// 
@@ -314,17 +335,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// </summary>
     public async Task UpgradePlugin(string id, string newVersionZip)
     {
-        newVersionZip = await DownloadZipFromPath(newVersionZip);
+        newVersionZip = await DownloadHelper.DownloadFileAsync(TempFolder, newVersionZip, Logger);
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
-        var meta = await CheckPluginInZip(newVersionZip);
-        if (meta is null) throw new PluginUpgradeException($"Not Found `plugin.json` File In {newVersionZip}");
-        var pluginMetaData = plugin.GetType().GetPluginMetaData<TMeta>()
-                             ?? throw new PluginUpgradeException($"{plugin.Id}: MetaData Not Found");
-        CheckNewVersionMeta(meta, pluginMetaData);
-
         plugin.PlanUpgrade = true;
-        PluginSettingsHelper.SetPluginUpgradePath(id, newVersionZip);
+        var path = Path.GetDirectoryName(plugin.GetType().Assembly.Location);
+        PluginSettingsHelper.SetPluginUpgradePath(id, newVersionZip, path);
     }
 
     /// <inheritdoc />
