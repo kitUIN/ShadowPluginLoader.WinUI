@@ -4,6 +4,7 @@ using ShadowPluginLoader.WinUI.Interfaces;
 using System.Collections.Generic;
 using CustomExtensions.WinUI;
 using System;
+using Microsoft.UI.Dispatching;
 using Serilog;
 using ShadowPluginLoader.WinUI.Services;
 
@@ -46,15 +47,17 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     /// </summary>
     protected void Init()
     {
-        // Load ResourceDictionary
-        foreach (var item in ResourceDictionaries)
+        DispatcherQueue.GetForCurrentThread().TryEnqueue(() =>
         {
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary()
-                {
-                    Source = new Uri(item.PluginPath())
-                });
-        }
+            foreach (var item in ResourceDictionaries)
+            {
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary()
+                    {
+                        Source = new Uri(item.PluginPath())
+                    });
+            }
+        }); 
     }
 
     /// <summary>

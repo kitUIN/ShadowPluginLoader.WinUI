@@ -1,9 +1,5 @@
 {
   "DllName": "ShadowExample.Plugin.Emoji",
-  "Authors": [
-    "kitUIN",
-    "Hello"
-  ],
   "Id": "Emoji",
   "Name": "emoji",
   "Version": "1.0.1.1",

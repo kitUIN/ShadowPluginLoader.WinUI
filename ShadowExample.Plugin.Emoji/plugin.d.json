@@ -1,59 +1,62 @@
 {
-  "MetaDataType": "ShadowExample.Core.Plugins.ExampleMetaData",
+  "Type": "ShadowExample.Core.Plugins.ExampleMetaData",
   "Properties": {
     "Authors": {
-      "Type": "System.String[]",
-      "Nullable": false,
+      "Type": "System.Array",
       "Required": false,
-      "PropertyGroupName": "Authors"
+      "PropertyGroupName": "Authors",
+      "Nullable": false,
+      "Item": {
+        "Type": "System.String",
+        "Nullable": false
+      }
     },
     "Url": {
       "Type": "System.String",
-      "Nullable": false,
       "Required": false,
-      "PropertyGroupName": "Url"
-    },
-    "D": {
-      "Type": "System.Double",
-      "Nullable": false,
-      "Required": false,
-      "PropertyGroupName": "D"
-    },
-    "F": {
-      "Type": "System.Single[]",
-      "Nullable": false,
-      "Required": false,
-      "PropertyGroupName": "F"
+      "PropertyGroupName": "Url",
+      "Nullable": false
     },
     "Id": {
       "Type": "System.String",
-      "Nullable": false,
       "Required": true,
-      "PropertyGroupName": "Id"
+      "PropertyGroupName": "Id",
+      "Nullable": false
     },
     "Name": {
       "Type": "System.String",
-      "Nullable": false,
       "Required": true,
-      "PropertyGroupName": "Name"
+      "PropertyGroupName": "Name",
+      "Nullable": false
     },
     "DllName": {
       "Type": "System.String",
-      "Nullable": false,
       "Required": false,
-      "PropertyGroupName": "DllName"
+      "PropertyGroupName": "DllName",
+      "Nullable": false
     },
     "Version": {
       "Type": "System.String",
-      "Nullable": false,
       "Required": true,
-      "PropertyGroupName": "Version"
+      "PropertyGroupName": "Version",
+      "Nullable": false
+    },
+    "Priority": {
+      "Type": "System.Int32",
+      "Required": false,
+      "PropertyGroupName": "Priority",
+      "Nullable": false
     },
     "Dependencies": {
-      "Type": "System.String[]",
+      "Type": "System.Array",
+      "Required": false,
+      "PropertyGroupName": "Dependencies",
       "Nullable": false,
-      "Required": true,
-      "PropertyGroupName": "Dependencies"
+      "Item": {
+        "Type": "System.String",
+        "Nullable": false,
+        "ConstructionTemplate": "new ShadowPluginLoader.WinUI.Models.PluginDependency(\u0022{{ RAW }}\u0022)"
+      }
     }
   }
 }

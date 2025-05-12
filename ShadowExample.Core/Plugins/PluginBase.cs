@@ -1,17 +1,13 @@
-﻿using Microsoft.UI.Xaml;
-using Serilog;
+﻿using Serilog;
 using ShadowPluginLoader.WinUI;
-using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowExample.Core.Plugins;
 
-public abstract class PluginBase : AbstractPlugin
+public abstract class PluginBase : AbstractPlugin<ExampleMetaData>
 {
     /// <inheritdoc />
     protected PluginBase(ILogger logger, PluginEventService pluginEventService) : base(logger, pluginEventService)
     {
     }
-
-    public abstract string GetEmoji();
-    public abstract FrameworkElement GetControl();
 }

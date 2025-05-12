@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+        <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
         <RootNamespace>ShadowExample.Plugin.Emoji</RootNamespace>
-        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
         <UseWinUI>true</UseWinUI>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <NoWarn>MSB3277</NoWarn>
@@ -21,11 +21,7 @@
         <PluginMeta>
             <Id>Emoji</Id>
             <Name>emoji</Name>
-            <Version>$(Version)</Version>
-            <Authors>
-                <Item>kitUIN</Item>
-                <Item>Hello</Item>
-            </Authors>
+            <Version>$(Version)</Version> 
             <PackageLicenseExpression>MIT</PackageLicenseExpression>
             <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
             <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
@@ -34,20 +30,9 @@
             <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
         </PluginMeta>
         <LangVersion>12</LangVersion>
-    </PropertyGroup>
+    </PropertyGroup> 
     <ItemGroup>
-        <None Remove="Controls\UserControl1.xaml"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="ShadowExample.Core" Version="1.0.7"/>
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="2.0.3.3"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Page Update="Controls\UserControl1.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-    </ItemGroup>
-
+        <PackageReference Include="ShadowExample.Core" Version="1.1.2" /> 
+    </ItemGroup> 
+ 
 </Project>
