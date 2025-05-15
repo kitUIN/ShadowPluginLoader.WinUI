@@ -14,9 +14,9 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<Nullable>enable</Nullable>
 		<DebugType>full</DebugType>
-		<!-- <IsTestProject>true</IsTestProject> -->
-		<!-- <EnableMsBuildForWinUI>true</EnableMsBuildForWinUI> -->
-		<!-- <WindowsAppSdkBootstrapInitialize>true</WindowsAppSdkBootstrapInitialize> -->
+		<IsTestProject>true</IsTestProject>
+		<EnableMsBuildForWinUI>true</EnableMsBuildForWinUI>
+		<WindowsAppSdkBootstrapInitialize>true</WindowsAppSdkBootstrapInitialize>
 
 	</PropertyGroup>
 
@@ -58,16 +58,15 @@
 	</PropertyGroup>
 	<ItemGroup>  
 		<PackageReference Include="coverlet.collector" Version="6.0.4">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
+ 
 		</PackageReference>  
 		<PackageReference Include="Microsoft.TestPlatform" Version="17.13.0" >
-			<PrivateAssets>all</PrivateAssets>
+		 
 		</PackageReference>
 		<PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.13.0" />
 		<PackageReference Include="MSTest.TestAdapter" Version="3.8.3" />
 		<PackageReference Include="MSTest.TestFramework" Version="3.8.3" />
-
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>

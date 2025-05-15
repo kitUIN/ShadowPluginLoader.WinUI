@@ -4,7 +4,7 @@
 	</RunConfiguration>
 	<DataCollectionRunSettings>
 		<DataCollectors>
-			<DataCollector friendlyName="Code Coverage"  >
+			<DataCollector friendlyName="XPlat Code Coverage"  uri="datacollector://Microsoft/CoverletCodeCoverage/1.0"   >
 				<Configuration>
 					<Format>cobertura</Format>
 					<LogLevel>Verbose</LogLevel>
@@ -12,8 +12,11 @@
 					<AllowLowIntegrityProcesses>True</AllowLowIntegrityProcesses>
 					<CollectFromChildProcesses>True</CollectFromChildProcesses>
 					<CollectAspDotNet>False</CollectAspDotNet>
-					
-					<FCCGenerated />
+					<!-- <ModulePaths> -->
+					<!-- 	<Exclude> -->
+					<!-- 		<ModulePath>ShadowExample.*</ModulePath> -->
+					<!-- 	</Exclude> -->
+					<!-- </ModulePaths> -->
 				</Configuration>
 			</DataCollector>
 		</DataCollectors>
