@@ -6,18 +6,17 @@
 		<RootNamespace>App1</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;ARM64</Platforms>
-		<!-- <Platform>x64</Platform> -->
+		<!-- <PlatformTarget>x64</PlatformTarget> -->
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<Nullable>enable</Nullable>
-		<DebugType>full</DebugType>
+		<DebugType>portable</DebugType>
 		<IsTestProject>true</IsTestProject>
-		<EnableMsBuildForWinUI>true</EnableMsBuildForWinUI>
-		<WindowsAppSdkBootstrapInitialize>true</WindowsAppSdkBootstrapInitialize>
-
+		<!-- <EnableMsBuildForWinUI>true</EnableMsBuildForWinUI> -->
+		<!-- <WindowsAppSdkBootstrapInitialize>true</WindowsAppSdkBootstrapInitialize> -->
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -56,16 +55,13 @@
 	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
 	 <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
 	</PropertyGroup>
-	<ItemGroup>  
-		<PackageReference Include="coverlet.collector" Version="6.0.4">
- 
-		</PackageReference>  
-		<PackageReference Include="Microsoft.TestPlatform" Version="17.13.0" >
-		 
-		</PackageReference>
-		<PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.13.0" />
-		<PackageReference Include="MSTest.TestAdapter" Version="3.8.3" />
-		<PackageReference Include="MSTest.TestFramework" Version="3.8.3" />
+	<ItemGroup>
+		
+		<!-- <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />     -->
+		<PackageReference Include="Microsoft.TestPlatform" Version="17.14.0-preview-25107-01"/>
+		<PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.14.0-preview-25107-01" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.10.0-ci" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.10.0-ci" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
