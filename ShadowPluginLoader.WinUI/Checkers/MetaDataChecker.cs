@@ -1,15 +1,18 @@
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using CustomExtensions.WinUI;
+using Serilog.Core;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading.Tasks;
+using Serilog;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -34,27 +37,39 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public async Task<TMeta> LoadMetaData(FileInfo pluginJson)
+    public async Task<SortPluginData<TMeta>> LoadSortPluginData(Uri uri, string tempFolder)
     {
+        var serializeOptions = new JsonSerializerOptions();
+        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
+        var zipPath = await DownloadHelper.DownloadFileAsync(tempFolder, uri.AbsoluteUri,
+            Log.ForContext<MetaDataChecker<AbstractPluginMetaData>>());
+        if (zipPath.EndsWith(".zip"))
+        {
+            await using FileStream zipToOpen = new(zipPath, FileMode.Open);
+            using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
+            var entry = archive.Entries.FirstOrDefault(e =>
+                e.FullName.EndsWith("/plugin.json", StringComparison.OrdinalIgnoreCase));
+
+            if (entry == null) throw new PluginImportException($"Not Found plugin.json in zip {zipPath}");
+            using var reader = new StreamReader(entry.Open());
+            var jsonContent = await reader.ReadToEndAsync();
+
+            var zipMeta = JsonSerializer.Deserialize<TMeta>(jsonContent, serializeOptions);
+            EntryPoints[zipMeta!.Id] = zipMeta.EntryPoints;
+            return new SortPluginData<TMeta>(zipMeta, zipPath);
+        }
+
+        if (!uri.IsFile || !uri.AbsolutePath.EndsWith("plugin.json"))
+            throw new PluginImportException($"Not Found  plugin.json in {uri}");
+        var pluginJson = new FileInfo(uri.LocalPath);
         if (!pluginJson.Exists) throw new PluginImportException($"Not Found {pluginJson.FullName}");
         // Load Json From plugin.json
 
         var content = await File.ReadAllTextAsync(pluginJson.FullName);
-        var serializeOptions = new JsonSerializerOptions();
-        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
+
         var meta = JsonSerializer.Deserialize<TMeta>(content, serializeOptions);
         EntryPoints[meta!.Id] = meta.EntryPoints;
-        var dirPath = Path.GetFullPath(pluginJson.Directory!.FullName + "/../../");
-        if (!Directory.Exists(dirPath))
-        {
-            // The Folder Containing The Plugin Dll Not Found
-            throw new PluginImportException($"Dir Not Found: {dirPath}");
-        }
-
-        var dllFilePath = Path.Combine(dirPath, meta.DllName + ".dll");
-        if (!File.Exists(dllFilePath)) throw new PluginImportException($"Not Found {dllFilePath}");
-        DllFiles[meta.Id] = dllFilePath;
-        return meta;
+        return new SortPluginData<TMeta>(meta, uri);
     }
 
     /// <summary>
@@ -81,36 +96,38 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     /// <inheritdoc />
     /// </summary>
     /// <exception cref="PluginImportException"></exception>
-    public async Task<Type> GetMainPluginType(TMeta meta)
+    public async Task<Type> GetMainPluginType(SortPluginData<TMeta> sortPluginData)
     {
-        if (!DllFiles.TryGetValue(meta.Id, out var path))
+        var dirPath = Path.GetFullPath(new FileInfo(sortPluginData.Path).Directory!.FullName + "/../../");
+        if (!Directory.Exists(dirPath))
         {
-            throw new PluginImportException($"{meta.Id} Dll Path Not Found");
+            // The Folder Containing The Plugin Dll Not Found
+            throw new PluginImportException($"Dir Not Found: {dirPath}");
         }
 
-        var assemblyName = Path.GetFileNameWithoutExtension(path);
+        var dllFilePath = Path.Combine(dirPath, sortPluginData.MetaData.DllName + ".dll");
+        if (!File.Exists(dllFilePath)) throw new PluginImportException($"Not Found {dllFilePath}");
+
+
+        var assemblyName = Path.GetFileNameWithoutExtension(dllFilePath);
         var assembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(assembly => assembly.GetName().Name == assemblyName);
         if (assembly == null)
         {
-            var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(path);
+            var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(dllFilePath);
             assembly = asm.ForeignAssembly;
         }
 
-        if (!EntryPoints.TryGetValue(meta.Id, out var entryPoints) || entryPoints.Length == 0)
-        {
-            throw new PluginImportException($"{meta.Id} EntryPoints Not Found");
-        }
-
+        var entryPoints = sortPluginData.MetaData.EntryPoints;
         if (entryPoints.FirstOrDefault(x => x.Name == "MainPlugin") is not { } pluginEntryPoint)
         {
-            throw new PluginImportException($"{meta.Id} MainPlugin(EntryPoint) Not Found");
+            throw new PluginImportException($"{sortPluginData.MetaData.Id} MainPlugin(EntryPoint) Not Found");
         }
 
         var mainType = assembly.GetType(pluginEntryPoint.Type);
         if (mainType == null)
         {
-            throw new PluginImportException($"{meta.Id} MainPlugin(Type) Not Found");
+            throw new PluginImportException($"{sortPluginData.MetaData.Id} MainPlugin(Type) Not Found");
         }
 
         return mainType;

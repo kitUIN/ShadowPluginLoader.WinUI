@@ -47,17 +47,14 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     /// </summary>
     protected void Init()
     {
-        DispatcherQueue.GetForCurrentThread().TryEnqueue(() =>
+        foreach (var item in ResourceDictionaries)
         {
-            foreach (var item in ResourceDictionaries)
-            {
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary()
-                    {
-                        Source = new Uri(item.PluginPath())
-                    });
-            }
-        }); 
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary()
+                {
+                    Source = new Uri(item.PluginPath())
+                });
+        }
     }
 
     /// <summary>

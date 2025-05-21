@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent; 
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -24,11 +24,12 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     public ConcurrentDictionary<string, string> DllFiles { get; }
 
     /// <summary>
-    /// Load MetaData From plugin.json
+    /// Load SortPluginData From Uri
     /// </summary>
-    /// <param name="pluginJson"></param>
+    /// <param name="uri"></param>
+    /// <param name="tempFolder"></param>
     /// <returns></returns>
-    public Task<TMeta> LoadMetaData(FileInfo pluginJson);
+    public Task<SortPluginData<TMeta>> LoadSortPluginData(Uri uri, string tempFolder);
 
     /// <summary>
     /// Check if MetaData is valid
@@ -40,5 +41,5 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// Get Main Plugin
     /// </summary>
     /// <param name="meta"></param>
-    public Task<Type> GetMainPluginType(TMeta meta);
+    public Task<Type> GetMainPluginType(SortPluginData<TMeta> sortPluginData);
 }

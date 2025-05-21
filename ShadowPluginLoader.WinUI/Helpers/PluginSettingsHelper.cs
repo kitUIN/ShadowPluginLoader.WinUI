@@ -87,6 +87,14 @@ public static class PluginSettingsHelper
     {
         return GetPluginSetting(UpgradePathKey);
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public static ApplicationDataCompositeValue GetPluginUpgradeTargetPaths()
+    {
+        return GetPluginSetting(UpgradeTargetPathKey);
+    }
 
     /// <summary>
     /// 

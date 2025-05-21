@@ -21,7 +21,7 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// After Scan You Need Calling <see cref="Load"/>
     /// </summary>
     /// <param name="type">Plugin Type</param>
-    IPluginLoader<TMeta, TAPlugin> Scan(Type type);
+    IPluginLoader<TMeta, TAPlugin> Scan(Type? type);
 
     /// <summary>
     /// Scan Plugin From Type<br/>
@@ -62,6 +62,7 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// </summary>
     /// <param name="pluginJson">plugin.json</param>
     IPluginLoader<TMeta, TAPlugin> Scan(FileInfo pluginJson);
+
     /// <summary>
     /// Scan Plugin From Uri<br/>
     /// After Scan You Need Calling <see cref="Load"/>
@@ -83,8 +84,8 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// </code>
     /// </example>
     /// </summary>
-    /// <returns></returns>
-    Task Load();
+    /// <returns>Need Upgrade Plugin</returns>
+    Task<List<string>> Load();
 
     /// <summary>
     /// Get Enabled Plugins

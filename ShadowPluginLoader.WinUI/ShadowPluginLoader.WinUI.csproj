@@ -12,7 +12,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12</LangVersion>
         <!-- Nuget -->
-        <Version>2.6.4</Version>
+        <Version>2.6.5</Version>
 		<PackageId>ShadowPluginLoader.WinUI</PackageId>
 		<Owner>kitUIN</Owner>
 		<Authors>kitUIN</Authors>
@@ -38,7 +38,7 @@
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
         <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="2.3.4" />
         <PackageReference Include="kitUIN.CustomExtensions.WinUI" Version="0.6.4" />
-        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.6.2" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.6.3" />
         <PackageReference Include="SharpCompress" Version="0.39.0" /> 
     </ItemGroup>
     <ItemGroup>

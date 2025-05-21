@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ShadowPluginLoader.WinUI.Models;
 
@@ -27,7 +29,7 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// Version
     /// </summary>
-    public string Version { get; }
+    public Version Version { get; }
 
 
     /// <summary>
@@ -36,17 +38,42 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     public TMeta MetaData { get; }
 
     /// <summary>
+    /// Path
+    /// </summary>
+    public string Path { get; }
+
+    /// <summary>
     /// SortPluginData
     /// </summary>
-    public SortPluginData(TMeta metaData)
+    private SortPluginData(TMeta metaData)
     {
         MetaData = metaData;
         Id = metaData.Id;
         Priority = metaData.Priority;
-        Version = metaData.Version;
+        Version = new Version(metaData.Version);
         foreach (var dep in metaData.Dependencies)
         {
             Dependencies.Add(dep);
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="metaData"></param>
+    /// <param name="uri"></param>
+    public SortPluginData(TMeta metaData, Uri uri) : this(metaData)
+    {
+        Path = uri.AbsolutePath;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="metaData"></param>
+    /// <param name="path"></param>
+    public SortPluginData(TMeta metaData, string path) : this(metaData)
+    {
+        Path = path;
     }
 }

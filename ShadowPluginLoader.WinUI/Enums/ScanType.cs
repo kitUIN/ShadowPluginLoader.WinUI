@@ -6,9 +6,9 @@
 public enum ScanType
 {
     /// <summary>
-    /// Http
+    /// Uri
     /// </summary>
-    Http,
+    Uri,
     /// <summary>
     /// FileInfo
     /// </summary>

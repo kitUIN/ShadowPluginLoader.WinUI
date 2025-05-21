@@ -43,7 +43,13 @@ public partial class ZipPluginInstaller : IPluginInstaller
     public async Task<FileInfo> ScanAsync(Uri uri, string tempFolder, string targetFolder)
     {
         var zipPath = await DownloadHelper.DownloadFileAsync(tempFolder, uri.AbsoluteUri, Logger);
-        var outPath = Path.Combine(targetFolder, Path.GetFileName(zipPath));
+        var outName = Path.GetFileNameWithoutExtension(zipPath);
+        var outPath = Path.Combine(targetFolder, outName);
+        var count = 0;
+        while (Directory.Exists(outPath))
+        {
+            outPath = Path.Combine(targetFolder, $"{outName}{++count}");
+        }
         Logger.Debug("Plugin OutPath: {t}", outPath);
         var dir = await UnZip(zipPath, outPath);
         var jsonEntryFile = new DirectoryInfo(dir)

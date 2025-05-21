@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ShadowPluginLoader.WinUI.Models;
 
@@ -12,12 +13,12 @@ public interface IDependencyChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// LoadedPluginDependencies
     /// </summary>
-    Dictionary<string, string> LoadedPlugins { get; }
+    Dictionary<string, Version> LoadedPlugins { get; }
 
     /// <summary>
     /// DetermineLoadOrder
     /// </summary>
     /// <param name="plugins"></param>
     /// <returns></returns>
-    List<SortPluginData<TMeta>> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins);
+    DependencyCheckResult<TMeta> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins);
 }

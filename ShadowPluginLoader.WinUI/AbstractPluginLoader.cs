@@ -1,23 +1,21 @@
 using DryIoc;
 using Serilog;
+using ShadowPluginLoader.WinUI.Args;
+using ShadowPluginLoader.WinUI.Checkers;
+using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
+using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Models;
+using ShadowPluginLoader.WinUI.Services;
+using SharpCompress.Archives;
+using SharpCompress.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using ShadowPluginLoader.WinUI.Args;
-using ShadowPluginLoader.WinUI.Checkers;
-using ShadowPluginLoader.WinUI.Enums;
-using ShadowPluginLoader.WinUI.Interfaces;
-using ShadowPluginLoader.WinUI.Models;
-using ShadowPluginLoader.WinUI.Services;
-using SharpCompress.Archives;
-using SharpCompress.IO;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -69,11 +67,28 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     protected PluginEventService PluginEventService { get; }
 
-    /// <summary>
-    /// PluginInstallers
-    /// </summary>
-    protected IEnumerable<IPluginInstaller> PluginInstallers { get; }
 
+    /// <summary>
+    /// Get PluginInstaller
+    /// </summary>
+    /// <param name="uri"></param>
+    /// <returns></returns>
+    protected IPluginInstaller GetPluginInstaller(Uri uri)
+    {
+        foreach (var installer in DiFactory.Services.ResolveMany<IPluginInstaller>().OrderBy(x => x.Priority))
+        {
+            try
+            {
+                if (installer.Check(uri)) return installer;
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("PluginInstaller CheckError: {Ex}", e);
+            }
+        }
+
+        return new BasePluginInstaller(Logger);
+    }
 
     /// <summary>
     /// Default
@@ -122,7 +137,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             stopwatch.Stop();
             Logger.Information("{Pre}{ID}({isEnabled}): Load Success! Used: {mi} ms",
                 LoggerPrefix, meta.Id, enabled, stopwatch.ElapsedMilliseconds);
-            DependencyChecker.LoadedPlugins.Add(meta.DllName, meta.Version);
+            DependencyChecker.LoadedPlugins.Add(meta.DllName, new Version(meta.Version));
             if (!enabled) return;
             instance.IsEnabled = enabled;
         }

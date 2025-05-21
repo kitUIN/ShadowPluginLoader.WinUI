@@ -16,25 +16,40 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public Dictionary<string, string> LoadedPlugins { get; } = new();
+    public Dictionary<string, Version> LoadedPlugins { get; } = new();
+
 
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public List<SortPluginData<TMeta>> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins)
+    public DependencyCheckResult<TMeta> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins)
     {
         var sortedPlugins = new List<SortPluginData<TMeta>>();
         var visited = new HashSet<string>();
-
-        foreach (var plugin in plugins.OrderBy(p => p.Priority))
-        {
-            if (!visited.Contains(plugin.Id))
+        var needUpgradePlugins = new List<SortPluginData<TMeta>>();
+        var uniquePlugins = plugins
+            .GroupBy(p => p.Id)
+            .Select(g => g
+                .OrderByDescending(p => p.Version)
+                .ThenBy(p => p.Priority)
+                .First())
+            .Where(p =>
             {
-                SortDependencies(plugin, plugins, sortedPlugins, visited);
-            }
+                if (!LoadedPlugins.ContainsKey(p.Id)) return true;
+                if (LoadedPlugins.TryGetValue(p.Id, out var actualVersion) &&
+                    actualVersion < p.Version)
+                    needUpgradePlugins.Add(p);
+                return false;
+            })
+            .OrderBy(p => p.Priority)
+            .ToList();
+
+        foreach (var plugin in uniquePlugins)
+        {
+            SortDependencies(plugin, uniquePlugins, sortedPlugins, visited);
         }
 
-        return sortedPlugins;
+        return new DependencyCheckResult<TMeta>(sortedPlugins, needUpgradePlugins);
     }
 
     /// <summary>
@@ -63,6 +78,7 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
                     throw new PluginImportException(
                         $"Version Not Satisfied: {dependency.Id}, Need: {dependency.Need}, Actual: {loadedPlugin}");
                 }
+
                 continue;
             }
 
@@ -91,13 +107,13 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// <param name="actualVersion"></param>
     /// <param name="dependency"></param>
     /// <returns></returns>
-    private bool IsVersionSatisfied(string actualVersion, PluginDependency dependency)
+    private bool IsVersionSatisfied(Version actualVersion, PluginDependency dependency)
     {
         return dependency.Comparer switch
         {
-            PluginDependencyComparer.Lesser => new Version(actualVersion) <= dependency.Version,
-            PluginDependencyComparer.Same => new Version(actualVersion) == dependency.Version,
-            _ => new Version(actualVersion) >= dependency.Version
+            PluginDependencyComparer.Lesser => actualVersion <= dependency.Version,
+            PluginDependencyComparer.Same => actualVersion == dependency.Version,
+            _ => actualVersion >= dependency.Version
         };
     }
 }
