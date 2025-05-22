@@ -17,6 +17,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
+using ShadowPluginLoader.WinUI.Checkers;
 
 namespace ShadowPluginLoader.WinUI.Services;
 
@@ -51,7 +52,8 @@ public partial class ZipPluginInstaller : BasePluginInstaller
             .FirstOrDefault(file => file.Exists);
         if (jsonEntryFile == null)
             throw new PluginImportException($"Not Found plugin.json in zip {sortPluginData.Path}");
-        return await base.InstallAsync(new SortPluginData<TMeta>(sortPluginData.MetaData, jsonEntryFile.FullName),
+        return await base.InstallAsync(
+            new SortPluginData<TMeta>(sortPluginData.MetaData, jsonEntryFile.FullName, Identify),
             tempFolder, pluginFolder);
     }
 
@@ -86,7 +88,12 @@ public partial class ZipPluginInstaller : BasePluginInstaller
     public override async Task PreUpgradeAsync<TMeta>(AbstractPlugin<TMeta> plugin, Uri uri, string tempFolder,
         string targetFolder)
     {
+        var serializeOptions = new JsonSerializerOptions();
+        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
         var newVersionUri = await FileHelper.DownloadFileAsync(tempFolder, uri, Logger);
+        var zipMeta = await GetMetaData<TMeta>(newVersionUri, serializeOptions);
+        if (new Version(zipMeta.Version) <= new Version(plugin.MetaData.Version)) 
+            throw new PluginUpgradeException("NewVersionUri Version is less than or equal to current version");
         plugin.PlanUpgrade = true;
         PluginSettingsHelper.SetPluginUpgradePath(plugin.Id, newVersionUri.LocalPath,
             Path.GetDirectoryName(plugin.GetType().Assembly.Location)!);
@@ -97,5 +104,31 @@ public partial class ZipPluginInstaller : BasePluginInstaller
     {
         await UnZip(uri.LocalPath, targetPath);
         await base.UpgradeAsync(pluginId, uri, tempFolder, targetPath);
+    }
+
+    /// <inheritdoc />
+    public override async Task<SortPluginData<TMeta>> LoadSortPluginData<TMeta>(Uri uri, string tempFolder)
+    {
+        var serializeOptions = new JsonSerializerOptions();
+        serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
+        var zipPath = await FileHelper.DownloadFileAsync(tempFolder, uri,
+            Log.ForContext<ZipPluginInstaller>());
+        var zipMeta = await GetMetaData<TMeta>(zipPath, serializeOptions);
+        EntryPoints[zipMeta.Id] = zipMeta.EntryPoints;
+        return new SortPluginData<TMeta>(zipMeta, zipPath, Identify);
+    }
+
+    private static async Task<TMeta> GetMetaData<TMeta>(Uri zipPath, JsonSerializerOptions serializeOptions)
+    {
+        await using FileStream zipToOpen = new(zipPath.LocalPath, FileMode.Open);
+        using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
+        var entry = archive.Entries.FirstOrDefault(e =>
+            e.FullName.EndsWith("/plugin.json", StringComparison.OrdinalIgnoreCase));
+
+        if (entry == null) throw new PluginImportException($"Not Found plugin.json in zip {zipPath}");
+        using var reader = new StreamReader(entry.Open());
+        var jsonContent = await reader.ReadToEndAsync();
+        var zipMeta = JsonSerializer.Deserialize<TMeta>(jsonContent, serializeOptions);
+        return zipMeta!;
     }
 }

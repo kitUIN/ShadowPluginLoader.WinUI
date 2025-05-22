@@ -7,9 +7,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using DryIoc;
+using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -142,10 +143,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             {
                 var uri = ScanQueue.Dequeue();
                 beforeSortTasks.Add(Task.Run(async () =>
-                    {
-                        beforeSort.Add(await MetaDataChecker.LoadSortPluginData(uri, TempFolder));
-                    }
-                ));
+                        beforeSort.Add(
+                            await GetPluginInstaller(uri)
+                                .LoadSortPluginData<TMeta>(uri, TempFolder))
+                    )
+                );
             }
             catch (PluginImportException e)
             {
@@ -164,7 +166,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         beforeSort.Clear();
         beforeSortTasks.AddRange(afterSortResult.Result.Select(sortPluginData => Task.Run(async () =>
         {
-            beforeSort.Add(await GetPluginInstaller(sortPluginData.Link)
+            beforeSort.Add(await GetPluginInstaller(sortPluginData.InstallerId)
                 .InstallAsync(sortPluginData, TempFolder, PluginFolder));
         })));
         await Task.WhenAll(beforeSortTasks);
@@ -172,7 +174,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         {
             try
             {
-                var mainPluginType = await MetaDataChecker.GetMainPluginType(sortPluginData);
+                var mainPluginType = await GetPluginInstaller(sortPluginData.InstallerId).GetMainPluginType(sortPluginData);
                 LoadPlugin(mainPluginType, sortPluginData.MetaData);
             }
             catch (Exception e)

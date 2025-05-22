@@ -147,8 +147,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         try
         {
             stopwatch.Start();
-            // CheckPluginType(plugin);
-            MetaDataChecker.CheckMetaDataValid(meta);
             BeforeLoadPlugin(plugin, meta);
             var instance = LoadMainPlugin(plugin, meta);
             AfterLoadPlugin(plugin, instance, meta);
