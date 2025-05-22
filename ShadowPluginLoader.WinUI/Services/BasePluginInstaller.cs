@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Serilog;
 using ShadowPluginLoader.Attributes;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Services;
 
@@ -18,29 +19,32 @@ public partial class BasePluginInstaller : IPluginInstaller
     public ILogger Logger { get; }
 
     /// <inheritdoc />
-    public int Priority => 100;
+    public virtual int Priority => 100;
 
     /// <inheritdoc />
-    public bool Check(Uri path)
+    public virtual bool Check(Uri path)
     {
         return true;
     }
 
     /// <inheritdoc />
-    public Task<FileInfo> ScanAsync(Uri uri, string tempFolder, string targetFolder)
+    public virtual Task<SortPluginData<TMeta>> InstallAsync<TMeta>(SortPluginData<TMeta> sortPluginData,
+        string tempFolder, string pluginFolder) where TMeta : AbstractPluginMetaData
     {
-        throw new NotImplementedException();
+        return Task.FromResult(sortPluginData);
     }
 
     /// <inheritdoc />
-    public Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetFolder)
+    public virtual Task<string?> PreUpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetFolder)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(uri.LocalPath)!;
     }
 
+
     /// <inheritdoc />
-    public bool Remove(string pluginId)
+    public virtual Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetFolder)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
+
 }

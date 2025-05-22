@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Serilog.Core;
+using ShadowPluginLoader.WinUI.Models;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -25,15 +27,28 @@ public interface IPluginInstaller
     /// <summary>
     /// Second Scan
     /// </summary>
-    public Task<FileInfo> ScanAsync(Uri uri, string tempFolder, string targetFolder);
+    public Task<SortPluginData<TMeta>> InstallAsync<TMeta>(SortPluginData<TMeta> sortPluginData, string tempFolder,
+        string pluginFolder)
+        where TMeta : AbstractPluginMetaData;
 
     /// <summary>
-    /// Upgrade
+    /// 
     /// </summary>
-    public Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetFolder);
+    /// <param name="pluginId"></param>
+    /// <param name="uri"></param>
+    /// <param name="tempFolder"></param>
+    /// <param name="targetFolder"></param>
+    /// <returns></returns>
+    public Task<string?> PreUpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetFolder);
 
     /// <summary>
-    /// Remove
+    /// 
     /// </summary>
-    public bool Remove(string pluginId);
+    /// <param name="pluginId"></param>
+    /// <param name="uri"></param>
+    /// <param name="tempFolder"></param>
+    /// <param name="targetPath"></param>
+    /// <returns></returns>
+    public Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetPath);
+
 }

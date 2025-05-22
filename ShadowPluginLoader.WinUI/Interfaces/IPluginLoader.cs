@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -18,45 +19,45 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
 {
     /// <summary>
     /// Scan Plugin From Type<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// </summary>
     /// <param name="type">Plugin Type</param>
     IPluginLoader<TMeta, TAPlugin> Scan(Type? type);
 
     /// <summary>
     /// Scan Plugin From Type<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// </summary>
     IPluginLoader<TMeta, TAPlugin> Scan<TPlugin>();
 
     /// <summary>
     /// Scan Plugins From Type<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// </summary>
     /// <param name="types">Plugin Type List</param>
     IPluginLoader<TMeta, TAPlugin> Scan(IEnumerable<Type> types);
 
     /// <summary>
     /// Scan Plugin From Optional Package<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// </summary>
     /// <param name="package">Optional Package</param>
     IPluginLoader<TMeta, TAPlugin> Scan(Package package);
 
     /// <summary>
     /// Scan Plugin From Plugin Path<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// </summary>
     /// <param name="pluginPath">Plugin Path</param>
     IPluginLoader<TMeta, TAPlugin> Scan(DirectoryInfo pluginPath);
 
     /// <summary>
     /// Scan Plugin From plugin.json<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// <example>
     /// <code>
     /// loader.Scan(pluginJson);
-    /// await loader.Load();
+    /// await loader.LoadAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -65,7 +66,7 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
 
     /// <summary>
     /// Scan Plugin From Uri<br/>
-    /// After Scan You Need Calling <see cref="Load"/>
+    /// After Scan You Need Calling <see cref="LoadAsync"/>
     /// </summary>
     /// <param name="uri">Uri</param>
     IPluginLoader<TMeta, TAPlugin> Scan(Uri uri);
@@ -76,16 +77,16 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     void ScanClear();
 
     /// <summary>
-    /// Start Load Plugin
+    /// Start LoadAsync Plugin
     /// <example>
     /// <code>
     /// loader.Scan(pluginJson);
-    /// await loader.Load();
+    /// await loader.LoadAsync();
     /// </code>
     /// </example>
     /// </summary>
     /// <returns>Need Upgrade Plugin</returns>
-    Task<List<string>> Load();
+    Task<List<SortPluginData<TMeta>>> LoadAsync();
 
     /// <summary>
     /// Get Enabled Plugins
@@ -140,8 +141,8 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// Upgrade Plugin
     /// </summary>
     /// <param name="id">Plugin Id</param>
-    /// <param name="newVersionZip">new Version Zip Path (Uri)</param>
-    Task UpgradePlugin(string id, string newVersionZip);
+    /// <param name="uri">new Version Path (Uri)</param>
+    Task UpgradePlugin(string id, Uri uri);
 
     /// <summary>
     /// Checked for updates and removed plugins

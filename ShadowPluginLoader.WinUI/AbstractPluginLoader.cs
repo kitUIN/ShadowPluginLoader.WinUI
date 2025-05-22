@@ -115,7 +115,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     private readonly Dictionary<string, TAPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Load Plugin From Type
+    /// LoadAsync Plugin From Type
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
     /// <param name="meta">Plugin MetaData</param>
@@ -135,7 +135,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             instance.Loaded();
             PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
             stopwatch.Stop();
-            Logger.Information("{Pre}{ID}({isEnabled}): Load Success! Used: {mi} ms",
+            Logger.Information("{Pre}{ID}({isEnabled}): LoadAsync Success! Used: {mi} ms",
                 LoggerPrefix, meta.Id, enabled, stopwatch.ElapsedMilliseconds);
             DependencyChecker.LoadedPlugins.Add(meta.DllName, new Version(meta.Version));
             if (!enabled) return;
@@ -146,9 +146,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             if (stopwatch.IsRunning)
             {
                 stopwatch.Stop();
-                Logger.Information("{Pre}Plugin Load Failed! Used: {mi} ms",
-                    LoggerPrefix, stopwatch.ElapsedMilliseconds);
             }
+            Logger.Warning("{Pre}Plugin LoadAsync Failed! Used: {mi} ms",
+                LoggerPrefix, stopwatch.ElapsedMilliseconds);
         }
     }
 
@@ -175,13 +175,13 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         DiFactory.Services.Register(typeof(TAPlugin), plugin, reuse: Reuse.Singleton,
             serviceKey: meta.Id);
         var instance = DiFactory.Services.Resolve<TAPlugin>(serviceKey: meta.Id);
-        if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
-        Logger.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
+        if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't LoadAsync Plugin");
+        Logger.Information("Plugin[{ID}] Main Class LoadAsync Success", meta.Id);
         return instance;
     }
 
     /// <summary>
-    /// After Load Plugin
+    /// After LoadAsync Plugin
     /// </summary>
     protected virtual void AfterLoadPlugin(Type tPlugin, TAPlugin aPlugin, TMeta meta)
     {

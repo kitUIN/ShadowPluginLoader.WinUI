@@ -1,23 +1,28 @@
-﻿using System;
+﻿using Serilog;
+using ShadowPluginLoader.Attributes;
+using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Extensions;
+using ShadowPluginLoader.WinUI.Helpers;
+using ShadowPluginLoader.WinUI.Models;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using SharpCompress.IO;
+using SharpCompress.Readers;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Serilog;
-using ShadowPluginLoader.Attributes;
-using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Helpers;
-using SharpCompress.Archives;
-using SharpCompress.IO;
 
 namespace ShadowPluginLoader.WinUI.Services;
 
 /// <summary>
 /// PluginInstaller For Zip/Rar/Tat and more
 /// </summary>
-public partial class ZipPluginInstaller : IPluginInstaller
+public partial class ZipPluginInstaller : BasePluginInstaller
 {
     /// <summary>
     /// Logger
@@ -26,61 +31,68 @@ public partial class ZipPluginInstaller : IPluginInstaller
     public ILogger Logger { get; }
 
     /// <inheritdoc />
-    public int Priority => 1;
-
-    /// <summary>
-    /// SupportTypes
-    /// </summary>
-    protected string[] SupportTypes => [".zip", ".rar"];
+    public override int Priority => 1;
 
     /// <inheritdoc />
-    public bool Check(Uri path)
+    public override bool Check(Uri path)
     {
-        return SupportTypes.Any(x => path.OriginalString.EndsWith(x, StringComparison.OrdinalIgnoreCase));
+        return path.IsZip();
     }
 
     /// <inheritdoc />
-    public async Task<FileInfo> ScanAsync(Uri uri, string tempFolder, string targetFolder)
+    public override async Task<SortPluginData<TMeta>> InstallAsync<TMeta>(SortPluginData<TMeta> sortPluginData,
+        string tempFolder, string pluginFolder)
     {
-        var zipPath = await DownloadHelper.DownloadFileAsync(tempFolder, uri.AbsoluteUri, Logger);
-        var outName = Path.GetFileNameWithoutExtension(zipPath);
-        var outPath = Path.Combine(targetFolder, outName);
-        var count = 0;
-        while (Directory.Exists(outPath))
-        {
-            outPath = Path.Combine(targetFolder, $"{outName}{++count}");
-        }
+        var outPath = FileHelper.GetName(sortPluginData.Path, pluginFolder, true);
         Logger.Debug("Plugin OutPath: {t}", outPath);
-        var dir = await UnZip(zipPath, outPath);
+        var dir = await UnZip(sortPluginData.Path, outPath);
         var jsonEntryFile = new DirectoryInfo(dir)
             .GetDirectories("Assets", SearchOption.AllDirectories)
             .Select(assetDir => new FileInfo(Path.Combine(assetDir.FullName, "plugin.json")))
             .FirstOrDefault(file => file.Exists);
-        if (jsonEntryFile == null) throw new PluginImportException($"Not Found plugin.json in zip {zipPath}");
-        return jsonEntryFile;
+        if (jsonEntryFile == null)
+            throw new PluginImportException($"Not Found plugin.json in zip {sortPluginData.Path}");
+        return new SortPluginData<TMeta>(sortPluginData.MetaData, jsonEntryFile.FullName);
     }
 
     /// <summary>
     /// UnZip
     /// </summary>
-    protected virtual async Task<string> UnZip(string zipPath, string outputPath)
+    protected virtual Task<string> UnZip(string zipPath, string outputPath)
     {
-        await using var fStream = File.OpenRead(zipPath);
-        await using var stream = NonDisposingStream.Create(fStream);
-        using var archive = ArchiveFactory.Open(stream);
-        archive.ExtractToDirectory(outputPath);
-        return outputPath;
+        var options = new ReaderOptions
+        {
+            LeaveStreamOpen = false,
+            ArchiveEncoding = new ArchiveEncoding
+            {
+                Default = Encoding.UTF8
+            }
+        };
+        using var archive = ArchiveFactory.Open(zipPath, options);
+        if (!Directory.Exists(outputPath)) Directory.CreateDirectory(outputPath);
+        foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
+        {
+            entry.WriteToDirectory(outputPath, new ExtractionOptions
+            {
+                ExtractFullPath = true,
+                Overwrite = true,
+            });
+        }
+
+        return Task.FromResult(outputPath);
     }
 
     /// <inheritdoc />
-    public async Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetFolder)
+    public override async Task<string?> PreUpgradeAsync(string pluginId, Uri uri, string tempFolder,
+        string targetFolder)
     {
-        await UnZip(uri.AbsoluteUri, targetFolder);
+        var newVersionUri = await FileHelper.DownloadFileAsync(tempFolder, uri, Logger);
+        return newVersionUri.LocalPath;
     }
 
     /// <inheritdoc />
-    public bool Remove(string pluginId)
+    public override async Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetPath)
     {
-        throw new System.NotImplementedException();
+        await UnZip(uri.LocalPath, targetPath);
     }
 }

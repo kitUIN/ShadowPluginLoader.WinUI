@@ -1,16 +1,15 @@
-using ShadowPluginLoader.WinUI.Extensions;
+using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
-using ShadowPluginLoader.WinUI.Enums;
-using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Helpers;
-using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -26,7 +25,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// ScanQueue
     /// </summary>
-    protected readonly Queue<ScanTarget> ScanQueue = new();
+    protected readonly Queue<Uri> ScanQueue = new();
 
     /// <summary>
     /// <inheritdoc />
@@ -37,7 +36,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         if (type is null) return this;
         var dir = type.Assembly.Location[..^".dll".Length];
         var metaPath = Path.Combine(dir, "Assets", "plugin.json");
-        Scan(new FileInfo(metaPath));
+        Scan(new Uri(metaPath));
         return this;
     }
 
@@ -98,9 +97,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <exception cref="PluginImportException"></exception>
     public IPluginLoader<TMeta, TAPlugin> Scan(FileInfo pluginJson)
     {
-        ScanQueue.Enqueue(pluginJson.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
-            ? new ScanTarget(ScanType.FileInfo, pluginJson)
-            : new ScanTarget(ScanType.Uri, new Uri(pluginJson.FullName)));
+        ScanQueue.Enqueue(new Uri(pluginJson.FullName));
         return this;
     }
 
@@ -116,7 +113,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         }
         else
         {
-            ScanQueue.Enqueue(new ScanTarget(ScanType.Uri, uri));
+            ScanQueue.Enqueue(uri);
         }
 
         return this;
@@ -133,38 +130,20 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public async Task<List<string>> Load()
+    public async Task<List<SortPluginData<TMeta>>> LoadAsync()
     {
         if (!IsCheckUpgradeAndRemove)
-            throw new Exception("You need to try CheckUpgradeAndRemoveAsync before Load");
-        List<SortPluginData<TMeta>> beforeSort = [];
+            throw new Exception("You need to try CheckUpgradeAndRemoveAsync before LoadAsync");
+        ConcurrentBag<SortPluginData<TMeta>> beforeSort = [];
         List<Task> beforeSortTasks = [];
         while (ScanQueue.Count > 0)
         {
             try
             {
-                var scanTarget = ScanQueue.Dequeue();
+                var uri = ScanQueue.Dequeue();
                 beforeSortTasks.Add(Task.Run(async () =>
                     {
-                        FileInfo? target = null;
-                        if (scanTarget.Type == ScanType.Uri)
-                        {
-                            var uri = (Uri)scanTarget.Target;
-                            var installer = GetPluginInstaller(uri);
-                            if (installer is null)
-                            {
-                                Logger.Warning("{URI} Not Found Installer", uri);
-                                return;
-                            }
-
-                            target = await installer.ScanAsync(uri, TempFolder, PluginFolder);
-                        }
-                        else
-                        {
-                            target = (FileInfo)scanTarget.Target;
-                        }
-
-                        beforeSort.Add(new SortPluginData<TMeta>(await MetaDataChecker.LoadMetaData(target), target));
+                        beforeSort.Add(await MetaDataChecker.LoadSortPluginData(uri, TempFolder));
                     }
                 ));
             }
@@ -180,17 +159,25 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
 
         await Task.WhenAll(beforeSortTasks);
         // 排序
-        var afterSortResult = DependencyChecker.DetermineLoadOrder(beforeSort);
-        foreach (var sortPluginData in afterSortResult.Result)
+        var afterSortResult = DependencyChecker.DetermineLoadOrder(beforeSort.ToList());
+        beforeSortTasks.Clear();
+        beforeSort.Clear();
+        beforeSortTasks.AddRange(afterSortResult.Result.Select(sortPluginData => Task.Run(async () =>
+        {
+            beforeSort.Add(await GetPluginInstaller(sortPluginData.Link)
+                .InstallAsync(sortPluginData, TempFolder, PluginFolder));
+        })));
+        await Task.WhenAll(beforeSortTasks);
+        foreach (var sortPluginData in beforeSort)
         {
             try
             {
-                var mainPluginType = await MetaDataChecker.GetMainPluginType(sortPluginData.MetaData);
+                var mainPluginType = await MetaDataChecker.GetMainPluginType(sortPluginData);
                 LoadPlugin(mainPluginType, sortPluginData.MetaData);
             }
             catch (Exception e)
             {
-                Logger.Warning("Load Error:{Ex}", e);
+                Logger.Warning("LoadAsync Error:{Ex}", e);
             }
         }
 
@@ -207,9 +194,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         foreach (var setting in settings)
         {
             var uri = new Uri((string)setting.Value);
-            var installer = GetPluginInstaller(uri);
-            if (installer is null) continue;
-            await installer.UpgradeAsync(setting.Key, uri, TempFolder, (string)targetPaths[setting.Key]);
+            await GetPluginInstaller(uri).UpgradeAsync(setting.Key, uri, TempFolder, (string)targetPaths[setting.Key]);
             PluginSettingsHelper.DeleteUpgradePluginPath(setting.Key);
         }
     }
@@ -335,14 +320,16 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public async Task UpgradePlugin(string id, string newVersionZip)
+    public async Task UpgradePlugin(string id, Uri uri)
     {
-        newVersionZip = await DownloadHelper.DownloadFileAsync(TempFolder, newVersionZip, Logger);
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
-        plugin.PlanUpgrade = true;
-        var path = plugin.GetType().Assembly.Location;
-        PluginSettingsHelper.SetPluginUpgradePath(id, newVersionZip, path);
+        if ((await GetPluginInstaller(uri).PreUpgradeAsync(id, uri, TempFolder, PluginFolder)) is { } newPath)
+        {
+            plugin.PlanUpgrade = true;
+            PluginSettingsHelper.SetPluginUpgradePath(id, newPath,
+                Path.GetDirectoryName(plugin.GetType().Assembly.Location)!);
+        }
     }
 
     /// <inheritdoc />

@@ -40,7 +40,12 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// Path
     /// </summary>
-    public string Path { get; }
+    public string Path { get; } = null!;
+
+    /// <summary>
+    /// Link
+    /// </summary>
+    public Uri Link { get; } = null!;
 
     /// <summary>
     /// SortPluginData
@@ -65,6 +70,7 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     public SortPluginData(TMeta metaData, Uri uri) : this(metaData)
     {
         Path = uri.AbsolutePath;
+        Link = uri;
     }
 
     /// <summary>
@@ -75,5 +81,6 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     public SortPluginData(TMeta metaData, string path) : this(metaData)
     {
         Path = path;
+        Link = new Uri(path);
     }
 }

@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Serilog;
+using ShadowPluginLoader.WinUI.Extensions;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -27,11 +28,6 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     /// </summary>
     public ConcurrentDictionary<string, PluginEntryPoint[]> EntryPoints { get; } = new();
 
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    public ConcurrentDictionary<string, string> DllFiles { get; } = new();
-
 
     /// <summary>
     /// <inheritdoc />
@@ -41,11 +37,11 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
     {
         var serializeOptions = new JsonSerializerOptions();
         serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
-        var zipPath = await DownloadHelper.DownloadFileAsync(tempFolder, uri.AbsoluteUri,
+        var zipPath = await FileHelper.DownloadFileAsync(tempFolder, uri,
             Log.ForContext<MetaDataChecker<AbstractPluginMetaData>>());
-        if (zipPath.EndsWith(".zip"))
+        if (zipPath.IsZip())
         {
-            await using FileStream zipToOpen = new(zipPath, FileMode.Open);
+            await using FileStream zipToOpen = new(zipPath.LocalPath, FileMode.Open);
             using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
             var entry = archive.Entries.FirstOrDefault(e =>
                 e.FullName.EndsWith("/plugin.json", StringComparison.OrdinalIgnoreCase));
@@ -63,7 +59,7 @@ public class MetaDataChecker<TMeta> : IMetaDataChecker<TMeta>
             throw new PluginImportException($"Not Found  plugin.json in {uri}");
         var pluginJson = new FileInfo(uri.LocalPath);
         if (!pluginJson.Exists) throw new PluginImportException($"Not Found {pluginJson.FullName}");
-        // Load Json From plugin.json
+        // LoadAsync Json From plugin.json
 
         var content = await File.ReadAllTextAsync(pluginJson.FullName);
 

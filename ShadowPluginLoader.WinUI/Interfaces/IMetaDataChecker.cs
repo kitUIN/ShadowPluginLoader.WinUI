@@ -19,12 +19,7 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     public ConcurrentDictionary<string, PluginEntryPoint[]> EntryPoints { get; }
 
     /// <summary>
-    /// DllFiles
-    /// </summary>
-    public ConcurrentDictionary<string, string> DllFiles { get; }
-
-    /// <summary>
-    /// Load SortPluginData From Uri
+    /// LoadAsync SortPluginData From Uri
     /// </summary>
     /// <param name="uri"></param>
     /// <param name="tempFolder"></param>
@@ -40,6 +35,6 @@ public interface IMetaDataChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// Get Main Plugin
     /// </summary>
-    /// <param name="meta"></param>
+    /// <param name="sortPluginData"></param>
     public Task<Type> GetMainPluginType(SortPluginData<TMeta> sortPluginData);
 }
