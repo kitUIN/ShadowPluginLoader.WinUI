@@ -10,7 +10,7 @@
 	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
 	<!-- Nuget -->
-	<Version>1.1.3</Version>
+	<Version>1.1.5</Version>
 	<PackageId>ShadowExample.Core</PackageId>
 	<Authors>kitUIN</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>

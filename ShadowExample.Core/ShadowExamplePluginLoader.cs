@@ -1,7 +1,10 @@
-using System.Collections.Generic;
+using System;
+using System.Collections.Generic; 
 using Serilog;
 using ShadowExample.Core.Plugins;
 using ShadowPluginLoader.WinUI;
+using ShadowPluginLoader.WinUI.Checkers;
+using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
 using ShadowPluginLoader.WinUI.Services;
 
@@ -18,9 +21,19 @@ namespace ShadowExample.Core
             IsCheckUpgradeAndRemove = value;
         }
 
-        public Queue<ScanTarget> GetScanQueue()
+        public Queue<Uri> GetScanQueue()
         {
             return ScanQueue;
+        }
+
+        public IDependencyChecker<ExampleMetaData> GetDependencyChecker()
+        {
+            return DependencyChecker;
+        }
+
+        public IMetaDataChecker<ExampleMetaData> GetMetaDataChecker()
+        {
+            return MetaDataChecker;
         }
 
         /// <inheritdoc />
