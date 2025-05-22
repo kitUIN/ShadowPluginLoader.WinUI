@@ -31,7 +31,13 @@
 	  <LangVersion>12</LangVersion>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="ShadowExample.Core" Version="1.1.3" />
+		<PackageReference Include="ShadowExample.Core" Version="1.1.5" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.6.5" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="AppxManifest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 	<ItemGroup>
 	  <Page Update="Themes\ResourceDictionary1.xaml">

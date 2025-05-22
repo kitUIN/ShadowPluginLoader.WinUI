@@ -21,7 +21,7 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
                 Id = id, Version = version, Priority = priority,
                 Dependencies = dependencies
             };
-            var plugin = new SortPluginData<TestMeta>(meta)
+            var plugin = new SortPluginData<TestMeta>(meta, "")
             {
                 // 反射设置只读属性
             };
@@ -38,9 +38,9 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
 
             var result = checker.DetermineLoadOrder(plugins);
 
-            Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("A", result[0].Id);
-            Assert.AreEqual("B", result[1].Id);
+            Assert.AreEqual(2, result.Result.Count);
+            Assert.AreEqual("A", result.Result[0].Id);
+            Assert.AreEqual("B", result.Result[1].Id);
         }
 
         [TestMethod("测试有依赖的加载")]
@@ -54,9 +54,9 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
 
             var result = checker.DetermineLoadOrder(plugins);
 
-            Assert.AreEqual(2, result.Count);
-            Assert.AreEqual("A", result[0].Id);
-            Assert.AreEqual("B", result[1].Id);
+            Assert.AreEqual(2, result.Result.Count);
+            Assert.AreEqual("A", result.Result[0].Id);
+            Assert.AreEqual("B", result.Result[1].Id);
         }
 
         [TestMethod("测试不存在依赖")]

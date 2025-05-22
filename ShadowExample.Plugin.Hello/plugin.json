@@ -2,6 +2,6 @@
   "DllName": "ShadowExample.Plugin.Hello",
   "Id": "Hello",
   "Name": "Hello",
-  "Version": "1.1",
+  "Version": "1.0.1",
   "Dependencies": []
 }

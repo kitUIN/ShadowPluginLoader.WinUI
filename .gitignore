@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /.idea/.idea.ShadowPluginLoader.WinUI/.idea
 nuget.config
 /nuget.config
+/ShadowExample.Plugin.Hello/Plugin.Build.exclude

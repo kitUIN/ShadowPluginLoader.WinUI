@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+xmlns:uap18="http://schemas.microsoft.com/appx/manifest/uap/windows10/18"
+IgnorableNamespaces="uap rescap uap3 uap18">
+	<Identity Name="42e7fc96-a0a5-450b-b880-6e930b1a9923"
+			  Version="1.1.0.0"
+			  Publisher="CN=15854"/>
+	<Properties>
+		<DisplayName>ShadowExample.Plugin.Hello</DisplayName>
+		<PublisherDisplayName>kitUIN</PublisherDisplayName>
+		<Logo>ShadowExample.Plugin.Hello\Assets\StoreLogo.png</Logo>
+	</Properties>
+    <Resources>
+        <Resource Language="zh-CN"/>
+        <Resource Language="en-US"/>
+      </Resources>
+    <Dependencies>
+        <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+        <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+        <uap3:MainPackageDependency Name="ab803c11-0728-459c-b7ac-24f44b015c17" />  
+    </Dependencies>
+     
+</Package>
