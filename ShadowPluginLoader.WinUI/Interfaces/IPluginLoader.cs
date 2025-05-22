@@ -135,7 +135,7 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// Remove Plugin
     /// </summary>
     /// <param name="id">Plugin Id</param>
-    void RemovePlugin(string id);
+    Task RemovePlugin(string id);
 
     /// <summary>
     /// Upgrade Plugin

@@ -16,20 +16,16 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Windows.Devices.Geolocation;
 
 namespace ShadowPluginLoader.WinUI.Services;
 
 /// <summary>
 /// PluginInstaller For Zip/Rar/Tat and more
 /// </summary>
+[CheckAutowired]
 public partial class ZipPluginInstaller : BasePluginInstaller
 {
-    /// <summary>
-    /// Logger
-    /// </summary>
-    [Autowired]
-    public ILogger Logger { get; }
-
     /// <inheritdoc />
     public override int Priority => 1;
 
@@ -38,6 +34,9 @@ public partial class ZipPluginInstaller : BasePluginInstaller
     {
         return path.IsZip();
     }
+
+    /// <inheritdoc />
+    public override string Identify => "Zip";
 
     /// <inheritdoc />
     public override async Task<SortPluginData<TMeta>> InstallAsync<TMeta>(SortPluginData<TMeta> sortPluginData,
@@ -52,7 +51,8 @@ public partial class ZipPluginInstaller : BasePluginInstaller
             .FirstOrDefault(file => file.Exists);
         if (jsonEntryFile == null)
             throw new PluginImportException($"Not Found plugin.json in zip {sortPluginData.Path}");
-        return new SortPluginData<TMeta>(sortPluginData.MetaData, jsonEntryFile.FullName);
+        return await base.InstallAsync(new SortPluginData<TMeta>(sortPluginData.MetaData, jsonEntryFile.FullName),
+            tempFolder, pluginFolder);
     }
 
     /// <summary>
@@ -83,16 +83,19 @@ public partial class ZipPluginInstaller : BasePluginInstaller
     }
 
     /// <inheritdoc />
-    public override async Task<string?> PreUpgradeAsync(string pluginId, Uri uri, string tempFolder,
+    public override async Task PreUpgradeAsync<TMeta>(AbstractPlugin<TMeta> plugin, Uri uri, string tempFolder,
         string targetFolder)
     {
         var newVersionUri = await FileHelper.DownloadFileAsync(tempFolder, uri, Logger);
-        return newVersionUri.LocalPath;
+        plugin.PlanUpgrade = true;
+        PluginSettingsHelper.SetPluginUpgradePath(plugin.Id, newVersionUri.LocalPath,
+            Path.GetDirectoryName(plugin.GetType().Assembly.Location)!);
     }
 
     /// <inheritdoc />
     public override async Task UpgradeAsync(string pluginId, Uri uri, string tempFolder, string targetPath)
     {
         await UnZip(uri.LocalPath, targetPath);
+        await base.UpgradeAsync(pluginId, uri, tempFolder, targetPath);
     }
 }

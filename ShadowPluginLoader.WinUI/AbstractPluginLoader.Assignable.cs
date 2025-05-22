@@ -194,22 +194,22 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         foreach (var setting in settings)
         {
             var uri = new Uri((string)setting.Value);
-            await GetPluginInstaller(uri).UpgradeAsync(setting.Key, uri, TempFolder, (string)targetPaths[setting.Key]);
-            PluginSettingsHelper.DeleteUpgradePluginPath(setting.Key);
+            await GetPluginInstaller(PluginSettingsHelper.GetPluginInstaller(setting.Key))
+                .UpgradeAsync(setting.Key, uri, TempFolder, (string)targetPaths[setting.Key]);
         }
     }
 
     /// <summary>
     /// Check Any Plugin Plan To Remove
     /// </summary>
-    protected void CheckRemove()
+    protected async Task CheckRemove()
     {
         var settings = PluginSettingsHelper.GetPluginRemovePaths();
         foreach (var setting in settings)
         {
             var path = (string)setting.Value;
-            if (Directory.Exists(path)) Directory.Delete(path, true);
-            PluginSettingsHelper.DeleteRemovePluginPath(setting.Key);
+            await GetPluginInstaller(PluginSettingsHelper.GetPluginInstaller(setting.Key))
+                .RemoveAsync(setting.Key, TempFolder, path);
             PluginEventService.InvokePluginRemoved(this,
                 new Args.PluginEventArgs(setting.Key, Enums.PluginStatus.Removed));
         }
@@ -290,14 +290,14 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public void RemovePlugin(string id)
+    public async Task RemovePlugin(string id)
     {
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginRemoveException($"{id} Plugin Not Found");
         var path = Path.GetDirectoryName(plugin.GetType().Assembly.Location);
         if (path == null) throw new PluginRemoveException($"{id} Plugin Path Not Found");
-        plugin.PlanRemove = true;
-        PluginSettingsHelper.SetPluginPlanRemove(id, path);
+        await GetPluginInstaller(PluginSettingsHelper.GetPluginInstaller(id))
+            .PreRemoveAsync(plugin, TempFolder, path);
     }
 
 
@@ -324,18 +324,14 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
-        if ((await GetPluginInstaller(uri).PreUpgradeAsync(id, uri, TempFolder, PluginFolder)) is { } newPath)
-        {
-            plugin.PlanUpgrade = true;
-            PluginSettingsHelper.SetPluginUpgradePath(id, newPath,
-                Path.GetDirectoryName(plugin.GetType().Assembly.Location)!);
-        }
+        await GetPluginInstaller(PluginSettingsHelper.GetPluginInstaller(id))
+            .PreUpgradeAsync(plugin, uri, TempFolder, PluginFolder);
     }
 
     /// <inheritdoc />
     public async Task CheckUpgradeAndRemoveAsync()
     {
-        CheckRemove();
+        await CheckRemove();
         await CheckUpgrade();
         IsCheckUpgradeAndRemove = true;
     }

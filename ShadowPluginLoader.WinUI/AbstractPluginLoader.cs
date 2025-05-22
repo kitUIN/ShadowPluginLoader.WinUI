@@ -91,6 +91,28 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     }
 
     /// <summary>
+    /// Get PluginInstaller
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    protected IPluginInstaller GetPluginInstaller(string key)
+    {
+        foreach (var installer in DiFactory.Services.ResolveMany<IPluginInstaller>())
+        {
+            try
+            {
+                if (installer.Identify == key) return installer;
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("PluginInstaller CheckError: {Ex}", e);
+            }
+        }
+
+        return new BasePluginInstaller(Logger);
+    }
+
+    /// <summary>
     /// Default
     /// </summary>
     /// <param name="logger">log</param>
@@ -147,6 +169,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             {
                 stopwatch.Stop();
             }
+
             Logger.Warning("{Pre}Plugin LoadAsync Failed! Used: {mi} ms",
                 LoggerPrefix, stopwatch.ElapsedMilliseconds);
         }

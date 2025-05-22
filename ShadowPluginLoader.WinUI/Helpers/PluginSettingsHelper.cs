@@ -12,6 +12,7 @@ public static class PluginSettingsHelper
     private const string UpgradePathKey = "UpgradePathKey";
     private const string UpgradeTargetPathKey = "UpgradeTargetPathKey";
     private const string RemovePathKey = "RemovePathKey";
+    private const string InstallerKey = "InstallerKey";
 
     /// <summary>
     /// Get Plugin Setting
@@ -59,6 +60,30 @@ public static class PluginSettingsHelper
     }
 
     /// <summary>
+    /// Get Plugin Installer
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <returns></returns>
+    public static string GetPluginInstaller(string key)
+    {
+        var settings = GetPluginSetting(InstallerKey);
+        if (settings.TryGetValue(key, out var setting)) return (string)setting;
+        return "Base";
+    }
+
+    /// <summary>
+    /// Set Plugin Installer
+    /// </summary>
+    /// <param name="key">Plugin Id</param>
+    /// <param name="value">Is Enabled</param>
+    public static void SetPluginInstaller(string key, string value)
+    {
+        var settings = GetPluginSetting(InstallerKey);
+        settings[key] = value;
+        SetPluginSetting(InstallerKey, settings);
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="key"></param>
@@ -87,6 +112,7 @@ public static class PluginSettingsHelper
     {
         return GetPluginSetting(UpgradePathKey);
     }
+
     /// <summary>
     /// 
     /// </summary>
@@ -102,7 +128,7 @@ public static class PluginSettingsHelper
     /// <returns></returns>
     public static string? GetPluginUpgradeTargetPath(string key)
     {
-        return GetPluginSetting(UpgradeTargetPathKey).TryGetValue(key, out var value) ? (string) value : null;
+        return GetPluginSetting(UpgradeTargetPathKey).TryGetValue(key, out var value) ? (string)value : null;
     }
 
     /// <summary>
