@@ -144,9 +144,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     protected virtual void LoadPlugin(Type plugin, TMeta meta)
     {
         var stopwatch = new Stopwatch();
+        stopwatch.Start();
         try
         {
-            stopwatch.Start();
             BeforeLoadPlugin(plugin, meta);
             var instance = LoadMainPlugin(plugin, meta);
             AfterLoadPlugin(plugin, instance, meta);
@@ -161,15 +161,23 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             if (!enabled) return;
             instance.IsEnabled = enabled;
         }
-        finally
+        catch (Exception e)
         {
             if (stopwatch.IsRunning)
             {
                 stopwatch.Stop();
             }
 
-            Logger.Warning("{Pre}Plugin LoadAsync Failed! Used: {mi} ms",
-                LoggerPrefix, stopwatch.ElapsedMilliseconds);
+            Logger.Warning("{Pre}Plugin LoadAsync Failed! Used: {mi} ms, Error: {Ex}",
+                LoggerPrefix, stopwatch.ElapsedMilliseconds, e);
+            throw;
+        }
+        finally
+        {
+            if (stopwatch.IsRunning)
+            {
+                stopwatch.Stop();
+            }
         }
     }
 
