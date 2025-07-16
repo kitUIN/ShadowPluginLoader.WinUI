@@ -1,0 +1,52 @@
+@startuml
+abstract class "AbstractPlugin"<TMeta> {
+    + {abstract} DisplayName : string <<get>>
+    + {abstract} MetaData : TMeta <<get>>
+    # AbstractPlugin(logger:ILogger, pluginEventService:PluginEventService)
+    # Init() : void
+    + IsEnabled : bool <<get>>
+    + PlanUpgrade : bool <<get>>
+    + PlanRemove : bool <<get>>
+    + <<virtual>> Disabled() : void
+    + <<virtual>> Enabled() : void
+    + <<virtual>> Upgrade() : void
+    + <<virtual>> Remove() : void
+    # ResourceDictionaries: IEnumerable<string> <<get>>
+    + <<virtual>> Loaded() : void
+    + {abstract} Id : string <<get>>
+}
+interface "IPlugin"<out TMeta> {
+    MetaData : TMeta <<get>>
+    Id : string <<get>>
+    DisplayName : string <<get>>
+    IsEnabled : bool <<get>> 
+    PlanUpgrade : bool <<get>>
+    PlanRemove : bool <<get>> 
+    Loaded() : void
+    Disabled() : void
+    Enabled() : void
+    Upgrade() : void
+    Remove() : void
+}
+interface IPluginMetaData {
+    Id : string <<get>> <<init>>
+    Name : string <<get>> <<init>>
+    DllName : string <<get>> <<init>>
+    Version : string <<get>> <<init>>
+    Priority : int <<get>> <<init>>
+    BuiltIn : bool <<get>> <<init>>
+    Dependencies : PluginDependency[] <<get>> <<init>>
+}
+abstract class AbstractPluginMetaData <<record>> {
+    + Id : string <<get>> <<init>>
+    + Name : string <<get>> <<init>>
+    + DllName : string <<get>> <<init>>
+    + Version : string <<get>> <<init>>
+    + Priority : int <<get>> <<init>>
+    + BuiltIn : bool <<get>> <<init>>
+    + Dependencies : PluginDependency[] <<get>> <<init>>
+}
+IPluginMetaData <|-- AbstractPluginMetaData
+"IPlugin" "<TMeta>" <|-- "AbstractPlugin"
+AbstractPlugin ..|> AbstractPluginMetaData : TMeta
+@enduml

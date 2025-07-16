@@ -1,0 +1,43 @@
+﻿@startuml
+
+start
+:PluginEventService 发布\n"进入初始化阶段";
+
+partition "初始化阶段" {
+    :反射加载插件程序集;
+    :注册插件到DI容器;
+    :执行插件初始化逻辑;
+
+    :自动发现并注册\n已声明服务类;
+    :PluginEventService 发布\n"完成初始化阶段"事件;
+}
+
+partition "实例阶段" {
+    :插件开始提供服务\n响应主程序调用\n持续运行中;
+}
+
+if (用户禁用插件?) then (是)
+
+    partition "暂停阶段" {
+        :停止非必要功能;
+        :保留部分数据访问能力;
+    }
+
+    if (用户重新启用插件?) then (是)
+        :重启插件功能;
+        :重新进入实例阶段;
+    endif
+    
+endif
+
+if (进入升级或卸载流程?) then (是)
+
+    partition "升级/卸载阶段" {
+        :标记插件为待更新/卸载;
+        :释放资源;
+        :下次启动时完成热替换或卸载;
+    }
+endif
+
+stop
+@enduml

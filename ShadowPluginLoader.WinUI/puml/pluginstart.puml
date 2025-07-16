@@ -1,0 +1,32 @@
+﻿@startuml
+
+start
+
+:PluginEventService 发布\n"进入预加载阶段";
+
+partition "预加载阶段" {
+    :检测插件是否需要\n升级或卸载;
+    if (需要升级或卸载?) then (是)
+        :执行插件升级与卸载;
+    endif
+
+    :读取插件对象\n（文件/目录/网络/压缩包/Type）\n加入预加载队列;
+
+    :接收加载指令，\n并发解析元数据;
+    :构造插件依赖图（DAG）;
+
+    if (存在依赖回环\n或缺失?) then (是)
+        :报错并跳过;
+    endif
+
+    :二次校验元数据字段\n（如最低主程序版本）;
+    if (存在校验错误?) then (是)
+        :报错并跳过;
+    endif
+    :PluginEventService 发布\n"完成预加载阶段"事件;
+}
+
+
+
+stop
+@enduml

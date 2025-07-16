@@ -87,7 +87,7 @@ public class AbstractPluginLoaderAssignableTests
         loader = new ShadowExamplePluginLoader(logger, new PluginEventService(logger));
     }
 
-    [TestMethod]
+    [TestMethod("扫描原始对象Type")]
     public void Scan_Type_ShouldEnqueueFileInfo()
     {
         loader.Scan(typeof(EmojiPlugin));
@@ -95,7 +95,7 @@ public class AbstractPluginLoaderAssignableTests
         var target = loader.GetScanQueue().Dequeue();
     }
 
-    [UITestMethod]
+    [TestMethod("加载原始对象Type")]
     public async Task Scan_Type_Load()
     {
         loader.Scan(typeof(EmojiPlugin));
@@ -104,7 +104,7 @@ public class AbstractPluginLoaderAssignableTests
         // await loader.LoadAsync();
     }
 
-    [TestMethod]
+    [TestMethod("扫描原始对象<Type>")]
     public void Scan_Generic_ShouldEnqueueFileInfo()
     {
         loader.Scan<EmojiPlugin>();
@@ -112,7 +112,8 @@ public class AbstractPluginLoaderAssignableTests
         var target = loader.GetScanQueue().Dequeue();
     }
 
-    [TestMethod]
+
+    [TestMethod("扫描原始对象List<Type>")]
     public void Scan_EnumerableTypes_ShouldEnqueueAll()
     {
         var types = new[] { typeof(EmojiPlugin), typeof(EmojiPlugin) };
@@ -122,7 +123,7 @@ public class AbstractPluginLoaderAssignableTests
         var target2 = loader.GetScanQueue().Dequeue();
     }
 
-    [TestMethod]
+    [TestMethod("扫描原始对象DirectoryInfo")]
     public void Scan_DirectoryInfo_ShouldEnqueueAll()
     {
         var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -130,7 +131,7 @@ public class AbstractPluginLoaderAssignableTests
         Assert.IsTrue(loader.GetScanQueue().Count >= 0);
     }
 
-    [TestMethod]
+    [TestMethod("扫描原始对象FileInfo")]
     public void Scan_FileInfo_ShouldEnqueue()
     {
         var file = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), "plugin.json"));
@@ -138,7 +139,7 @@ public class AbstractPluginLoaderAssignableTests
         Assert.IsTrue(loader.GetScanQueue().Count > 0);
     }
 
-    [TestMethod]
+    [TestMethod("扫描原始对象Uri")]
     public void Scan_Uri_File_ShouldEnqueue()
     {
         var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -147,7 +148,7 @@ public class AbstractPluginLoaderAssignableTests
         Assert.IsTrue(loader.GetScanQueue().Count >= 0);
     }
 
-    [TestMethod]
+    [TestMethod("扫描原始对象HttpUri")]
     public void Scan_Uri_Http_ShouldEnqueue()
     {
         var uri = new Uri("http://localhost/plugin.json");
@@ -156,7 +157,7 @@ public class AbstractPluginLoaderAssignableTests
         var target2 = loader.GetScanQueue().Dequeue();
     }
 
-    [TestMethod]
+    [TestMethod("清空原始对象扫描队列")]
     public void ScanClear_ShouldClearQueue()
     {
         loader.Scan<EmojiPlugin>();

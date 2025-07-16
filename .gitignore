@@ -365,3 +365,4 @@ FodyWeavers.xsd
 nuget.config
 /nuget.config
 /ShadowExample.Plugin.Hello/Plugin.Build.exclude
+*.msix

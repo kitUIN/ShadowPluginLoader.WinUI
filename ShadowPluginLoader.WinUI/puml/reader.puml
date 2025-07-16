@@ -1,0 +1,30 @@
+﻿@startuml
+' title LocalPicViewResponder 类图
+
+' 抽象基类
+abstract class AbstractPicViewResponder {
+    + CurrentEpisodeIndexChanged(sender : object, ctx:PicViewContext, oldValue: int, newValue: int) : void
+    + CurrentPageIndexChanged(sender : object, ctx:PicViewContext, oldValue: int, newValue: int) : void
+    + PicturesLoadStarting(sender : object, ctx:PicViewContext) : void
+}
+
+class LocalPicViewResponder {
+    + CurrentEpisodeIndexChanged(sender : object, ctx:PicViewContext, oldValue: int, newValue: int) : void
+    + CurrentPageIndexChanged(sender : object, ctx:PicViewContext, oldValue: int, newValue: int) : void
+    + PicturesLoadStarting(sender : object, ctx:PicViewContext) : void
+    # Caller : ICallableService
+    # Db : ISqlSugarClient
+}
+class PicViewContext <<record>> {
+    + Affiliation : string
+    + Parameter : object
+    + States : Dictionary<string, object>
+}
+
+' 继承关系
+LocalPicViewResponder --|> AbstractPicViewResponder
+
+' 方法参数模型依赖
+LocalPicViewResponder ..> PicViewContext
+
+@enduml

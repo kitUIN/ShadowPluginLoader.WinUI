@@ -3,8 +3,9 @@ using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Models;
 using ShadowPluginLoader.WinUI.Exceptions;
 using System.Collections.Generic;
+using ShadowPluginLoader.WinUI;
 
-namespace ShadowPluginLoader.WinUI.Tests.Checkers
+namespace App1
 {
     [TestClass]
     public class DependencyCheckerTests
@@ -21,14 +22,14 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
                 Id = id, Version = version, Priority = priority,
                 Dependencies = dependencies
             };
-            var plugin = new SortPluginData<TestMeta>(meta, "")
+            var plugin = new SortPluginData<TestMeta>(meta, "C:/test","Base")
             {
                 // ∑¥…‰…Ë÷√÷ª∂¡ Ù–‘
             };
             return plugin;
         }
 
-        [TestMethod("≤‚ ‘º”‘ÿÀ≥–Ú")]
+        [TestMethod("“¿¿µº”‘ÿÀ≥–Ú")]
         public void DetermineLoadOrder_NoDependencies_ReturnsPluginsInPriorityOrder()
         {
             var checker = new DependencyChecker<TestMeta>();
@@ -43,7 +44,7 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
             Assert.AreEqual("B", result.Result[1].Id);
         }
 
-        [TestMethod("≤‚ ‘”–“¿¿µµƒº”‘ÿ")]
+        [TestMethod("”–“¿¿µµƒº”‘ÿ")]
         public void DetermineLoadOrder_WithDependencies_RespectsDependencyOrder()
         {
             var checker = new DependencyChecker<TestMeta>();
@@ -59,7 +60,7 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
             Assert.AreEqual("B", result.Result[1].Id);
         }
 
-        [TestMethod("≤‚ ‘≤ª¥Ê‘⁄“¿¿µ")]
+        [TestMethod("≤ª¥Ê‘⁄“¿¿µ")]
         [ExpectedException(typeof(PluginImportException))]
         public void DetermineLoadOrder_MissingDependency_ThrowsException()
         {
@@ -71,7 +72,7 @@ namespace ShadowPluginLoader.WinUI.Tests.Checkers
             checker.DetermineLoadOrder(plugins);
         }
 
-        [TestMethod("≤‚ ‘“¿¿µ∞Ê±æ≤ª∂‘")]
+        [TestMethod("“¿¿µ∞Ê±æ¥ÌŒÛ")]
         [ExpectedException(typeof(PluginImportException))]
         public void DetermineLoadOrder_VersionNotSatisfied_ThrowsException()
         {

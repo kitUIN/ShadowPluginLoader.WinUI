@@ -36,8 +36,7 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
             .Where(p =>
             {
                 if (!LoadedPlugins.ContainsKey(p.MetaData.DllName)) return true;
-                if (LoadedPlugins.TryGetValue(p.MetaData.DllName, out var actualVersion) &&
-                    actualVersion < p.Version)
+                if (LoadedPlugins.TryGetValue(p.MetaData.DllName, out var actualVersion) && actualVersion < p.Version)
                     needUpgradePlugins.Add(p);
                 return false;
             })

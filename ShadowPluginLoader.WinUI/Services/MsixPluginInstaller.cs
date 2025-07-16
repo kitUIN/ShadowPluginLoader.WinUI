@@ -9,14 +9,14 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Management.Deployment;
+using Serilog;
 
 namespace ShadowPluginLoader.WinUI.Services;
 
 /// <summary>
 /// Msix Plugin Installer
 /// </summary>
-[CheckAutowired]
-public partial class MsixPluginInstaller : ZipPluginInstaller
+public partial class MsixPluginInstaller(ILogger logger) : ZipPluginInstaller(logger)
 {
     /// <inheritdoc />
     public override int Priority => 1;
