@@ -51,12 +51,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// DependencyChecker
     /// </summary>
     protected virtual IDependencyChecker<TMeta> DependencyChecker { get; } = new DependencyChecker<TMeta>();
-
-    /// <summary>
-    /// MetaDataChecker
-    /// </summary>
-    protected virtual IMetaDataChecker<TMeta> MetaDataChecker { get; } = new MetaDataChecker<TMeta>();
-
+    
     /// <summary>
     /// Logger
     /// </summary>
