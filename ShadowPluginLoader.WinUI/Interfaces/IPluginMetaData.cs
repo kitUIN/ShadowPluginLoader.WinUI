@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Text.Json.Nodes;
+using System;
 using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
@@ -25,9 +24,19 @@ internal interface IPluginMetaData
     string DllName { get; init; }
 
     /// <summary>
+    /// Plugin DllPath relative to plugin.json location
+    /// </summary>
+    string DllPath { get; init; }
+
+    /// <summary>
     /// Plugin Version
     /// </summary>
-    string Version { get; init; }
+    Version Version { get; init; }
+
+    /// <summary>
+    /// Plugin Type
+    /// </summary>
+    Type MainPluginType { get; init; }
 
     /// <summary>
     /// Plugin Dependencies

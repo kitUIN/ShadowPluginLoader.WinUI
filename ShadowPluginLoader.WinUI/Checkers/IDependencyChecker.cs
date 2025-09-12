@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ShadowPluginLoader.WinUI.Models;
 
-namespace ShadowPluginLoader.WinUI.Interfaces;
+namespace ShadowPluginLoader.WinUI.Checkers;
 
 /// <summary>
 /// Dependency Checker
@@ -16,9 +16,14 @@ public interface IDependencyChecker<TMeta> where TMeta : AbstractPluginMetaData
     Dictionary<string, Version> LoadedPlugins { get; }
 
     /// <summary>
+    /// LoadedMetas
+    /// </summary>
+    Dictionary<string, TMeta> LoadedMetas { get; }
+
+    /// <summary>
     /// DetermineLoadOrder
     /// </summary>
     /// <param name="plugins"></param>
     /// <returns></returns>
-    DependencyCheckResult<TMeta> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins);
+    DependencyCheckResult<TMeta> DetermineLoadOrder(IEnumerable<SortPluginData<TMeta>> plugins);
 }

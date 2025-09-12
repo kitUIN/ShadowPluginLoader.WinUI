@@ -22,7 +22,7 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public DependencyCheckResult<TMeta> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins)
+    public DependencyCheckResult<TMeta> DetermineLoadOrder(IEnumerable<SortPluginData<TMeta>> plugins)
     {
         var sortedPlugins = new List<SortPluginData<TMeta>>();
         var visited = new HashSet<string>();
