@@ -40,6 +40,7 @@
         <PackageReference Include="kitUIN.CustomExtensions.WinUI" Version="0.6.4" />
         <PackageReference Include="ShadowPluginLoader.Tool" Version="2.6.5" />
         <PackageReference Include="SharpCompress" Version="0.39.0" /> 
+        <PackageReference Include="YamlDotNet" Version="16.3.0" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />
