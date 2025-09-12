@@ -89,6 +89,39 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     Task<List<SortPluginData<TMeta>>> LoadAsync();
 
     /// <summary>
+    /// 预加载插件DLL（不实例化）
+    /// <example>
+    /// <code>
+    /// loader.Scan(pluginJson);
+    /// await loader.PreloadAsync(); // 只加载DLL，不实例化
+    /// await loader.InstantiatePluginsAsync(); // 延迟实例化
+    /// </code>
+    /// </example>
+    /// </summary>
+    /// <returns>预加载的插件数据</returns>
+    Task<List<PreloadedPluginData<TMeta>>> PreloadAsync();
+
+    /// <summary>
+    /// 实例化预加载的插件
+    /// </summary>
+    /// <param name="pluginIds">要实例化的插件ID列表，为空则实例化所有</param>
+    /// <returns>实例化的插件数量</returns>
+    Task<int> InstantiatePluginsAsync(IEnumerable<string>? pluginIds = null);
+
+    /// <summary>
+    /// 获取预加载的插件数据
+    /// </summary>
+    /// <returns>预加载的插件数据列表</returns>
+    IList<PreloadedPluginData<TMeta>> GetPreloadedPlugins();
+
+    /// <summary>
+    /// 获取指定插件的预加载数据
+    /// </summary>
+    /// <param name="id">插件ID</param>
+    /// <returns>预加载的插件数据或null</returns>
+    PreloadedPluginData<TMeta>? GetPreloadedPlugin(string id);
+
+    /// <summary>
     /// Get Enabled Plugins
     /// </summary>
     /// <returns>Enabled Plugins</returns>

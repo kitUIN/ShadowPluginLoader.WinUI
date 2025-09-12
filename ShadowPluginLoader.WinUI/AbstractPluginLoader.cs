@@ -132,6 +132,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     private readonly Dictionary<string, TAPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// 预加载的插件数据
+    /// </summary>
+    private readonly Dictionary<string, PreloadedPluginData<TMeta>> _preloadedPlugins = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// LoadAsync Plugin From Type
     /// </summary>
     /// <param name="plugin">Plugin Type</param>
