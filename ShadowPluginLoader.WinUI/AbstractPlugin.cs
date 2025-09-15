@@ -21,6 +21,8 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     /// <inheritdoc />
     public virtual TMeta MetaData { get; }
 
+    /// <inheritdoc />
+    public virtual string Id => MetaData.Id;
     /// <summary>
     /// Logger
     /// </summary>
@@ -155,7 +157,4 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     public virtual void Loaded()
     {
     }
-
-    /// <inheritdoc/>
-    public abstract string Id { get; }
 }

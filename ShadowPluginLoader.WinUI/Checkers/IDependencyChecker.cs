@@ -1,6 +1,7 @@
+using NuGet.Versioning;
+using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
-using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -13,7 +14,7 @@ public interface IDependencyChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// LoadedPluginDependencies
     /// </summary>
-    Dictionary<string, Version> LoadedPlugins { get; }
+    Dictionary<string, NuGetVersion> LoadedPlugins { get; }
 
     /// <summary>
     /// LoadedMetas

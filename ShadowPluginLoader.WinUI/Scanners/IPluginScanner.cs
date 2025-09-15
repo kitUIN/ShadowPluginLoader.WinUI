@@ -142,7 +142,7 @@ public interface IPluginScanner<TAPlugin, TMeta>
     /// </example>
     /// </summary>
     /// <exception cref="PluginScanException"></exception>
-    Task<IEnumerable<String>> Finish();
+    Task<IEnumerable<string>> Finish();
 
 
 

@@ -10,7 +10,7 @@
         <!-- Nuget && Plugin Meta -->
         <PackageId>ShadowExample.Plugin.Emoji</PackageId>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>1.0.1.2</Version>
+        <Version>1.0.2.2</Version>
         <Author>kitUIN</Author>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
@@ -18,21 +18,16 @@
         <Description>✨ ShadowExample.Plugin.Emoji | WinUI3✨</Description>
         <Copyright>Copyright 2024</Copyright>
         <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-        <PluginMeta>
-            <Id>Emoji</Id>
-            <Name>emoji</Name>
-            <Version>$(Version)</Version> 
-            <PackageLicenseExpression>MIT</PackageLicenseExpression>
-            <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
-            <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
-            <Description>✨ ShadowExample.Plugin.Emoji | WinUI3✨</Description>
-            <Copyright>Copyright 2024</Copyright>
-            <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-        </PluginMeta>
+
+		<PluginId>Emoji</PluginId>
+        <PluginName>emoji</PluginName>
         <LangVersion>12</LangVersion>
-    </PropertyGroup> 
+    </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="ShadowExample.Core" Version="1.1.4" /> 
-    </ItemGroup> 
- 
+        <PackageReference Include="ShadowExample.Core" Version="1.1.13" /> 
+    </ItemGroup>
+
+	<ItemGroup Label="Dependencies">
+		<PackageReference Include="ShadowExample.Plugin.Hello" Version="1.1.2"  Need="(1.0,2.0)" />
+	</ItemGroup>
 </Project>

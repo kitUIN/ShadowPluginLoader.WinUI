@@ -1,7 +1,9 @@
-using System;
+using NuGet.Versioning;
 using ShadowPluginLoader.Attributes;
+using ShadowPluginLoader.WinUI.Converters;
 using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
+using System;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -31,21 +33,15 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.DllName"/>
     /// </summary>
-    [Meta(Required = false)]
+    [Meta(Exclude = true)]
     public string DllName { get; init; } = null!;
 
-    /// <summary>
-    /// <inheritdoc cref="IPluginMetaData.DllPath"/>
-    /// </summary>
-    [Meta(Required = false)]
-    public string DllPath { get; init; } = null!;
 
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Version"/>
     /// </summary>
-    [Meta(Required = true, JsonType = typeof(string),
-        ConstructionTemplate = "new System.Version(\"{{ RAW }}\")")]
-    public Version Version { get; init; } = null!;
+    [Meta(Required = true, AsString = true, Converter = typeof(NuGetVersionJsonConverter))]
+    public NuGetVersion Version { get; init; } = null!;
 
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.MainPluginType"/>
@@ -62,8 +58,7 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.Dependencies"/>
     /// </summary>
-    [Meta(Required = false, JsonType = typeof(string[]),
-        ConstructionTemplate = "new ShadowPluginLoader.WinUI.Models.PluginDependency(\"{{ RAW }}\")")]
+    [Meta(Exclude = true, AsString = true, Converter = typeof(PluginDependencyJsonConverter))]
     public PluginDependency[] Dependencies { get; init; } = [];
 
     /// <summary>

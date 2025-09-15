@@ -1,62 +1,79 @@
 {
-  "Type": "ShadowExample.Core.Plugins.ExampleMetaData",
-  "Properties": {
-    "Authors": {
-      "Type": "System.Array",
-      "Required": false,
-      "PropertyGroupName": "Authors",
-      "Nullable": false,
-      "Item": {
-        "Type": "System.String",
-        "Nullable": false
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "ExampleMetaData",
+  "definitions": {
+    "InnerMetaData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Number",
+        "DoubleNumber"
+      ],
+      "properties": {
+        "Number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "DoubleNumber": {
+          "type": "number",
+          "format": "double"
+        }
       }
     },
-    "Url": {
-      "Type": "System.String",
-      "Required": false,
-      "PropertyGroupName": "Url",
-      "Nullable": false
-    },
-    "Id": {
-      "Type": "System.String",
-      "Required": true,
-      "PropertyGroupName": "Id",
-      "Nullable": false
-    },
-    "Name": {
-      "Type": "System.String",
-      "Required": true,
-      "PropertyGroupName": "Name",
-      "Nullable": false
-    },
-    "DllName": {
-      "Type": "System.String",
-      "Required": false,
-      "PropertyGroupName": "DllName",
-      "Nullable": false
-    },
-    "Version": {
-      "Type": "System.String",
-      "Required": true,
-      "PropertyGroupName": "Version",
-      "Nullable": false
-    },
-    "Priority": {
-      "Type": "System.Int32",
-      "Required": false,
-      "PropertyGroupName": "Priority",
-      "Nullable": false
-    },
-    "Dependencies": {
-      "Type": "System.Array",
-      "Required": false,
-      "PropertyGroupName": "Dependencies",
-      "Nullable": false,
-      "Item": {
-        "Type": "System.String",
-        "Nullable": false,
-        "ConstructionTemplate": "new ShadowPluginLoader.WinUI.Models.PluginDependency(\u0022{{ RAW }}\u0022)"
+    "AbstractPluginMetaData": {
+      "type": "object",
+      "description": "Abstract PluginMetaData",
+      "x-abstract": true,
+      "additionalProperties": false,
+      "required": [
+        "Id",
+        "Name",
+        "Version"
+      ],
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Version": {
+          "type": "string"
+        },
+        "Priority": {
+          "type": "integer",
+          "format": "int32"
+        }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/AbstractPluginMetaData"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Authors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Url": {
+          "type": "string"
+        },
+        "InnerMetaData": {
+          "$ref": "#/definitions/InnerMetaData"
+        },
+        "InnerMetaDatas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InnerMetaData"
+          }
+        }
+      }
+    }
+  ]
 }

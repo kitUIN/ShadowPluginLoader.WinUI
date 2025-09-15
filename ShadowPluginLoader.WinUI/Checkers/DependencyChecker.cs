@@ -1,9 +1,10 @@
-using ShadowPluginLoader.WinUI.Interfaces;
-using System.Collections.Generic;
-using System;
-using System.Linq;
+using NuGet.Versioning;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -13,10 +14,11 @@ namespace ShadowPluginLoader.WinUI.Checkers;
 public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-    /// <summary>
     /// <inheritdoc />
-    /// </summary>
-    public Dictionary<string, Version> LoadedPlugins { get; } = new();
+    public Dictionary<string, NuGetVersion> LoadedPlugins { get; } = new();
+
+    /// <inheritdoc />
+    public Dictionary<string, TMeta> LoadedMetas { get; } = new();
 
 
     /// <summary>
@@ -106,13 +108,8 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// <param name="actualVersion"></param>
     /// <param name="dependency"></param>
     /// <returns></returns>
-    private bool IsVersionSatisfied(Version actualVersion, PluginDependency dependency)
+    private bool IsVersionSatisfied(NuGetVersion actualVersion, PluginDependency dependency)
     {
-        return dependency.Comparer switch
-        {
-            PluginDependencyComparer.Lesser => actualVersion <= dependency.Version,
-            PluginDependencyComparer.Same => actualVersion == dependency.Version,
-            _ => actualVersion >= dependency.Version
-        };
+        return dependency.Need.Satisfies(actualVersion);
     }
 }

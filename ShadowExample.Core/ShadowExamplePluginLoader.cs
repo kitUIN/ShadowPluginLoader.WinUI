@@ -21,21 +21,11 @@ namespace ShadowExample.Core
             IsCheckUpgradeAndRemove = value;
         }
 
-        public Queue<Uri> GetScanQueue()
-        {
-            return ScanQueue;
-        }
 
         public IDependencyChecker<ExampleMetaData> GetDependencyChecker()
         {
             return DependencyChecker;
         }
-
-        public IMetaDataChecker<ExampleMetaData> GetMetaDataChecker()
-        {
-            return MetaDataChecker;
-        }
-
         /// <inheritdoc />
         protected override string TempFolder => "temps";
 

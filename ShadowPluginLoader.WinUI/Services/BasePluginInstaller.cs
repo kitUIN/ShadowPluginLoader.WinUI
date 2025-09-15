@@ -1,4 +1,4 @@
-﻿using CustomExtensions.WinUI;
+using CustomExtensions.WinUI;
 using Serilog;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Exceptions;
@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ShadowPluginLoader.WinUI.Converters;
 
 namespace ShadowPluginLoader.WinUI.Services;
 

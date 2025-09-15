@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Extensions;
@@ -18,6 +18,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 using ShadowPluginLoader.WinUI.Checkers;
+using ShadowPluginLoader.WinUI.Converters;
 
 namespace ShadowPluginLoader.WinUI.Services;
 
@@ -92,7 +93,7 @@ public partial class ZipPluginInstaller : BasePluginInstaller
         serializeOptions.Converters.Add(new PluginDependencyJsonConverter());
         var newVersionUri = await FileHelper.DownloadFileAsync(tempFolder, uri, Logger);
         var zipMeta = await GetMetaData<TMeta>(newVersionUri, serializeOptions);
-        if (new Version(zipMeta.Version) <= new Version(plugin.MetaData.Version)) 
+        if (zipMeta.Version <= plugin.MetaData.Version) 
             throw new PluginUpgradeException("NewVersionUri Version is less than or equal to current version");
         plugin.PlanUpgrade = true;
         PluginSettingsHelper.SetPluginUpgradePath(plugin.Id, newVersionUri.LocalPath,

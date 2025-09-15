@@ -1,5 +1,6 @@
-using System;
+using NuGet.Versioning;
 using ShadowPluginLoader.WinUI.Models;
+using System;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -24,14 +25,9 @@ internal interface IPluginMetaData
     string DllName { get; init; }
 
     /// <summary>
-    /// Plugin DllPath relative to plugin.json location
-    /// </summary>
-    string DllPath { get; init; }
-
-    /// <summary>
     /// Plugin Version
     /// </summary>
-    Version Version { get; init; }
+    NuGetVersion Version { get; init; }
 
     /// <summary>
     /// Plugin Type
