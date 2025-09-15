@@ -3,6 +3,7 @@ using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Models;
 using ShadowPluginLoader.WinUI.Exceptions;
 using System.Collections.Generic;
+using NuGet.Versioning;
 using ShadowPluginLoader.WinUI;
 
 namespace App1
@@ -19,17 +20,17 @@ namespace App1
         {
             var meta = new TestMeta()
             {
-                Id = id, Version = version, Priority = priority,
+                Id = id, Version = new NuGetVersion(version), Priority = priority,
                 Dependencies = dependencies
             };
             var plugin = new SortPluginData<TestMeta>(meta, "C:/test","Base")
             {
-                // ·´ÉäÉèÖÃÖ»¶ÁÊôĞÔ
+                // åå°„è®¾ç½®åªè¯»å±æ€§
             };
             return plugin;
         }
 
-        [TestMethod("ÒÀÀµ¼ÓÔØË³Ğò")]
+        [TestMethod("ä¾èµ–åŠ è½½é¡ºåº")]
         public void DetermineLoadOrder_NoDependencies_ReturnsPluginsInPriorityOrder()
         {
             var checker = new DependencyChecker<TestMeta>();
@@ -44,7 +45,7 @@ namespace App1
             Assert.AreEqual("B", result.Result[1].Id);
         }
 
-        [TestMethod("ÓĞÒÀÀµµÄ¼ÓÔØ")]
+        [TestMethod("æœ‰ä¾èµ–çš„åŠ è½½")]
         public void DetermineLoadOrder_WithDependencies_RespectsDependencyOrder()
         {
             var checker = new DependencyChecker<TestMeta>();
@@ -60,7 +61,7 @@ namespace App1
             Assert.AreEqual("B", result.Result[1].Id);
         }
 
-        [TestMethod("²»´æÔÚÒÀÀµ")]
+        [TestMethod("ä¸å­˜åœ¨ä¾èµ–")]
         [ExpectedException(typeof(PluginImportException))]
         public void DetermineLoadOrder_MissingDependency_ThrowsException()
         {
@@ -72,7 +73,7 @@ namespace App1
             checker.DetermineLoadOrder(plugins);
         }
 
-        [TestMethod("ÒÀÀµ°æ±¾´íÎó")]
+        [TestMethod("ä¾èµ–ç‰ˆæœ¬é”™è¯¯")]
         [ExpectedException(typeof(PluginImportException))]
         public void DetermineLoadOrder_VersionNotSatisfied_ThrowsException()
         {
