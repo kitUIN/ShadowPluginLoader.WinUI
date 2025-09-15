@@ -7,13 +7,13 @@ namespace ShadowPluginLoader.WinUI.Models;
 /// </summary>
 public record PluginDependency
 {
-
     /// <summary>
     /// 
     /// </summary>
-    public PluginDependency(string id, string versionRange)
+    public PluginDependency(string id, string name, string versionRange)
     {
         Id = id;
+        Name = name;
         Need = VersionRange.Parse(versionRange);
     }
 
@@ -21,6 +21,11 @@ public record PluginDependency
     /// 
     /// </summary>
     public string Id { get; init; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Name { get; init; }
 
     /// <summary>
     /// 

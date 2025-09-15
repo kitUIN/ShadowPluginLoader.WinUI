@@ -1,6 +1,5 @@
 using System;
 using DryIoc;
-using ShadowPluginLoader.WinUI.Scanners;
 using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowPluginLoader.WinUI;

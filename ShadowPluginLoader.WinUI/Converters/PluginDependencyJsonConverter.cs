@@ -19,8 +19,9 @@ public class PluginDependencyJsonConverter : JsonConverter<PluginDependency>
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected StartObject");
 
-        string id = "";
-        string need = "";
+        var id = "";
+        var need = "";
+        var name = "";
 
         while (reader.Read())
         {
@@ -35,8 +36,10 @@ public class PluginDependencyJsonConverter : JsonConverter<PluginDependency>
                 switch (propertyName)
                 {
                     case "Id":
-                    case "Name": // 兼容旧字段名
                         id = reader.TokenType == JsonTokenType.String ? reader.GetString() ?? "" : "";
+                        break;
+                    case "Name": // 兼容旧字段名
+                        name = reader.TokenType == JsonTokenType.String ? reader.GetString() ?? "" : "";
                         break;
 
                     case "Need":
@@ -50,13 +53,14 @@ public class PluginDependencyJsonConverter : JsonConverter<PluginDependency>
             }
         }
 
-        return new PluginDependency(id, need);
+        return new PluginDependency(id, name,need);
     }
 
     public override void Write(Utf8JsonWriter writer, PluginDependency value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
         writer.WriteString("Id", value.Id);
+        writer.WriteString("Name", value.Name);
         writer.WriteString("Need", value.Need.ToString());
         writer.WriteEndObject();
     }

@@ -14,6 +14,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using ShadowPluginLoader.WinUI.Helpers;
 
 namespace ShadowPluginLoader.WinUI.Scanners;
 
@@ -140,7 +141,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    /// <exception cref="PluginImportException"></exception>
+    /// <exception cref="PluginScanException"></exception>
     public IPluginScanner<TAPlugin, TMeta> Scan(Uri uri)
     {
         if (!uri.IsFile && Directory.Exists(uri.LocalPath))
@@ -152,8 +153,8 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
             ScanTaskList.Add(Task.Run(async () =>
             {
                 var content = await File.ReadAllTextAsync(uri.LocalPath);
-                var meta = JsonSerializer.Deserialize<TMeta>(content) ??
-                           throw new PluginImportException($"Failed to deserialize plugin metadata from {uri}");
+                var meta = MetaDataHelper.ToMeta<TMeta>(content) ??
+                           throw new PluginScanException($"Failed to deserialize plugin metadata from {uri}");
                 return new SortPluginData<TMeta>(meta, uri);
             }));
         }
