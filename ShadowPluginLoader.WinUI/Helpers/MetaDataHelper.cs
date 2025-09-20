@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 namespace ShadowPluginLoader.WinUI.Helpers;
 
 /// <summary>
-/// 
+/// Metadata helper for plugin configuration
 /// </summary>
 public static class MetaDataHelper
 {
@@ -41,7 +41,7 @@ public static class MetaDataHelper
 
 
     /// <summary>
-    /// 获取并实例化所有属性上的 Converter（父类 + 子类）
+    /// Get and instantiate all Converters on properties (parent class + child class)
     /// </summary>
     private static IEnumerable<JsonConverter> GetAllConverters(Type type)
     {
@@ -56,7 +56,7 @@ public static class MetaDataHelper
                 if (meta?.Converter != null &&
                     typeof(JsonConverter).IsAssignableFrom(meta.Converter))
                 {
-                    // 通过 Activator 实例化
+                    // Instantiate through Activator
                     if (Activator.CreateInstance(meta.Converter) is JsonConverter instance)
                     {
                         converters.Add(instance);
@@ -64,7 +64,7 @@ public static class MetaDataHelper
                 }
             }
 
-            type = type.BaseType; // 递归父类
+            type = type.BaseType; // Recursive parent class
         }
 
         return converters;

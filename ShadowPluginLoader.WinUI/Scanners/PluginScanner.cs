@@ -48,7 +48,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     }
 
     /// <summary>
-    /// 用于放置将json文件转为TMeta的Task
+    /// Used to store Tasks that convert JSON files to TMeta
     /// </summary>
     protected readonly ConcurrentBag<Task<SortPluginData<TMeta>>> ScanTaskList = [];
 

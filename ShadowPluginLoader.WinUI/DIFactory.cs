@@ -5,12 +5,12 @@ using ShadowPluginLoader.WinUI.Services;
 namespace ShadowPluginLoader.WinUI;
 
 /// <summary>
-/// 依赖注入-工厂
+/// Dependency injection factory
 /// </summary>
 public static class DiFactory
 {
     /// <summary>
-    /// 依赖注入-容器
+    /// Dependency injection container
     /// </summary>
     public static Container Services { get; }
 

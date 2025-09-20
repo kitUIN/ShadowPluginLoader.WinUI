@@ -19,12 +19,20 @@
         <Copyright>Copyright 2024</Copyright>
         <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
 
+  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  <!-- 可选：自定义生成目录 -->
+  <CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
 		<PluginId>Emoji</PluginId>
         <PluginName>emoji</PluginName>
         <LangVersion>12</LangVersion>
     </PropertyGroup>
+      <ItemGroup>
+    <!-- 添加了内存里面的文件，不应该添加磁盘的，否则添加两份 -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+  </ItemGroup>
     <ItemGroup>
         <PackageReference Include="ShadowExample.Core" Version="1.1.13" /> 
+        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="3.0.4" /> 
     </ItemGroup>
 
 	<ItemGroup Label="Dependencies">
