@@ -23,11 +23,17 @@ public partial class EmojiConfig
     [ConfigField(Name = "AnimationSpeed", Description = "动画速度")]
     private double _animationSpeed;
 
+    [ConfigField(Name = "Settings", Description = "表情设置")]
+    private EmojiSettings _settings;
+
     /// <summary>
     /// 配置初始化后的回调
     /// </summary>
     partial void AfterConfigInit()
     {
+        // 初始化实体类
+        _settings ??= new EmojiSettings();
+        
         // 在这里可以添加配置初始化后的逻辑
         System.Diagnostics.Debug.WriteLine($"EmojiConfig initialized: Size={DefaultEmojiSize}, AutoComplete={EnableAutoComplete}");
     }

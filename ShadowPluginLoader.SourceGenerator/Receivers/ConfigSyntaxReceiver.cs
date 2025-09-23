@@ -27,6 +27,15 @@ public class ConfigSyntaxReceiver : ISyntaxReceiver
         {
             MainPluginClasses.Add(classDeclaration);
         }
+        
+        // 检查内部类是否有ConfigAttribute
+        foreach (var innerClass in classDeclaration.Members.OfType<ClassDeclarationSyntax>())
+        {
+            if (innerClass.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)) && HasConfigAttribute(innerClass))
+            {
+                ConfigClasses.Add(innerClass);
+            }
+        }
     }
 
     private static bool HasConfigAttribute(ClassDeclarationSyntax classDeclaration)

@@ -22,10 +22,11 @@ public record ConfigChangedEventArgs(
 );
 
 /// <summary>
-/// Base configuration class providing property change notification and configuration change event functionality
+/// Base configuration class providing property change notification, configuration change event functionality, and entity change notification
 /// Inherits from INotifyPropertyChanged to support data binding
+/// Supports both configuration-level and entity-level change notifications
 /// </summary>
-public abstract class BaseConfig : INotifyPropertyChanged
+public abstract class BaseConfig : INotifyPropertyChanged, IEntityWithChangeNotification
 {
     private static readonly ISerializer _serializer = new SerializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -62,6 +63,12 @@ public abstract class BaseConfig : INotifyPropertyChanged
     public event EventHandler<ConfigChangedEventArgs> ConfigChanged;
 
     /// <summary>
+    /// Entity changed event that is triggered when entity properties change
+    /// Used for nested entity change notifications
+    /// </summary>
+    public event EventHandler<EntityChangedEventArgs> EntityChanged;
+
+    /// <summary>
     /// Triggers the property changed event
     /// Call this method when property values change to notify UI updates
     /// </summary>
@@ -95,10 +102,58 @@ public abstract class BaseConfig : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// Triggers the entity changed event
+    /// Call this method when entity properties change for nested entity notifications
+    /// </summary>
+    /// <param name="propertyName">The name of the changed property</param>
+    /// <param name="oldValue">The old value of the property</param>
+    /// <param name="newValue">The new value of the property</param>
+    public virtual void OnEntityChanged(string propertyName, object oldValue, object newValue)
+    {
+        OnEntityChanged(propertyName, propertyName, oldValue, newValue);
+    }
+
+    /// <summary>
+    /// Triggers the entity changed event with full property path
+    /// Call this method when entity properties change for nested entity notifications with full path
+    /// </summary>
+    /// <param name="propertyName">The name of the changed property</param>
+    /// <param name="fullPropertyPath">The full property path from root</param>
+    /// <param name="oldValue">The old value of the property</param>
+    /// <param name="newValue">The new value of the property</param>
+    public virtual void OnEntityChanged(string propertyName, string fullPropertyPath, object oldValue, object newValue)
+    {
+        EntityChanged?.Invoke(this, new EntityChangedEventArgs(propertyName, fullPropertyPath, oldValue, newValue, GetType()));
+    }
+
+    /// <summary>
+    /// Sets a property value and triggers change notifications
+    /// This method provides a convenient way to set properties with automatic change notification
+    /// </summary>
+    /// <typeparam name="T">The type of the property</typeparam>
+    /// <param name="field">The field reference</param>
+    /// <param name="value">The new value</param>
+    /// <param name="propertyName">The name of the property</param>
+    /// <returns>True if the value was changed, false otherwise</returns>
+    protected virtual bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null!)
+    {
+        if (Equals(field, value)) return false;
+        
+        var oldValue = field;
+        field = value;
+        
+        OnPropertyChanged(propertyName);
+        OnEntityChanged(propertyName, oldValue, value);
+        
+        return true;
+    }
+
+    /// <summary>
     /// Saves the current configuration to a YAML file synchronously
     /// </summary>
     public virtual void SaveToYaml()
     {
+        if (string.IsNullOrEmpty(ConfigPath)) return;
         try
         {
             var yaml = _serializer.Serialize(this);
