@@ -31,6 +31,7 @@ public class ConfigGenerator : ISourceGenerator
 
         try
         {
+            // 首先处理Config类，生成Config类代码
             foreach (var classDeclaration in receiver.ConfigClasses)
             {
                 var semanticModel = context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree);
@@ -53,11 +54,30 @@ public class ConfigGenerator : ISourceGenerator
 
                 if (configFields.Count == 0) continue;
 
-                // 生成代码
+                // 生成Config类代码
                 var generatedCode = GenerateConfigClass(classSymbol, configFields, fileName, dirPath, description, version);
                 
                 var fileName_safe = classSymbol.Name.Replace("<", "").Replace(">", "");
                 context.AddSource($"{fileName_safe}.Config.g.cs", generatedCode);
+            }
+
+            // 然后处理MainPlugin类，为每个MainPlugin类添加Config静态成员
+            foreach (var mainPluginDeclaration in receiver.MainPluginClasses)
+            {
+                var semanticModel = context.Compilation.GetSemanticModel(mainPluginDeclaration.SyntaxTree);
+                var mainPluginSymbol = semanticModel.GetDeclaredSymbol(mainPluginDeclaration) as INamedTypeSymbol;
+                
+                if (mainPluginSymbol == null) continue;
+
+                // 查找同命名空间下的Config类
+                var configClass = FindConfigClassInSameNamespace(mainPluginSymbol, receiver.ConfigClasses, context);
+                if (configClass == null) continue;
+
+                // 生成MainPlugin类的扩展代码，添加Config静态成员
+                var mainPluginExtensionCode = GenerateMainPluginConfigExtension(mainPluginSymbol, configClass);
+                
+                var mainPluginFileName_safe = mainPluginSymbol.Name.Replace("<", "").Replace(">", "");
+                context.AddSource($"{mainPluginFileName_safe}.ConfigExtension.g.cs", mainPluginExtensionCode);
             }
         }
         catch (Exception ex)
@@ -238,6 +258,49 @@ public class ConfigGenerator : ISourceGenerator
             return input;
 
         return char.ToLower(input[0]) + input.Substring(1);
+    }
+
+    private INamedTypeSymbol? FindConfigClassInSameNamespace(INamedTypeSymbol mainPluginSymbol, 
+        List<ClassDeclarationSyntax> configClasses, GeneratorExecutionContext context)
+    {
+        var mainPluginNamespace = mainPluginSymbol.ContainingNamespace.ToDisplayString();
+        
+        foreach (var configDeclaration in configClasses)
+        {
+            var semanticModel = context.Compilation.GetSemanticModel(configDeclaration.SyntaxTree);
+            var configSymbol = semanticModel.GetDeclaredSymbol(configDeclaration) as INamedTypeSymbol;
+            
+            if (configSymbol == null) continue;
+            
+            // 检查是否在同一命名空间
+            if (configSymbol.ContainingNamespace.ToDisplayString() == mainPluginNamespace)
+            {
+                return configSymbol;
+            }
+        }
+        
+        return null;
+    }
+
+    private string GenerateMainPluginConfigExtension(INamedTypeSymbol mainPluginSymbol, INamedTypeSymbol configSymbol)
+    {
+        var namespaceName = mainPluginSymbol.ContainingNamespace.ToDisplayString();
+        var mainPluginClassName = mainPluginSymbol.Name;
+        var configClassName = configSymbol.Name;
+
+        return $$"""
+                 // Automatic Generate From ShadowPluginLoader.SourceGenerator
+                 
+                 namespace {{namespaceName}};
+                 
+                 public partial class {{mainPluginClassName}}
+                 {
+                     /// <summary>
+                     /// 配置实例
+                     /// </summary>
+                     public static {{configClassName}} Config { get; } = new {{configClassName}}();
+                 }
+                 """;
     }
 
     private class ConfigFieldInfo

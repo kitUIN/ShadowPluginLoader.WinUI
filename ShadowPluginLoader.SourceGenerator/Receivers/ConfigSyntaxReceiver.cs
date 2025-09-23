@@ -7,6 +7,7 @@ namespace ShadowPluginLoader.SourceGenerator.Receivers;
 public class ConfigSyntaxReceiver : ISyntaxReceiver
 {
     public List<ClassDeclarationSyntax> ConfigClasses { get; } = [];
+    public List<ClassDeclarationSyntax> MainPluginClasses { get; } = [];
 
     public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
     {
@@ -16,9 +17,16 @@ public class ConfigSyntaxReceiver : ISyntaxReceiver
         if (!classDeclaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return;
         
         // 检查是否有ConfigAttribute
-        if (!HasConfigAttribute(classDeclaration)) return;
+        if (HasConfigAttribute(classDeclaration))
+        {
+            ConfigClasses.Add(classDeclaration);
+        }
         
-        ConfigClasses.Add(classDeclaration);
+        // 检查是否有MainPluginAttribute
+        if (HasMainPluginAttribute(classDeclaration))
+        {
+            MainPluginClasses.Add(classDeclaration);
+        }
     }
 
     private static bool HasConfigAttribute(ClassDeclarationSyntax classDeclaration)
@@ -26,5 +34,12 @@ public class ConfigSyntaxReceiver : ISyntaxReceiver
         return classDeclaration.AttributeLists
             .SelectMany(al => al.Attributes)
             .Any(attr => attr.Name.ToString() == "Config");
+    }
+    
+    private static bool HasMainPluginAttribute(ClassDeclarationSyntax classDeclaration)
+    {
+        return classDeclaration.AttributeLists
+            .SelectMany(al => al.Attributes)
+            .Any(attr => attr.Name.ToString() == "MainPlugin");
     }
 }
