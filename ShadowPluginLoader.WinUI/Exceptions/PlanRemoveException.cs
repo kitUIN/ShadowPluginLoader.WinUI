@@ -3,13 +3,13 @@
 /// <summary>
 /// 
 /// </summary>
-public class PluginUpgradeException : System.Exception
+public class PlanRemoveException : System.Exception
 {
     /// <summary>
     /// 
     /// </summary>
     /// <param name="message">Error Message</param>
-    public PluginUpgradeException(string? message) : base(message)
+    public PlanRemoveException(string? message) : base(message)
     {
     }
 }

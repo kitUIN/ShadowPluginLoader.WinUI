@@ -10,8 +10,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using ShadowObservableConfig;
+using ShadowObservableConfig.Attributes;
+using ShadowPluginLoader.WinUI.Config;
 
 namespace ShadowPluginLoader.WinUI.Scanners;
 
@@ -40,6 +44,11 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     /// DependencyChecker
     /// </summary>
     protected readonly IDependencyChecker<TMeta> DependencyChecker;
+
+    /// <summary>
+    /// ConfigInitQueue
+    /// </summary>
+    protected Queue<Type> ConfigInitQueue { get; } = new();
 
     /// <summary>
     /// Plugin Scanner
@@ -195,6 +204,22 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
         var sortResult = DependencyChecker.DetermineLoadOrder(beforeSorts.ToList());
         await Task.WhenAll(sortResult.Result.Select(GetMainPluginType).ToArray());
+        var configList = new List<Task>();
+        while (ConfigInitQueue.Count > 0)
+        {
+            var type = ConfigInitQueue.Dequeue();
+            configList.Add(Task.Run(() =>
+            {
+                var loadMethod = type.GetMethod(
+                    "Load",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic
+                );
+                if (loadMethod == null) return;
+                DiFactory.Services.RegisterInstance(loadMethod.Invoke(null, null));
+            }));
+        }
+
+        await Task.WhenAll(configList);
         sortResult.Result.ForEach(t =>
         {
             DependencyChecker.LoadedMetas[t.Id] = t.MetaData;
@@ -236,6 +261,14 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         if (mainType == null)
         {
             throw new PluginScanException($"{sortPluginData.Id} MainPlugin(Type) Not Found");
+        }
+
+        foreach (var type in assembly.GetExportedTypes()
+                     .Where(t => t is { IsClass: true, IsAbstract: false }
+                                 && typeof(BaseConfig).IsAssignableFrom(t)
+                                 && t.GetCustomAttribute<ObservableConfigAttribute>() is { FileName: { Length: > 0 } }))
+        {
+            ConfigInitQueue.Enqueue(type);
         }
 
         DiFactory.Services.Register(typeof(TAPlugin), mainType, reuse: Reuse.Singleton,

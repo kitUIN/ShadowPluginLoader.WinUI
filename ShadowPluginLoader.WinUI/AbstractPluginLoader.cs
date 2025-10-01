@@ -113,9 +113,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     {
         PluginFolderPath = Path.Combine(BaseFolder, PluginFolder);
         TempFolderPath = Path.Combine(BaseFolder, TempFolder);
-        DependencyChecker = new DependencyChecker<TMeta>();
-        UpgradeChecker = new UpgradeChecker();
-        RemoveChecker = new RemoveChecker();
         PluginScanner = new PluginScanner<TAPlugin, TMeta>(DependencyChecker, UpgradeChecker, RemoveChecker);
         Logger = logger;
         PluginEventService = pluginEventService;
@@ -133,6 +130,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// All Plugins
     /// </summary>
     private readonly Dictionary<string, TAPlugin> _plugins = new();
+
+    protected virtual void LoadConfigFile()
+    {
+
+    }
 
     /// <summary>
     /// LoadAsync Plugin From Type

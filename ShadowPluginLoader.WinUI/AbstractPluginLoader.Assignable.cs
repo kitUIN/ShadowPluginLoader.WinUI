@@ -24,18 +24,17 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// DependencyChecker
     /// </summary>
-    protected IDependencyChecker<TMeta> DependencyChecker { get; }
-
+    protected IDependencyChecker<TMeta> DependencyChecker { get; } = new DependencyChecker<TMeta>();
 
     /// <summary>
     /// UpgradeChecker
     /// </summary>
-    protected IUpgradeChecker UpgradeChecker { get; }
+    protected IUpgradeChecker UpgradeChecker { get; } = new UpgradeChecker();
 
     /// <summary>
     /// RemoveChecker
     /// </summary>
-    protected IRemoveChecker RemoveChecker { get; }
+    protected IRemoveChecker RemoveChecker { get; } = new RemoveChecker();
 
     /// <summary>
     /// <inheritdoc />
@@ -112,14 +111,14 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public async Task RemovePlugin(string id)
+    public Task RemovePlugin(string id)
     {
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginRemoveException($"{id} Plugin Not Found");
         var path = Path.GetDirectoryName(plugin.GetType().Assembly.Location);
         if (path == null) throw new PluginRemoveException($"{id} Plugin Path Not Found");
-        await GetPluginInstaller(PluginSettingsHelper.GetPluginInstaller(id))
-            .PreRemoveAsync(plugin, TempFolder, path);
+        RemoveChecker.PlanRemove(id, path);
+        return Task.CompletedTask;
     }
 
 

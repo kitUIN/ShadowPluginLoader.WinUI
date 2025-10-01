@@ -1,5 +1,6 @@
 using System;
 using DryIoc;
+using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowPluginLoader.WinUI;
@@ -23,5 +24,9 @@ public static class DiFactory
             setup: Setup.With(condition: r => r.Parent.ImplementationType != null || r.ImplementationType != null));
         Services.Register<PluginEventService>(reuse: Reuse.Singleton);
         Services.Register<IPluginInstaller, ZipPluginInstaller>(reuse: Reuse.Singleton);
+        var baseSdkConfig = BaseSdkConfig.Load();
+        Services.RegisterInstance(baseSdkConfig);
+        var innerSdkConfig = InnerSdkConfig.Load();
+        Services.RegisterInstance(innerSdkConfig);
     }
 }
