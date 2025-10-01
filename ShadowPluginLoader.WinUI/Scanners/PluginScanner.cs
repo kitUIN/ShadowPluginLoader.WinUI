@@ -189,7 +189,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         List<string> results = [];
         if (!UpgradeChecker.UpgradeChecked || !RemoveChecker.RemoveChecked)
             throw new PluginScanException(
-                "You need to try UpgradeChecker.CheckUpgrade and RemoveChecker.CheckRemove before FinishAsync");
+                "You need to try CheckUpgradeAndRemoveAsync before FinishAsync");
         var scanTaskArray = ScanTaskList.ToArray();
         ScanClear();
         List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
@@ -201,6 +201,13 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
             results.Add(t.Id);
         });
         return results;
+    }
+
+    /// <inheritdoc />
+    public async Task CheckUpgradeAndRemoveAsync()
+    {
+        await RemoveChecker.CheckRemoveAsync();
+        await UpgradeChecker.CheckUpgradeAsync();
     }
 
     /// <summary>
