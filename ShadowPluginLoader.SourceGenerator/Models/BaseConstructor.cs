@@ -1,11 +1,28 @@
-﻿namespace ShadowPluginLoader.SourceGenerator.Models
-{
-    public record BaseConstructor(string Type, string Name);
-}
+namespace ShadowPluginLoader.SourceGenerator.Models;
 
-namespace System.Runtime.CompilerServices
+/// <summary>
+/// Base Constructor Parameter
+/// </summary>
+internal class BaseConstructor
 {
-    class IsExternalInit
+    /// <summary>
+    /// Parameter Type
+    /// </summary>
+    public string Type { get; }
+
+    /// <summary>
+    /// Parameter Name
+    /// </summary>
+    public string Name { get; }
+
+    /// <summary>
+    /// BaseConstructor
+    /// </summary>
+    /// <param name="type">Parameter Type</param>
+    /// <param name="name">Parameter Name</param>
+    public BaseConstructor(string type, string name)
     {
+        Type = type;
+        Name = name;
     }
 }
