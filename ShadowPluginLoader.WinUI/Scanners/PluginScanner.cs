@@ -3,18 +3,15 @@ using DryIoc;
 using Serilog;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Interfaces;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
-using ShadowPluginLoader.WinUI.Helpers;
 
 namespace ShadowPluginLoader.WinUI.Scanners;
 
@@ -28,10 +25,16 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     /// </summary>
     protected ILogger Logger { get; } = Log.ForContext<PluginScanner<TAPlugin, TMeta>>();
 
+
     /// <summary>
-    /// checked for updates and removed plugins
+    /// UpgradeChecker
     /// </summary>
-    protected bool IsCheckUpgradeAndRemove = false;
+    protected readonly IUpgradeChecker UpgradeChecker;
+
+    /// <summary>
+    /// RemoveChecker
+    /// </summary>
+    protected readonly IRemoveChecker RemoveChecker;
 
     /// <summary>
     /// DependencyChecker
@@ -42,9 +45,14 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     /// Plugin Scanner
     /// </summary>
     /// <param name="dependencyChecker">Dependency Checker</param>
-    public PluginScanner(IDependencyChecker<TMeta> dependencyChecker)
+    /// <param name="upgradeChecker"></param>
+    /// <param name="removeChecker"></param>
+    public PluginScanner(IDependencyChecker<TMeta> dependencyChecker,
+        IUpgradeChecker upgradeChecker, IRemoveChecker removeChecker)
     {
         DependencyChecker = dependencyChecker;
+        UpgradeChecker = upgradeChecker;
+        RemoveChecker = removeChecker;
     }
 
     /// <summary>
@@ -119,6 +127,12 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     /// <exception cref="PluginImportException"></exception>
     public IPluginScanner<TAPlugin, TMeta> Scan(DirectoryInfo dir)
     {
+        if (!dir.Exists)
+        {
+            Logger?.Warning("Scan Dir[{DirFullName}]: Dir Not Exists", dir.FullName);
+            return this;
+        }
+
         foreach (var assetDir in dir.EnumerateDirectories("Assets", SearchOption.AllDirectories))
         {
             var pluginPath = Path.Combine(assetDir.FullName, "plugin.json");
@@ -150,6 +164,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         }
         else
         {
+            Logger?.Information("Scan Uri[{DirFullName}]: Success", uri.LocalPath);
             ScanTaskList.Add(Task.Run(async () =>
             {
                 var content = await File.ReadAllTextAsync(uri.LocalPath);
@@ -169,17 +184,23 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<string>> Finish()
+    public async Task<IEnumerable<string>> FinishAsync()
     {
-        if (!IsCheckUpgradeAndRemove)
-            throw new PluginScanException("You need to try CheckUpgradeAndRemoveAsync before LoadAsync");
+        List<string> results = [];
+        if (!UpgradeChecker.UpgradeChecked || !RemoveChecker.RemoveChecked)
+            throw new PluginScanException(
+                "You need to try UpgradeChecker.CheckUpgrade and RemoveChecker.CheckRemove before FinishAsync");
         var scanTaskArray = ScanTaskList.ToArray();
         ScanClear();
         List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
         var sortResult = DependencyChecker.DetermineLoadOrder(beforeSorts.ToList());
         await Task.WhenAll(sortResult.Result.Select(GetMainPluginType).ToArray());
-        sortResult.Result.ForEach(t => DependencyChecker.LoadedMetas[t.Id] = t.MetaData);
-        return sortResult.Result.Select(sortPlugin => sortPlugin.Id);
+        sortResult.Result.ForEach(t =>
+        {
+            DependencyChecker.LoadedMetas[t.Id] = t.MetaData;
+            results.Add(t.Id);
+        });
+        return results;
     }
 
     /// <summary>
@@ -191,7 +212,8 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     private async Task<Tuple<string, Type>> GetMainPluginType(SortPluginData<TMeta> sortPluginData)
     {
         var dllFilePath =
-            Path.GetFullPath(Path.GetDirectoryName(sortPluginData.Path!)! + "/../"+ sortPluginData.MetaData.DllName);
+            Path.GetFullPath(Path.GetDirectoryName(sortPluginData.Path!)! + "/../" + sortPluginData.MetaData.DllName +
+                             ".dll");
         if (!File.Exists(dllFilePath)) throw new PluginScanException($"Not Found {dllFilePath}");
 
         var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(dllFilePath);
@@ -244,13 +266,5 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         //     PluginEventService.InvokePluginRemoved(this,
         //         new Args.PluginEventArgs(setting.Key, Enums.PluginStatus.Removed));
         // }
-    }
-
-    /// <inheritdoc />
-    public async Task CheckUpgradeAndRemoveAsync()
-    {
-        await CheckRemove();
-        await CheckUpgrade();
-        IsCheckUpgradeAndRemove = true;
     }
 }

@@ -13,7 +13,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12</LangVersion>
         <!-- Nuget -->
-        <Version>3.0.3.1</Version>
+        <Version>3.0.3.7</Version>
         <PackageId>ShadowPluginLoader.WinUI</PackageId>
         <Owner>kitUIN</Owner>
         <Authors>kitUIN</Authors>
@@ -30,6 +30,8 @@
         <IncludeSymbols>true</IncludeSymbols>
         <IncludeSource>true</IncludeSource>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,14 +40,25 @@
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.241107002" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
         <PackageReference Include="kitUIN.CustomExtensions.WinUI" Version="0.6.4" />
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="3.0.4" />
-        <PackageReference Include="ShadowPluginLoader.Tool" Version="3.0.4" />
+        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="3.0.5" />
+        <PackageReference Include="ShadowObservableConfig.Yaml" Version="0.5.3" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="3.0.5" />
         <PackageReference Include="NuGet.Versioning" Version="6.14.0" />
         <PackageReference Include="SharpCompress" Version="0.39.0" />
-        <PackageReference Include="YamlDotNet" Version="16.3.0" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-
+ <!--    <ItemGroup> -->
+ <!--      <ProjectReference Include="..\ShadowPluginLoader.SourceGenerator\ShadowPluginLoader.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"  /> -->
+ <!--    </ItemGroup> -->
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<!-- 可选：自定义生成目录 -->
+		<CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- 添加了内存里面的文件，不应该添加磁盘的，否则添加两份 -->
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+	</ItemGroup>
 </Project>

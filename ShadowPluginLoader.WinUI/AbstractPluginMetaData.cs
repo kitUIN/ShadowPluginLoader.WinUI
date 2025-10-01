@@ -43,6 +43,13 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     [Meta(Required = true, AsString = true, Converter = typeof(NuGetVersionJsonConverter))]
     public NuGetVersion Version { get; init; } = null!;
 
+
+    /// <summary>
+    /// <inheritdoc cref="IPluginMetaData.SdkRequiredVersion"/>
+    /// </summary>
+    [Meta(Required = false, AsString = true, Converter = typeof(VersionRangeJsonConverter))]
+    public VersionRange SdkRequiredVersion { get; init; } = null!;
+
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.MainPluginType"/>
     /// </summary>

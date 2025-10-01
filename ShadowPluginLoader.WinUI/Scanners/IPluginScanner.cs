@@ -15,14 +15,15 @@ public interface IPluginScanner<TAPlugin, TMeta>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
+
     /// <summary>
     /// Scan Plugin From Type<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(type);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -31,12 +32,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugin From Type<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan&lt;TPlugin&gt;();
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -44,12 +45,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugins From Type<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(types);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -58,12 +59,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugins From Type<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(uri);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -72,12 +73,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugin From Optional Package<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(package);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -86,12 +87,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugin From Plugin Path<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(pluginPath);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -100,12 +101,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugin From plugin.json<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(pluginJson);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -114,12 +115,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
 
     /// <summary>
     /// Scan Plugin From Uri<br/>
-    /// After Scan You Need Calling <see cref="Finish"/>
+    /// After Scan You Need Calling <see cref="FinishAsync"/>
     /// <example>
     /// <code>
     /// scanner.Scan(uri);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
@@ -137,13 +138,12 @@ public interface IPluginScanner<TAPlugin, TMeta>
     /// <code>
     /// scanner.Scan(pluginJson);
     /// // other scanner.Scan
-    /// await scanner.Finish();
+    /// await scanner.FinishAsync();
     /// </code>
     /// </example>
     /// </summary>
     /// <exception cref="PluginScanException"></exception>
-    Task<IEnumerable<string>> Finish();
-
+    Task<IEnumerable<string>> FinishAsync();
 
 
     /// <summary>

@@ -8,38 +8,46 @@ using ShadowPluginLoader.WinUI.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using Windows.Storage;
+using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Scanners;
 
 namespace ShadowPluginLoader.WinUI;
 
 public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 {
-    /// <summary>
-    /// checked for updates and removed plugins
-    /// </summary>
-    protected bool IsCheckUpgradeAndRemove = false;
-
-    /// <summary>
-    /// Clean Folder Before Upgrade
-    /// </summary>
-    protected virtual bool CleanBeforeUpgrade => false;
 
     /// <summary>
     /// Logger Print With Prefix
     /// </summary>
     protected virtual string LoggerPrefix => "[PluginLoader] ";
 
+    /// <summary>
+    /// Base Folder
+    /// </summary>
+    public string BaseFolder { get; } = ApplicationData.Current.LocalFolder.Path;
+
+    /// <summary>
+    /// Plugin Folder Path
+    /// </summary>
+    public string PluginFolderPath { get; }
+
+    /// <summary>
+    /// Plugin Folder Path
+    /// </summary>
+    public string TempFolderPath { get; }
 
     /// <summary>
     /// Plugins Folder
     /// </summary>
-    protected abstract string PluginFolder { get; }
+    protected const string PluginFolder = "plugin";
 
     /// <summary>
     /// Temp File Folder
     /// </summary>
-    protected abstract string TempFolder { get; }
+    protected const string TempFolder = "temp";
 
     /// <summary>
     /// Logger
@@ -103,7 +111,12 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="pluginEventService">pluginEventService</param>
     protected AbstractPluginLoader(ILogger logger, PluginEventService pluginEventService)
     {
-        PluginScanner = new PluginScanner<TAPlugin, TMeta>(DependencyChecker);
+        PluginFolderPath = Path.Combine(BaseFolder, PluginFolder);
+        TempFolderPath = Path.Combine(BaseFolder, TempFolder);
+        DependencyChecker = new DependencyChecker<TMeta>();
+        UpgradeChecker = new UpgradeChecker();
+        RemoveChecker = new RemoveChecker();
+        PluginScanner = new PluginScanner<TAPlugin, TMeta>(DependencyChecker, UpgradeChecker, RemoveChecker);
         Logger = logger;
         PluginEventService = pluginEventService;
     }

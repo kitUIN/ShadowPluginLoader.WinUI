@@ -30,6 +30,11 @@ internal interface IPluginMetaData
     NuGetVersion Version { get; init; }
 
     /// <summary>
+    /// Sdk Required Version
+    /// </summary>
+    VersionRange SdkRequiredVersion { get; init; }
+
+    /// <summary>
     /// Plugin Type
     /// </summary>
     Type MainPluginType { get; init; }

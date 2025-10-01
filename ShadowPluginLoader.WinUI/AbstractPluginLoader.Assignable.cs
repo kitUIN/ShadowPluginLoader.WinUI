@@ -24,8 +24,18 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// DependencyChecker
     /// </summary>
-    protected virtual IDependencyChecker<TMeta> DependencyChecker { get; } = new DependencyChecker<TMeta>();
+    protected IDependencyChecker<TMeta> DependencyChecker { get; }
 
+
+    /// <summary>
+    /// UpgradeChecker
+    /// </summary>
+    protected IUpgradeChecker UpgradeChecker { get; }
+
+    /// <summary>
+    /// RemoveChecker
+    /// </summary>
+    protected IRemoveChecker RemoveChecker { get; }
 
     /// <summary>
     /// <inheritdoc />
