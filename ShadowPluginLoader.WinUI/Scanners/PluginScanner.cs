@@ -60,6 +60,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         DependencyChecker = dependencyChecker;
         UpgradeChecker = upgradeChecker;
         RemoveChecker = removeChecker;
+        MetaDataHelper.Init<TMeta>();
     }
 
     /// <summary>
@@ -190,6 +191,12 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         ScanTaskList.Clear();
     }
 
+    private void LoggerMetaSort(List<SortPluginData<TMeta>> sorts)
+    {
+        Logger?.Information("\nLoading Plugin Sort:\n" +
+                            string.Join("\n", sorts.Select(meta => $" - {meta.Id}: {meta.MetaData.Version}")));
+    }
+
     /// <inheritdoc />
     public async Task<IEnumerable<string>> FinishAsync()
     {
@@ -202,6 +209,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
         CheckSdkVersion(beforeSorts);
         var sortResult = DependencyChecker.DetermineLoadOrder(beforeSorts.ToList());
+        LoggerMetaSort(sortResult.Result);
         await Task.WhenAll(sortResult.Result.Select(GetMainPluginType).ToArray());
         sortResult.Result.ForEach(t =>
         {
@@ -246,17 +254,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(dllFilePath);
         var assembly = asm.ForeignAssembly;
 
-        var entryPoints = sortPluginData.MetaData.EntryPoints;
-        if (entryPoints.FirstOrDefault(x => x.Name == "MainPlugin") is not { } pluginEntryPoint)
-        {
-            throw new PluginScanException($"{sortPluginData.Id} MainPlugin(EntryPoint) Not Found");
-        }
-
-        var mainType = assembly.GetType(pluginEntryPoint.Type);
-        if (mainType == null)
-        {
-            throw new PluginScanException($"{sortPluginData.Id} MainPlugin(Type) Not Found");
-        }
+        sortPluginData.MetaData.LoadEntryPoint(MetaDataHelper.Properties, assembly);
 
         var types = assembly.GetExportedTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(BaseConfig).IsAssignableFrom(t) &&
@@ -271,9 +269,10 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
             .ToArray();
         // Load Config File
         await Task.WhenAll(types);
-        DiFactory.Services.Register(typeof(TAPlugin), mainType, reuse: Reuse.Singleton,
+        DiFactory.Services.Register(typeof(TAPlugin), sortPluginData.MetaData.MainPlugin.EntryPointType,
+            reuse: Reuse.Singleton,
             serviceKey: sortPluginData.Id, made: Parameters.Of.Type(_ => sortPluginData.MetaData));
-        return new Tuple<string, Type>(sortPluginData.Id, mainType);
+        return new Tuple<string, Type>(sortPluginData.Id, sortPluginData.MetaData.MainPlugin.EntryPointType);
     }
 
 

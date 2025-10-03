@@ -37,7 +37,7 @@ internal interface IPluginMetaData
     /// <summary>
     /// Plugin Type
     /// </summary>
-    Type MainPluginType { get; init; }
+    PluginEntryPointType MainPlugin { get; }
 
     /// <summary>
     /// Plugin Dependencies
