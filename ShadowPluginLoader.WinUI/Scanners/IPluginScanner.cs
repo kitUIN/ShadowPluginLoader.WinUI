@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Scanners;
 
@@ -151,4 +152,11 @@ public interface IPluginScanner<TAPlugin, TMeta>
     /// </summary>
     /// <returns></returns>
     Task CheckUpgradeAndRemoveAsync();
+
+    /// <summary>
+    /// Check Sdk Version
+    /// </summary>
+    /// <exception cref="PluginScanException"></exception>
+    void CheckSdkVersion(List<SortPluginData<TMeta>> metaList);
+
 }

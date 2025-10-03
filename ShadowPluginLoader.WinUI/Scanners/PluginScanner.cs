@@ -14,6 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using NuGet.Versioning;
 using ShadowObservableConfig;
 using ShadowObservableConfig.Attributes;
 using ShadowPluginLoader.WinUI.Config;
@@ -199,6 +200,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         var scanTaskArray = ScanTaskList.ToArray();
         ScanClear();
         List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
+        CheckSdkVersion(beforeSorts);
         var sortResult = DependencyChecker.DetermineLoadOrder(beforeSorts.ToList());
         await Task.WhenAll(sortResult.Result.Select(GetMainPluginType).ToArray());
         sortResult.Result.ForEach(t =>
@@ -214,6 +216,18 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     {
         await RemoveChecker.CheckRemoveAsync();
         await UpgradeChecker.CheckUpgradeAsync();
+    }
+
+    /// <inheritdoc />
+    public void CheckSdkVersion(List<SortPluginData<TMeta>> metaList)
+    {
+        var version = new NuGetVersion(typeof(TMeta).Assembly.GetName().Version!);
+        foreach (var meta in metaList.Where(meta => meta.MetaData.SdkVersion.Major < version.Major ||
+                                                    meta.MetaData.SdkVersion.Minor < version.Minor))
+        {
+            throw new PluginScanException(
+                $"{meta.Id} Sdk Version Not Match, Need {version.Major}.{version.Minor}.*, But {meta.MetaData.SdkVersion}");
+        }
     }
 
     /// <summary>
@@ -251,7 +265,6 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
             {
                 var loadMethod = type.GetMethod("Load",
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                Debug.WriteLine(loadMethod);
                 if (loadMethod == null) return;
                 DiFactory.Services.RegisterInstance(loadMethod.Invoke(null, null));
             }))
