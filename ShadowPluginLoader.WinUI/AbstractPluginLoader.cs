@@ -75,7 +75,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             stopwatch.Stop();
             Logger.Information("{Pre}{ID}({isEnabled}): Load Success! Used: {mi} ms",
                 LoggerPrefix, meta.Id, enabled, stopwatch.ElapsedMilliseconds);
-            DependencyChecker.LoadedPlugins.Add(meta.DllName, meta.Version);
+            DependencyChecker.LoadedPlugins.TryAdd(meta.DllName, meta.Version);
             if (!enabled) return;
             instance.IsEnabled = enabled;
         }

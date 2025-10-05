@@ -1,7 +1,10 @@
 using NuGet.Versioning;
+using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -14,17 +17,23 @@ public interface IDependencyChecker<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// LoadedPluginDependencies
     /// </summary>
-    Dictionary<string, NuGetVersion> LoadedPlugins { get; }
+    ConcurrentDictionary<string, NuGetVersion> LoadedPlugins { get; }
 
     /// <summary>
     /// LoadedMetas
     /// </summary>
-    Dictionary<string, TMeta> LoadedMetas { get; }
+    ConcurrentDictionary<string, TMeta> LoadedMetas { get; }
+
+    /// <summary>
+    /// CheckUpgrade
+    /// </summary>
+    /// <exception cref="PluginUpgradeException"></exception>
+    /// <exception cref="PluginDependencyException"></exception>
+    Task CheckUpgrade(string id, Uri uri);
 
     /// <summary>
     /// DetermineLoadOrder
     /// </summary>
-    /// <param name="plugins"></param>
-    /// <returns></returns>
+    /// <exception cref="PluginDependencyException"></exception>
     DependencyCheckResult<TMeta> DetermineLoadOrder(IEnumerable<SortPluginData<TMeta>> plugins);
 }

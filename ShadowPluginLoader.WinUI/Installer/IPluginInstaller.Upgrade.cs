@@ -9,6 +9,7 @@ namespace ShadowPluginLoader.WinUI.Installer;
 public partial interface IPluginInstaller<TMeta>  
 {
 
+
     /// <summary>
     /// PlanUpgrade
     /// <exception cref="PlanUpgradeException"></exception>

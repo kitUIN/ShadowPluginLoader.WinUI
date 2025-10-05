@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using ShadowPluginLoader.Attributes;
+﻿using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Installer;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -49,7 +50,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 
 
     /// <inheritdoc />
-    public Task UpgradePlugin(string id, Uri uri)
+    public async Task UpgradePlugin(string id, Uri uri)
     {
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
@@ -57,9 +58,9 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         if (dir == null) throw new PluginUpgradeException($"{id} Plugin Path Not Found");
         if (!(uri.IsFile && uri.LocalPath.EndsWith(".sdow")))
             throw new PluginUpgradeException($"{id} Plugin Upgrade Uri {uri} not support");
+        await DependencyChecker.CheckUpgrade(id, uri);
         PluginInstaller.PlanUpgrade(id, dir, uri.LocalPath);
         PluginEventService.InvokePluginPlanRemove(this, new PluginEventArgs(id, PluginStatus.PlanRemove));
-        return Task.CompletedTask;
     }
 
     /// <summary>

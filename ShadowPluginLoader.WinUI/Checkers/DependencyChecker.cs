@@ -1,8 +1,12 @@
 using NuGet.Versioning;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -13,15 +17,33 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     where TMeta : AbstractPluginMetaData
 {
     /// <inheritdoc />
-    public Dictionary<string, NuGetVersion> LoadedPlugins { get; } = new();
+    public ConcurrentDictionary<string, NuGetVersion> LoadedPlugins { get; } = new();
 
     /// <inheritdoc />
-    public Dictionary<string, TMeta> LoadedMetas { get; } = new();
+    public ConcurrentDictionary<string, TMeta> LoadedMetas { get; } = new();
 
-
-    /// <summary>
     /// <inheritdoc />
-    /// </summary>
+    public async Task CheckUpgrade(string id, Uri uri)
+    {
+        var meta = await MetaDataHelper.ToMetaAsyncFromZip<TMeta>(uri.LocalPath);
+        var current = LoadedMetas[id];
+        if (current.Version >= meta.Version)
+            throw new PluginUpgradeException(
+                $"{id} Plugin Current: {current.Version}, Upgrade: {meta.Version}");
+        foreach (var dependency in meta.Dependencies)
+        {
+            if (!LoadedPlugins.TryGetValue(dependency.Id, out var loadedPluginVersion))
+                throw new PluginDependencyException($"Dependency Not Found: {dependency.Id}");
+
+            if (!dependency.Need.Satisfies(loadedPluginVersion))
+            {
+                throw new PluginDependencyException(
+                    $"Version Not Satisfied: {dependency.Id}, Need: {dependency.Need}, Actual: {loadedPluginVersion}");
+            }
+        }
+    }
+
+    /// <inheritdoc />
     public DependencyCheckResult<TMeta> DetermineLoadOrder(IEnumerable<SortPluginData<TMeta>> plugins)
     {
         var sortedPlugins = new List<SortPluginData<TMeta>>();
@@ -92,17 +114,5 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
         {
             sortedPlugins.Add(plugin);
         }
-    }
-
-
-    /// <summary>
-    /// Check Version Satisfied
-    /// </summary>
-    /// <param name="actualVersion"></param>
-    /// <param name="dependency"></param>
-    /// <returns></returns>
-    private bool IsVersionSatisfied(NuGetVersion actualVersion, PluginDependency dependency)
-    {
-        return dependency.Need.Satisfies(actualVersion);
     }
 }
