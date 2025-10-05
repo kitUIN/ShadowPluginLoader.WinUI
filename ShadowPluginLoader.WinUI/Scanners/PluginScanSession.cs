@@ -163,6 +163,7 @@ public class PluginScanSession<TAPlugin, TMeta> : IPluginScanSession<TAPlugin, T
     {
         var scanTaskArray = ScanTaskList.ToArray();
         ScanClear();
+        if (scanTaskArray.Length == 0) return [];
         return await _scanner.FinishScanAsync(scanTaskArray, _token);
     }
 }

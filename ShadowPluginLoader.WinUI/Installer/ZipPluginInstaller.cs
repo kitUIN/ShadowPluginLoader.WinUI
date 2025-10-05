@@ -64,7 +64,7 @@ public class ZipPluginInstaller<TAPlugin, TMeta> : IPluginInstaller
         {
             var path = Path.Combine(BaseSdkConfig.PluginFolderPath, data.MetaData.DllName);
             await UnZip(data.Path, path);
-            session.Scan(new Uri(Path.Combine(path, data.MetaData.DllName, "Assets", "plugin.json")));
+            session.Scan(new Uri(Path.Combine(path, "Assets", "plugin.json")));
         }
 
         return await session.FinishAsync();

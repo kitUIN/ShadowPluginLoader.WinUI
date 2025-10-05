@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Windows.Storage;
+using ShadowPluginLoader.WinUI.Config;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -26,29 +27,19 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     protected virtual string LoggerPrefix => "[PluginLoader] ";
 
     /// <summary>
-    /// Base Folder
+    /// Plugin Folder Path
     /// </summary>
-    public string BaseFolder { get; } = ApplicationData.Current.LocalFolder.Path;
+    public string PluginFolderPath => BaseSdkConfig.PluginFolderPath;
 
     /// <summary>
     /// Plugin Folder Path
     /// </summary>
-    public string PluginFolderPath { get; }
+    public string TempFolderPath => BaseSdkConfig.TempFolderPath;
 
     /// <summary>
-    /// Plugin Folder Path
+    /// 
     /// </summary>
-    public string TempFolderPath { get; }
-
-    /// <summary>
-    /// Plugins Folder
-    /// </summary>
-    protected const string PluginFolder = "plugin";
-
-    /// <summary>
-    /// Temp File Folder
-    /// </summary>
-    protected const string TempFolder = "temp";
+    protected BaseSdkConfig BaseSdkConfig;
 
     /// <summary>
     /// Logger
@@ -63,17 +54,17 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// Default
     /// </summary>
-    protected AbstractPluginLoader(ILogger logger, 
+    protected AbstractPluginLoader(ILogger logger,
         IDependencyChecker<TMeta> dependencyChecker,
         IPluginInstaller pluginInstaller,
         IUpgradeChecker upgradeChecker,
         IRemoveChecker removeChecker,
         IPluginScanner<TAPlugin, TMeta> pluginScanner,
-        PluginEventService pluginEventService)
+        PluginEventService pluginEventService,
+        BaseSdkConfig baseSdkConfig)
     {
         MetaDataHelper.Init<TMeta>();
-        PluginFolderPath = Path.Combine(BaseFolder, PluginFolder);
-        TempFolderPath = Path.Combine(BaseFolder, TempFolder);
+        BaseSdkConfig = baseSdkConfig;
         PluginInstaller = pluginInstaller;
         Logger = logger;
         PluginScanner = pluginScanner;
@@ -88,9 +79,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     private readonly Dictionary<string, TAPlugin> _plugins = new();
 
-    protected virtual void LoadConfigFile()
-    {
-    }
 
     /// <summary>
     /// Load Plugin From Type
