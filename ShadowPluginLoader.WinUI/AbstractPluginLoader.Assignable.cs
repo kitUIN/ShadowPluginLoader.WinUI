@@ -1,10 +1,8 @@
-using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.Attributes;
+using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using ShadowPluginLoader.WinUI.Checkers;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -19,8 +17,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     /// <summary>
     /// DependencyChecker
     /// </summary>
+    [Autowired]
     protected IDependencyChecker<TMeta> DependencyChecker { get; }
-
 
     /// <summary>
     /// <inheritdoc />
@@ -94,14 +92,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             LoggerPrefix, id);
     }
 
-
-
-    /// <inheritdoc />
-    public async Task UpgradePlugin(string id, Uri uri)
-    {
-        var plugin = GetPlugin(id);
-        if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
-    }
 
     /// <inheritdoc />
     public void Load(IEnumerable<string> pluginIds)

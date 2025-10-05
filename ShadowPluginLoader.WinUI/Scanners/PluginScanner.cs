@@ -5,25 +5,23 @@ using Serilog;
 using ShadowObservableConfig;
 using ShadowObservableConfig.Attributes;
 using ShadowPluginLoader.WinUI.Checkers;
-using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
+using ShadowPluginLoader.Attributes;
 
 namespace ShadowPluginLoader.WinUI.Scanners;
 
 /// <inheritdoc />
-public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
+public partial class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
@@ -38,34 +36,11 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
 
 
     /// <summary>
-    /// UpgradeChecker
-    /// </summary>
-    protected readonly IUpgradeChecker UpgradeChecker;
-
-    /// <summary>
-    /// RemoveChecker
-    /// </summary>
-    protected readonly IRemoveChecker RemoveChecker;
-
-    /// <summary>
     /// DependencyChecker
     /// </summary>
-    protected readonly IDependencyChecker<TMeta> DependencyChecker;
+    [Autowired]
+    protected IDependencyChecker<TMeta> DependencyChecker { get; }
 
-
-    /// <summary>
-    /// Plugin Scanner
-    /// </summary>
-    /// <param name="dependencyChecker">Dependency Checker</param>
-    /// <param name="upgradeChecker"></param>
-    /// <param name="removeChecker"></param>
-    public PluginScanner(IDependencyChecker<TMeta> dependencyChecker,
-        IUpgradeChecker upgradeChecker, IRemoveChecker removeChecker)
-    {
-        DependencyChecker = dependencyChecker;
-        UpgradeChecker = upgradeChecker;
-        RemoveChecker = removeChecker;
-    }
 
     /// <summary>
     /// 
@@ -97,7 +72,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
             }
 
             List<string> results = [];
-            if (!UpgradeChecker.UpgradeChecked || !RemoveChecker.RemoveChecked)
+            if (!StaticValues.UpgradeChecked || !StaticValues.RemoveChecked)
                 throw new PluginScanException(
                     "You need to try CheckUpgradeAndRemoveAsync before FinishScanAsync");
 

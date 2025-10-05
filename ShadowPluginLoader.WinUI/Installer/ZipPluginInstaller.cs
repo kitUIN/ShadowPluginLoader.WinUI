@@ -1,9 +1,8 @@
-﻿using System;
-using DryIoc;
+﻿using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Checkers;
+using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
-using ShadowPluginLoader.WinUI.Scanners;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -12,43 +11,27 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ShadowPluginLoader.WinUI.Config;
 
 namespace ShadowPluginLoader.WinUI.Installer;
 
 /// <inheritdoc />
-public class ZipPluginInstaller<TAPlugin, TMeta> : IPluginInstaller
-    where TAPlugin : AbstractPlugin<TMeta>
+public partial class ZipPluginInstaller<TMeta> : IPluginInstaller<TMeta>
     where TMeta : AbstractPluginMetaData
 {
     /// <summary>
     /// 
     /// </summary>
-    protected readonly IDependencyChecker<TMeta> DependencyChecker;
+    [Autowired]
+    protected IDependencyChecker<TMeta> DependencyChecker { get; }
 
     /// <summary>
     /// 
     /// </summary>
-    protected readonly IPluginScanner<TAPlugin, TMeta> PluginScanner;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    protected readonly BaseSdkConfig BaseSdkConfig;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public ZipPluginInstaller(IDependencyChecker<TMeta> dependencyChecker,
-        IPluginScanner<TAPlugin, TMeta> pluginScanner, BaseSdkConfig baseSdkConfig)
-    {
-        DependencyChecker = dependencyChecker;
-        PluginScanner = pluginScanner;
-        BaseSdkConfig = baseSdkConfig;
-    }
+    [Autowired]
+    protected BaseSdkConfig BaseSdkConfig { get; }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<string>> InstallAsync(IEnumerable<string> shadowFiles)
+    public async Task<List<SortPluginData<TMeta>>> InstallAsync(IEnumerable<string> shadowFiles)
     {
         var sortDataList = new List<SortPluginData<TMeta>>();
         foreach (var shadowFile in shadowFiles)
@@ -59,16 +42,14 @@ public class ZipPluginInstaller<TAPlugin, TMeta> : IPluginInstaller
         }
 
         var res = DependencyChecker.DetermineLoadOrder(sortDataList);
-        var session = PluginScanner.StartScan();
         foreach (var data in res.Result)
         {
-            var path = Path.Combine(BaseSdkConfig.PluginFolderPath, data.MetaData.DllName);
-            await UnZip(data.Path, path);
-            session.Scan(new Uri(Path.Combine(path, "Assets", "plugin.json")));
+            await UnZip(data.Path, Path.Combine(BaseSdkConfig.PluginFolderPath, data.MetaData.DllName));
         }
 
-        return await session.FinishAsync();
+        return res.Result;
     }
+
 
     /// <summary>
     /// UnZip

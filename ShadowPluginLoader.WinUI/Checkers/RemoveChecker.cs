@@ -16,9 +16,6 @@ public partial class RemoveChecker : IRemoveChecker
     /// </summary>
     private readonly object _planRemoveLock = new();
 
-    /// <inheritdoc />
-    public bool RemoveChecked { get; private set; }
-
     /// <summary>
     /// 
     /// </summary>
@@ -58,13 +55,13 @@ public partial class RemoveChecker : IRemoveChecker
     {
         lock (_planRemoveLock)
         {
-            RemoveChecked = true;
+            StaticValues.RemoveChecked = true;
             foreach (var plan in InnerConfig.PlanRemove.ToArray())
             {
                 Directory.Delete(plan.Path, recursive: true);
                 InnerConfig.PlanRemove.Remove(plan);
             }
-            return Task.FromResult(RemoveChecked);
+            return Task.FromResult(StaticValues.RemoveChecked);
         }
     }
 }

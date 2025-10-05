@@ -8,10 +8,6 @@ namespace ShadowPluginLoader.WinUI.Checkers;
 /// </summary>
 public interface IRemoveChecker
 {
-    /// <summary>
-    /// Is Remove Checked
-    /// </summary>
-    bool RemoveChecked { get; }
 
     /// <summary>
     /// Plan Remove

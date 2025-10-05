@@ -1,17 +1,13 @@
-﻿using System.Threading.Tasks;
-using ShadowPluginLoader.WinUI.Exceptions;
+﻿using ShadowPluginLoader.WinUI.Exceptions;
+using System.Threading.Tasks;
 
-namespace ShadowPluginLoader.WinUI.Checkers;
+namespace ShadowPluginLoader.WinUI.Installer;
 
 /// <summary>
-/// Plugin Upgrade Checker
+/// 
 /// </summary>
-public interface IUpgradeChecker
+public partial interface IPluginInstaller<TMeta>  
 {
-    /// <summary>
-    /// Is Upgrade Checked
-    /// </summary>
-    bool UpgradeChecked { get; }
 
     /// <summary>
     /// PlanUpgrade

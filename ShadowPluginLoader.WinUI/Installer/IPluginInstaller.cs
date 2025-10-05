@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using ShadowPluginLoader.WinUI.Exceptions;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Installer;
 
 /// <summary>
 /// 
 /// </summary>
-public interface IPluginInstaller
+public partial interface IPluginInstaller<TMeta> where TMeta : AbstractPluginMetaData
 {
     /// <summary>
     /// Install From .sdow file
@@ -15,5 +16,5 @@ public interface IPluginInstaller
     /// <param name="shadowFiles"></param>
     /// <exception cref="PluginInstallException"></exception>
     /// <returns></returns>
-    Task<IEnumerable<string>> InstallAsync(IEnumerable<string> shadowFiles);
+    Task<List<SortPluginData<TMeta>>> InstallAsync(IEnumerable<string> shadowFiles);
 }

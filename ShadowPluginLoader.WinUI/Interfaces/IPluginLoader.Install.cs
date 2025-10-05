@@ -10,4 +10,16 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// Install From .sdow file
     /// </summary>
     Task InstallAsync(IEnumerable<string> shadowFiles);
+
+    /// <summary>
+    /// Checked for updates and removed plugins
+    /// </summary>
+    /// <returns></returns>
+    Task CheckUpgradeAndRemoveAsync();
+
+    /// <summary>
+    /// Remove Plugin
+    /// </summary>
+    /// <param name="id">Plugin Id</param>
+    Task RemovePlugin(string id);
 }

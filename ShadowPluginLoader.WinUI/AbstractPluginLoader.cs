@@ -2,19 +2,13 @@ using DryIoc;
 using Serilog;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Args;
-using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
-using ShadowPluginLoader.WinUI.Installer;
-using ShadowPluginLoader.WinUI.Scanners;
 using ShadowPluginLoader.WinUI.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using Windows.Storage;
 using ShadowPluginLoader.WinUI.Config;
 
 namespace ShadowPluginLoader.WinUI;
@@ -39,40 +33,21 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// 
     /// </summary>
+    [Autowired]
     protected BaseSdkConfig BaseSdkConfig { get; }
 
 
     /// <summary>
     /// Logger
     /// </summary>
+    [Autowired]
     protected ILogger Logger { get; }
 
     /// <summary>
     /// PluginEventService
     /// </summary>
+    [Autowired]
     protected PluginEventService PluginEventService { get; }
-
-    /// <summary>
-    /// Default
-    /// </summary>
-    protected AbstractPluginLoader(ILogger logger,
-        IDependencyChecker<TMeta> dependencyChecker,
-        IPluginInstaller pluginInstaller,
-        IUpgradeChecker upgradeChecker,
-        IRemoveChecker removeChecker,
-        IPluginScanner<TAPlugin, TMeta> pluginScanner,
-        PluginEventService pluginEventService,
-        BaseSdkConfig baseSdkConfig)
-    {
-        BaseSdkConfig = baseSdkConfig;
-        PluginInstaller = pluginInstaller;
-        Logger = logger;
-        PluginScanner = pluginScanner;
-        UpgradeChecker = upgradeChecker;
-        RemoveChecker = removeChecker;
-        DependencyChecker = dependencyChecker;
-        PluginEventService = pluginEventService;
-    }
 
     /// <summary>
     /// All Plugins

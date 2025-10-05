@@ -43,18 +43,14 @@ public static class DiFactory
         Services.RegisterInstance(innerSdkConfig);
         Services.Register<IDependencyChecker<TMeta>, DependencyChecker<TMeta>>(serviceKey: "base",
             reuse: Reuse.Singleton);
-        Services.Register<IUpgradeChecker, UpgradeChecker>(serviceKey: "base",
-            reuse: Reuse.Singleton);
         Services.Register<IRemoveChecker, RemoveChecker>(serviceKey: "base",
             reuse: Reuse.Singleton);
         Services.Register<IPluginScanner<TAPlugin, TMeta>, PluginScanner<TAPlugin, TMeta>>(
             serviceKey: "base", reuse: Reuse.Singleton, 
             made: Parameters.Of
                 .Type<IDependencyChecker<TMeta>>(serviceKey: "base")
-                .OverrideWith(Parameters.Of.Type<IUpgradeChecker>(serviceKey: "base"))
-                .OverrideWith(Parameters.Of.Type<IRemoveChecker>(serviceKey: "base"))
             ); 
-        Services.Register<IPluginInstaller, ZipPluginInstaller<TAPlugin, TMeta>>(
+        Services.Register<IPluginInstaller<TMeta>, ZipPluginInstaller<TMeta>>(
             serviceKey: "base",  reuse: Reuse.Singleton, 
             made: Parameters.Of
                 .Type<IDependencyChecker<TMeta>>(serviceKey: "base")
