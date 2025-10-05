@@ -104,7 +104,8 @@ public class AutowiredGenerator : IIncrementalGenerator
             var propertySymbols = properties as IPropertySymbol[] ?? properties.ToArray();
             if (!needCheck && !propertySymbols.Any()) continue;
             var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
-            var classClassName = classSymbol.Name;
+            var classClassNameSafe = classSymbol.Name;
+            var classClassName = classSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
             var constructors = new List<string>();
             var assignments = new List<string>();
@@ -172,10 +173,10 @@ public class AutowiredGenerator : IIncrementalGenerator
                              /// <summary>
                              /// 
                              /// </summary>
-                             public {{classClassName}}({{string.Join(", ", constructors)}}){{baseConstructorString}}
+                             public {{classClassNameSafe}}({{string.Join(", ", constructors)}}){{baseConstructorString}}
                              {
-                                {{string.Join("\n        ", assignments)}}
-                                ConstructorInit();
+                                 {{string.Join("\n        ", assignments)}}
+                                 ConstructorInit();
                              }
                              
                              /// <summary>
@@ -184,7 +185,7 @@ public class AutowiredGenerator : IIncrementalGenerator
                              partial void ConstructorInit();
                          }
                          """;
-            context.AddSource($"{classClassName}_Autowired.g.cs", code);
+            context.AddSource($"{classClassNameSafe}_Autowired.g.cs", code);
         }
     }
 }
