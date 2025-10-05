@@ -10,7 +10,7 @@
         <!-- Nuget && Plugin Meta -->
         <PackageId>ShadowExample.Plugin.Emoji</PackageId>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>1.0.2.2</Version>
+        <Version>1.0.2.7</Version>
         <Author>kitUIN</Author>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
@@ -18,24 +18,29 @@
         <Description>✨ ShadowExample.Plugin.Emoji | WinUI3✨</Description>
         <Copyright>Copyright 2024</Copyright>
         <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-
-  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-  <!-- 可选：自定义生成目录 -->
-  <CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
 		<PluginId>Emoji</PluginId>
         <PluginName>emoji</PluginName>
         <LangVersion>12</LangVersion>
     </PropertyGroup>
-      <ItemGroup>
-    <!-- 添加了内存里面的文件，不应该添加磁盘的，否则添加两份 -->
-    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-  </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="ShadowExample.Core" Version="1.1.13" /> 
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="3.0.4" /> 
+        <PackageReference Include="ShadowExample.Core" Version="1.2.5" /> 
     </ItemGroup>
 
-	<ItemGroup Label="Dependencies">
-		<PackageReference Include="ShadowExample.Plugin.Hello" Version="1.1.2"  Need="(1.0,2.0)" />
-	</ItemGroup>
+	<!-- <ItemGroup Label="Dependencies"> -->
+	<!-- 	<PackageReference Include="ShadowExample.Plugin.Hello" Version="1.1.2"  Need="(1.0,2.0)" /> -->
+	<!-- </ItemGroup> -->
+
+
+  <!-- <ItemGroup> -->
+	 <!--  <ProjectReference Include="..\ShadowPluginLoader.SourceGenerator\ShadowPluginLoader.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"  /> -->
+  <!-- </ItemGroup> -->
+  <PropertyGroup>
+	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	  <!-- 可选：自定义生成目录 -->
+	  <CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+	  <!-- 添加了内存里面的文件，不应该添加磁盘的，否则添加两份 -->
+	  <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+  </ItemGroup>
 </Project>

@@ -1,40 +1,90 @@
-using ShadowPluginLoader.Attributes;
+using System;
+using ShadowObservableConfig.Attributes;
+using System.Collections.ObjectModel;
 
-namespace ShadowExample.Plugin.Emoji;
+namespace Config.WinUI;
 
 /// <summary>
-/// Emojiæ’ä»¶é…ç½®ç±»
+/// ±íÇéäÖÈ¾Ä£Ê½Ã¶¾Ù
 /// </summary>
-[Config(FileName = "emoji_config.json", DirPath = "config", Description = "Emojiæ’ä»¶é…ç½®", Version = "1.0.0")]
+public enum EmojiRenderMode
+{
+    /// <summary>
+    /// Ô­ÉúäÖÈ¾
+    /// </summary>
+    Native,
+    
+    /// <summary>
+    /// TwemojiäÖÈ¾
+    /// </summary>
+    Twemoji,
+    
+    /// <summary>
+    /// Segoe UIäÖÈ¾
+    /// </summary>
+    SegoeUi,
+    
+    /// <summary>
+    /// AppleäÖÈ¾
+    /// </summary>
+    Apple,
+    
+    /// <summary>
+    /// GoogleäÖÈ¾
+    /// </summary>
+    Google
+}
+
+/// <summary>
+/// Emoji²å¼şÅäÖÃÀà
+/// </summary>
+[ObservableConfig(FileName = "emoji_config", DirPath = "config", Description = "Emoji²å¼şÅäÖÃ", Version = "1.0.0")]
 public partial class EmojiConfig
 {
-    [ConfigField(Name = "DefaultEmojiSize", Description = "é»˜è®¤è¡¨æƒ…å¤§å°")]
-    private int _defaultEmojiSize;
+    [ObservableConfigProperty(Description = "Ä¬ÈÏ±íÇé´óĞ¡")]
+    private int defaultEmojiSize;
 
-    [ConfigField(Name = "EnableAutoComplete", Description = "å¯ç”¨è‡ªåŠ¨å®Œæˆ")]
+    [ObservableConfigProperty(Description = "ÆôÓÃ×Ô¶¯Íê³É")]
     private bool _enableAutoComplete;
 
-    [ConfigField(Name = "MaxEmojiHistory", Description = "æœ€å¤§è¡¨æƒ…å†å²è®°å½•æ•°")]
+    [ObservableConfigProperty(Name = "MaxEmojiHistory", Description = "×î´ó±íÇéÀúÊ·¼ÇÂ¼Êı")]
     private int _maxEmojiHistory;
 
-    [ConfigField(Name = "DefaultSkinTone", Description = "é»˜è®¤è‚¤è‰²")]
-    private string _defaultSkinTone;
+    [ObservableConfigProperty(Name = "DefaultSkinTone", Description = "Ä¬ÈÏ·ôÉ«")]
+    private string _defaultSkinTone = null!;
 
-    [ConfigField(Name = "AnimationSpeed", Description = "åŠ¨ç”»é€Ÿåº¦")]
+    [ObservableConfigProperty(Name = "AnimationSpeed", Description = "¶¯»­ËÙ¶È")]
     private double _animationSpeed;
 
-    [ConfigField(Name = "Settings", Description = "è¡¨æƒ…è®¾ç½®")]
-    private EmojiSettings _settings;
+    [ObservableConfigProperty(Name = "RenderMode", Description = "±íÇéäÖÈ¾Ä£Ê½")]
+    private EmojiRenderMode _renderMode;
 
-    /// <summary>
-    /// é…ç½®åˆå§‹åŒ–åçš„å›è°ƒ
-    /// </summary>
-    partial void AfterConfigInit()
-    {
-        // åˆå§‹åŒ–å®ä½“ç±»
-        _settings ??= new EmojiSettings();
-        
-        // åœ¨è¿™é‡Œå¯ä»¥æ·»åŠ é…ç½®åˆå§‹åŒ–åçš„é€»è¾‘
-        System.Diagnostics.Debug.WriteLine($"EmojiConfig initialized: Size={DefaultEmojiSize}, AutoComplete={EnableAutoComplete}");
-    }
+    [ObservableConfigProperty(Name = "LaunchDate", Description = "ÆôÓÃÈÕÆÚ")]
+    private DateTime _launchDate;
+
+    [ObservableConfigProperty(Name = "Settings", Description = "±íÇéÉèÖÃ")]
+    private NestedSettings _settings = new();
+
+    [ObservableConfigProperty(Name = "FavoriteEmojis", Description = "ÊÕ²ØµÄ±íÇéÁĞ±í")]
+    private ObservableCollection<string> _favoriteEmojis = new ();
+
+    [ObservableConfigProperty(Name = "CustomSettings", Description = "×Ô¶¨ÒåÉèÖÃÁĞ±í")]
+    private ObservableCollection<NestedSettings> _customSettings = new();
+}
+
+/// <summary>
+/// ÄÚ²¿ÅäÖÃÀàÊ¾Àı
+/// </summary>
+[ObservableConfig(Description = "Ç¶Ì×ÅäÖÃ", Version = "1.0.0")]
+public partial class NestedSettings
+{
+    [ObservableConfigProperty(Name = "NestedValue", Description = "Ç¶Ì×Öµ")]
+    private string _nestedValue;
+
+    [ObservableConfigProperty(Name = "NestedNumber", Description = "Ç¶Ì×Êı×Ö")]
+    private int _nestedNumber;
+
+    [ObservableConfigProperty(Name = "NestedBoolean", Description = "Ç¶Ì×²¼¶ûÖµ")]
+    private bool _nestedBoolean;
+
 }

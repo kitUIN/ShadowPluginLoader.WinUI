@@ -18,6 +18,12 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using ShadowExample.Core.Plugins;
+using ShadowObservableConfig.Yaml;
+using ShadowPluginLoader.WinUI;
+using ShadowPluginLoader.WinUI.Checkers;
+using ShadowPluginLoader.WinUI.Installer;
+using ShadowPluginLoader.WinUI.Scanners;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -37,7 +43,21 @@ namespace ShadowExample
         {
             this.InitializeComponent();
             ApplicationExtensionHost.Initialize(this);
-            DiFactory.Services.Register<ShadowExamplePluginLoader>(reuse: Reuse.Singleton);
+            ShadowObservableConfig.ShadowConfigGlobalSetting.Init(new ShadowYamlConfigSetting());
+            Init();
+        }
+
+        private void Init()
+        {
+            DiFactory.Init<PluginBase, ExampleMetaData>();
+            DiFactory.Services.Register<ShadowExamplePluginLoader>(
+                reuse: Reuse.Singleton,
+                made: Parameters.Of
+                    .Type<IDependencyChecker<ExampleMetaData>>(serviceKey: "base")
+                    .OverrideWith(Parameters.Of.Type<IRemoveChecker>(serviceKey: "base"))
+                    .OverrideWith(Parameters.Of.Type<IPluginScanner<PluginBase, ExampleMetaData>>(serviceKey: "base"))
+                    .OverrideWith(Parameters.Of.Type<IPluginInstaller<ExampleMetaData>>(serviceKey: "base"))
+                );
         }
 
         /// <summary>
@@ -48,7 +68,6 @@ namespace ShadowExample
         {
             m_window = new MainWindow();
             m_window.Activate();
-            
         }
 
         private Window m_window;

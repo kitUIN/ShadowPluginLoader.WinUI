@@ -10,7 +10,7 @@
 	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
 	<!-- Nuget -->
-	<Version>1.1.13</Version>
+	<Version>1.2.5</Version>
 	<PackageId>ShadowExample.Core</PackageId>
 	<Authors>kitUIN</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -27,6 +27,9 @@
 
 
 	<ItemGroup>
-		<ProjectReference Include="..\ShadowPluginLoader.WinUI\ShadowPluginLoader.WinUI.csproj" />
+		<!-- <ProjectReference Include="..\ShadowPluginLoader.WinUI\ShadowPluginLoader.WinUI.csproj" /> -->
+			<PackageReference Include="ShadowPluginLoader.WinUI" Version="3.0.5"></PackageReference>
 	</ItemGroup>
+	<!-- <ItemGroup> -->
+	<!-- </ItemGroup> -->
 </Project>

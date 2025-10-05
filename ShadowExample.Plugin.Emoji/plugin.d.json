@@ -18,6 +18,10 @@
     "Version": {
       "type": "string"
     },
+    "SdkVersion": {
+      "type": "string",
+      "default": "1.2.5.0"
+    },
     "Priority": {
       "type": "integer",
       "format": "int32"
