@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using ShadowPluginLoader.WinUI.Converters;
 using ShadowPluginLoader.WinUI.Helpers;
 
 namespace ShadowPluginLoader.WinUI.Extensions;

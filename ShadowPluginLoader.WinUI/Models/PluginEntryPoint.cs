@@ -6,3 +6,8 @@ namespace ShadowPluginLoader.WinUI.Models;
 /// Plugin EntryPoint
 /// </summary>
 public record PluginEntryPoint(string Name, string Type);
+
+/// <summary>
+/// EntryPointType
+/// </summary>
+public record PluginEntryPointType(Type EntryPointType);

@@ -1,10 +1,9 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Interfaces;
 using System.Collections.Generic;
 using CustomExtensions.WinUI;
 using System;
-using Microsoft.UI.Dispatching;
 using Serilog;
 using ShadowPluginLoader.WinUI.Services;
 
@@ -20,8 +19,10 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     public abstract string DisplayName { get; }
 
     /// <inheritdoc />
-    public abstract TMeta MetaData { get; }
+    public virtual TMeta MetaData { get; }
 
+    /// <inheritdoc />
+    public virtual string Id => MetaData.Id;
     /// <summary>
     /// Logger
     /// </summary>
@@ -35,8 +36,9 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     /// <summary>
     /// Default
     /// </summary>
-    protected AbstractPlugin(ILogger logger, PluginEventService pluginEventService)
+    protected AbstractPlugin(TMeta meta, ILogger logger, PluginEventService pluginEventService)
     {
+        MetaData = meta;
         Logger = logger;
         PluginEventService = pluginEventService;
         Init();
@@ -155,7 +157,4 @@ public abstract class AbstractPlugin<TMeta> : IPlugin<TMeta>
     public virtual void Loaded()
     {
     }
-
-    /// <inheritdoc/>
-    public abstract string Id { get; }
 }

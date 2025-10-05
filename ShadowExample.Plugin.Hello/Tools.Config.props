@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <!-- Whether the current project is a PluginLoader -->
@@ -9,7 +9,7 @@
         <AutoPluginPackage>true</AutoPluginPackage>
         <!-- Package Type: False For Zip (Default); True for msix(Need Cert), 
         And Need AppCertPath and AppCertPassword -->
-        <PluginMisxPackage>true</PluginMisxPackage>
+        <PluginMisxPackage>false</PluginMisxPackage>
 		<AppCertPath>D:\VsProjects\WASDK\ShadowPluginLoader.WinUI\App1\App1_TemporaryKey.pfx</AppCertPath>
 		<!-- Auto Generate I18N -->
         <AutoGenerateI18N>true</AutoGenerateI18N>

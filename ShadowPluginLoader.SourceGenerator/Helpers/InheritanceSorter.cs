@@ -1,41 +1,54 @@
-﻿namespace ShadowPluginLoader.SourceGenerator.Helpers;
-
 using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-public class CustomSymbolComparer : IEqualityComparer<INamedTypeSymbol>
-{
-    public bool Equals(INamedTypeSymbol x, INamedTypeSymbol y)
-    {
-        return x.Name == y.Name && x.Kind == y.Kind;
-    }
 
-    public int GetHashCode(INamedTypeSymbol obj)
-    {
-        return obj.Name.GetHashCode() ^ obj.Kind.GetHashCode();
-    }
-}
-public static class InheritanceSorter
-{
-    public static List<INamedTypeSymbol> SortTypesByInheritance(IEnumerable<INamedTypeSymbol> types)
-    {
-        // 创建一个字典存储每个类型的继承链
-        var inheritanceChains = new Dictionary<INamedTypeSymbol, List<INamedTypeSymbol>>(new CustomSymbolComparer());
+namespace ShadowPluginLoader.SourceGenerator.Helpers;
 
-        var namedTypeSymbols = types as INamedTypeSymbol[] ?? types.ToArray();
-        foreach (var type in namedTypeSymbols)
+/// <summary>
+/// Inheritance Sorter Helper
+/// </summary>
+internal static class InheritanceSorter
+{
+    /// <summary>
+    /// Sort Types By Inheritance
+    /// </summary>
+    /// <param name="types">Types to sort</param>
+    /// <returns>Sorted types by inheritance order</returns>
+    public static IEnumerable<INamedTypeSymbol> SortTypesByInheritance(IEnumerable<INamedTypeSymbol> types)
+    {
+        var typeList = types.ToList();
+        var sorted = new List<INamedTypeSymbol>();
+        var visited = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var type in typeList)
         {
-            var chain = new List<INamedTypeSymbol>();
-            var currentType = type;
-
-            while (currentType != null)
-            {
-                chain.Add(currentType);
-                currentType = currentType.BaseType;
-            }
-            chain.Reverse();
-            inheritanceChains[type] = chain;
+            SortTypeRecursive(type, typeList, sorted, visited);
         }
-        var sortedTypes = namedTypeSymbols.OrderBy(t => string.Join(",", inheritanceChains[t])).ToList();
-        return sortedTypes;
+
+        return sorted;
+    }
+
+    private static void SortTypeRecursive(INamedTypeSymbol type, List<INamedTypeSymbol> allTypes, 
+        List<INamedTypeSymbol> sorted, HashSet<INamedTypeSymbol> visited)
+    {
+        if (visited.Contains(type) || sorted.Any(t => SymbolEqualityComparer.Default.Equals(t, type)))
+            return;
+
+        visited.Add(type);
+
+        // 先处理基类
+        if (type.BaseType != null && type.BaseType.SpecialType != SpecialType.System_Object)
+        {
+            var baseType = allTypes.FirstOrDefault(t => 
+                SymbolEqualityComparer.Default.Equals(t, type.BaseType));
+            if (baseType != null)
+            {
+                SortTypeRecursive(baseType, allTypes, sorted, visited);
+            }
+        }
+
+        // 再添加当前类型
+        if (!sorted.Contains(type))
+        {
+            sorted.Add(type);
+        }
     }
 }

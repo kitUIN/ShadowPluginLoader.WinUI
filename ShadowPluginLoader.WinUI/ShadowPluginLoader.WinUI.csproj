@@ -1,48 +1,67 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>net6.0-windows10.0.19041.0;net8.0-windows10.0.19041.0;net9.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks>
+            net6.0-windows10.0.19041.0;net8.0-windows10.0.19041.0;net9.0-windows10.0.19041.0</TargetFrameworks>
         <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
         <RootNamespace>ShadowPluginLoader.WinUI</RootNamespace>
-<!--        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>-->
+        <!--        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>-->
         <UseWinUI>true</UseWinUI>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>MSB3277</NoWarn>
-		<EnableMsixTooling>true</EnableMsixTooling>
+        <NoWarn>MSB3277</NoWarn>
+        <EnableMsixTooling>true</EnableMsixTooling>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12</LangVersion>
         <!-- Nuget -->
-        <Version>2.6.5</Version>
-		<PackageId>ShadowPluginLoader.WinUI</PackageId>
-		<Owner>kitUIN</Owner>
-		<Authors>kitUIN</Authors>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
-		<Description>✨ ShadowPluginLoader | WinUI3✨</Description>
-		<Copyright>Copyright 2024-2025</Copyright>
-		<PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
-		<PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
+        <Version>3.0.5</Version>
+        <PackageId>ShadowPluginLoader.WinUI</PackageId>
+        <Owner>kitUIN</Owner>
+        <Authors>kitUIN</Authors>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
+        <Description>✨ ShadowPluginLoader | WinUI3✨</Description>
+        <Copyright>Copyright 2024-2025</Copyright>
+        <PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
+        <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
 
         <IncludeSymbols>true</IncludeSymbols>
         <IncludeSource>true</IncludeSource>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="DryIoc.dll" Version="5.4.3" />
-        <PackageReference Include="Serilog" Version="4.2.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.241107002" />
-		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
-        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="2.3.4" />
+        <PackageReference Include="Serilog" Version="4.3.0" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.241107002" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
         <PackageReference Include="kitUIN.CustomExtensions.WinUI" Version="0.6.4" />
-        <PackageReference Include="ShadowPluginLoader.Tool" Version="2.6.5" />
-        <PackageReference Include="SharpCompress" Version="0.39.0" /> 
+        <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="3.0.7" />
+        <PackageReference Include="ShadowObservableConfig.Yaml" Version="0.5.6" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="3.0.6" />
+        <PackageReference Include="NuGet.Versioning" Version="6.14.0" />
+        <PackageReference Include="SharpCompress" Version="0.40.0" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-
+ <!--    <ItemGroup> -->
+ <!--      <ProjectReference Include="..\ShadowPluginLoader.SourceGenerator\ShadowPluginLoader.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"  /> -->
+ <!--    </ItemGroup> -->
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<!-- 可选：自定义生成目录 -->
+		<CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- 添加了内存里面的文件，不应该添加磁盘的，否则添加两份 -->
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Config\" />
+	</ItemGroup>
 </Project>

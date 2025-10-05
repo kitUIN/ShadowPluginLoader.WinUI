@@ -1,7 +1,5 @@
 {
-  "DllName": "ShadowExample.Plugin.Emoji",
-  "Id": "Emoji",
-  "Name": "emoji",
-  "Version": "1.0.1.2",
-  "Dependencies": []
+  "Id": "{{ PluginId }}",
+  "Name": "{{ PluginName }}",
+  "Version": "{{ Version }}"
 }

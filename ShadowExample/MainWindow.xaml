@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <Window
     x:Class="ShadowExample.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,11 +9,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel
-        x:Name="MyPanel"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Orientation="Horizontal">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
+    <StackPanel HorizontalAlignment="Center" Orientation="Vertical"
+                VerticalAlignment="Center">
+        <TextBlock x:Name="Block"></TextBlock>
+        <StackPanel
+            x:Name="MyPanel"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="10"
+            Orientation="Horizontal">
+            <Button x:Name="MyButton" Click="myButton_Click">Click Me</Button>
+            <Button x:Name="InstallButton" Click="InstallButton_OnClick">安装</Button>
+            <Button x:Name="UpgradeButton" Click="UpgradeButton_OnClick">升级</Button>
+            <Button x:Name="RemoveButton" Click="RemoveButton_OnClick">卸载</Button>
+        </StackPanel>
+        <Button x:Name="RebootButton" Click="RebootButton_OnClick" IsEnabled="False">重启</Button>
     </StackPanel>
 </Window>

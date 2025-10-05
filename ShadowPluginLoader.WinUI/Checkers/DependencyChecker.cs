@@ -1,9 +1,12 @@
-using ShadowPluginLoader.WinUI.Interfaces;
-using System.Collections.Generic;
-using System;
-using System.Linq;
+using NuGet.Versioning;
 using ShadowPluginLoader.WinUI.Exceptions;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
@@ -13,16 +16,35 @@ namespace ShadowPluginLoader.WinUI.Checkers;
 public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-    /// <summary>
     /// <inheritdoc />
-    /// </summary>
-    public Dictionary<string, Version> LoadedPlugins { get; } = new();
+    public ConcurrentDictionary<string, NuGetVersion> LoadedPlugins { get; } = new();
 
-
-    /// <summary>
     /// <inheritdoc />
-    /// </summary>
-    public DependencyCheckResult<TMeta> DetermineLoadOrder(List<SortPluginData<TMeta>> plugins)
+    public ConcurrentDictionary<string, TMeta> LoadedMetas { get; } = new();
+
+    /// <inheritdoc />
+    public async Task CheckUpgrade(string id, Uri uri)
+    {
+        var meta = await MetaDataHelper.ToMetaAsyncFromZip<TMeta>(uri.LocalPath);
+        var current = LoadedMetas[id];
+        if (current.Version >= meta.Version)
+            throw new PluginUpgradeException(
+                $"{id} Plugin Current: {current.Version}, Upgrade: {meta.Version}");
+        foreach (var dependency in meta.Dependencies)
+        {
+            if (!LoadedPlugins.TryGetValue(dependency.Id, out var loadedPluginVersion))
+                throw new PluginDependencyException($"Dependency Not Found: {dependency.Id}");
+
+            if (!dependency.Need.Satisfies(loadedPluginVersion))
+            {
+                throw new PluginDependencyException(
+                    $"Version Not Satisfied: {dependency.Id}, Need: {dependency.Need}, Actual: {loadedPluginVersion}");
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public DependencyCheckResult<TMeta> DetermineLoadOrder(IEnumerable<SortPluginData<TMeta>> plugins)
     {
         var sortedPlugins = new List<SortPluginData<TMeta>>();
         var visited = new HashSet<string>();
@@ -33,13 +55,7 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
                 .OrderByDescending(p => p.Version)
                 .ThenBy(p => p.Priority)
                 .First())
-            .Where(p =>
-            {
-                if (!LoadedPlugins.ContainsKey(p.MetaData.DllName)) return true;
-                if (LoadedPlugins.TryGetValue(p.MetaData.DllName, out var actualVersion) && actualVersion < p.Version)
-                    needUpgradePlugins.Add(p);
-                return false;
-            })
+            .Where(p => !LoadedPlugins.ContainsKey(p.MetaData.DllName))
             .OrderBy(p => p.Priority)
             .ToList();
 
@@ -58,7 +74,7 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
     /// <param name="plugins"></param>
     /// <param name="sortedPlugins"></param>
     /// <param name="visited"></param>
-    /// <exception cref="PluginImportException"></exception>
+    /// <exception cref="PluginDependencyException"></exception>
     private void SortDependencies(SortPluginData<TMeta> plugin, List<SortPluginData<TMeta>> plugins,
         List<SortPluginData<TMeta>> sortedPlugins, HashSet<string> visited)
     {
@@ -70,20 +86,21 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
 
             if (dependentPlugin == null)
             {
-                if (!LoadedPlugins.TryGetValue(dependency.Id, out var loadedPlugin))
-                    throw new PluginImportException($"Dependency Not Found: {dependency.Id}");
-                if (!IsVersionSatisfied(loadedPlugin, dependency))
+                if (!LoadedPlugins.TryGetValue(dependency.Id, out var loadedPluginVersion))
+                    throw new PluginDependencyException($"Dependency Not Found: {dependency.Id}");
+
+                if (!dependency.Need.Satisfies(loadedPluginVersion))
                 {
-                    throw new PluginImportException(
-                        $"Version Not Satisfied: {dependency.Id}, Need: {dependency.Need}, Actual: {loadedPlugin}");
+                    throw new PluginDependencyException(
+                        $"Version Not Satisfied: {dependency.Id}, Need: {dependency.Need}, Actual: {loadedPluginVersion}");
                 }
 
                 continue;
             }
 
-            if (!IsVersionSatisfied(dependentPlugin.Version, dependency))
+            if (!dependency.Need.Satisfies(dependentPlugin.Version))
             {
-                throw new PluginImportException(
+                throw new PluginDependencyException(
                     $"Version Not Satisfied: {dependentPlugin.Id}, Need: {dependency.Need}, Actual: {dependentPlugin.Version}");
             }
 
@@ -97,22 +114,5 @@ public class DependencyChecker<TMeta> : IDependencyChecker<TMeta>
         {
             sortedPlugins.Add(plugin);
         }
-    }
-
-
-    /// <summary>
-    /// Check Version Satisfied
-    /// </summary>
-    /// <param name="actualVersion"></param>
-    /// <param name="dependency"></param>
-    /// <returns></returns>
-    private bool IsVersionSatisfied(Version actualVersion, PluginDependency dependency)
-    {
-        return dependency.Comparer switch
-        {
-            PluginDependencyComparer.Lesser => actualVersion <= dependency.Version,
-            PluginDependencyComparer.Same => actualVersion == dependency.Version,
-            _ => actualVersion >= dependency.Version
-        };
     }
 }

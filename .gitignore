@@ -366,3 +366,5 @@ nuget.config
 /nuget.config
 /ShadowExample.Plugin.Hello/Plugin.Build.exclude
 *.msix
+/ShadowPluginLoader.WinUI/GeneratedFiles/
+/ShadowExample.Plugin.Emoji/GeneratedFiles/

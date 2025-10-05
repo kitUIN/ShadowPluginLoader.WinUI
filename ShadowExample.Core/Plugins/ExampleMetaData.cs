@@ -12,5 +12,9 @@ public record ExampleMetaData : AbstractPluginMetaData
     [Meta(Required = false)]
     public string Url { get; init; }
 
+    [Meta(Required = false)]
+    public InnerMetaData InnerMetaData { get; init; }
 
+    [Meta(Required = false)]
+    public InnerMetaData[] InnerMetaDatas { get; init; }
 }

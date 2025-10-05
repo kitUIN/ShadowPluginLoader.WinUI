@@ -1,21 +1,29 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ShadowPluginLoader.SourceGenerator.Models;
-using ShadowPluginLoader.SourceGenerator.Receivers;
-using System.ComponentModel;
+using System.Collections.Immutable;
 using System.Xml.Linq;
 
 namespace ShadowPluginLoader.SourceGenerator.Generators;
+
+internal class GeneratorData
+{
+    public ImmutableArray<ClassDeclarationSyntax> ClassDeclarations { get; set; }
+    public ImmutableArray<RecordDeclarationSyntax> RecordDeclarations { get; set; }
+    public Compilation Compilation { get; set; } = null!;
+    public ImmutableArray<AdditionalText> AdditionalTexts { get; set; }
+}
 
 /// <summary>
 /// Auto Generate I18N
 /// </summary>
 [Generator]
-internal class I18NGenerator : ISourceGenerator
+internal class I18NGenerator : IIncrementalGenerator
 {
-    private static Dictionary<string, List<ReswValue>> GetReswData(GeneratorExecutionContext context)
+    private static Dictionary<string, List<ReswValue>> GetReswData(ImmutableArray<AdditionalText> additionalTexts)
     {
         var reswData = new Dictionary<string, List<ReswValue>>();
-        foreach (var file in context.AdditionalFiles)
+        foreach (var file in additionalTexts)
         {
             if (!Path.GetExtension(file.Path).Equals(".resw", StringComparison.OrdinalIgnoreCase)) continue;
             var country = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(file.Path));
@@ -42,62 +50,99 @@ internal class I18NGenerator : ISourceGenerator
         return reswData;
     }
 
-    public void Execute(GeneratorExecutionContext context)
+    /// <inheritdoc />
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        // 创建语法提供器来查找类声明和记录声明
+        var classDeclarations = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (node, _) => node is ClassDeclarationSyntax,
+                transform: (ctx, _) => (ClassDeclarationSyntax)ctx.Node)
+            .Where(classDecl => classDecl != null);
+
+        var recordDeclarations = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (node, _) => node is RecordDeclarationSyntax,
+                transform: (ctx, _) => (RecordDeclarationSyntax)ctx.Node)
+            .Where(recordDecl => recordDecl != null);
+
+        // 创建编译提供器
+        var compilationProvider = context.CompilationProvider;
+        var additionalTextsProvider = context.AdditionalTextsProvider;
+
+        // 组合所有提供器
+        var combinedProvider = classDeclarations
+            .Collect()
+            .Combine(recordDeclarations.Collect())
+            .Combine(compilationProvider)
+            .Combine(additionalTextsProvider.Collect())
+            .Select((data, _) => new GeneratorData
+            {
+                ClassDeclarations = data.Left.Left.Left,
+                RecordDeclarations = data.Left.Left.Right,
+                Compilation = data.Left.Right,
+                AdditionalTexts = data.Right
+            });
+
+        // 注册源生成
+        context.RegisterSourceOutput(combinedProvider, Execute);
+    }
+
+    private static void Execute(SourceProductionContext context, GeneratorData data)
     {
         var logger = new Logger("I18nGenerator", context);
-        context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
-            out var currentNamespace);
+        var classDeclarations = data.ClassDeclarations;
+        var recordDeclarations = data.RecordDeclarations;
+        var compilation = data.Compilation;
+        var additionalTexts = data.AdditionalTexts;
+
+        // 获取根命名空间
+        var currentNamespace = compilation.AssemblyName;
         if (currentNamespace is null) return;
-        var receiver = context.SyntaxReceiver as I18nSyntaxReceiver;
-        var assemblyName = context.Compilation.Assembly.Name;
+
+        var assemblyName = compilation.AssemblyName;
         var isPlugin = false;
         var isPluginLoader = false;
         var builtIn = false;
-        if (receiver != null)
+
+        // 检查类声明中的 MainPlugin 特性
+        foreach (var classDeclaration in classDeclarations)
         {
-            if (receiver.Plugin != null)
+            var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
+            if (model.GetDeclaredSymbol(classDeclaration) is INamedTypeSymbol mainPluginSymbol)
             {
-                var model = context.Compilation.GetSemanticModel(receiver.Plugin.SyntaxTree);
-
-                if (model.GetDeclaredSymbol(receiver.Plugin) is INamedTypeSymbol mainPluginSymbol)
+                var mainPluginAttribute = GetAttribute(mainPluginSymbol, compilation, "ShadowPluginLoader.Attributes.MainPluginAttribute");
+                if (mainPluginAttribute != null)
                 {
-                    var mainPluginAttribute =
-                        mainPluginSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.MainPluginAttribute");
-                    if (mainPluginAttribute != null)
+                    isPlugin = true;
+                    foreach (var namedArgument in mainPluginAttribute.NamedArguments)
                     {
-                        isPlugin = true;
-                        foreach (var namedArgument in mainPluginAttribute.NamedArguments)
-                        {
-                            var name = namedArgument.Key;
-                            if (namedArgument.Value.Value == null) continue;
-                            if (name == "BuiltIn") builtIn = (bool)namedArgument.Value.Value;
-                        }
+                        var name = namedArgument.Key;
+                        if (namedArgument.Value.Value == null) continue;
+                        if (name == "BuiltIn") builtIn = (bool)namedArgument.Value.Value;
                     }
-                }
-            }
-
-            if (receiver.ExportMeta != null)
-            {
-                var model = context.Compilation.GetSemanticModel(receiver.ExportMeta.SyntaxTree);
-
-                if (model.GetDeclaredSymbol(receiver.ExportMeta) is INamedTypeSymbol metaSymbol &&
-                    metaSymbol.GetAttribute(context, "ShadowPluginLoader.Attributes.ExportMetaAttribute") != null
-                   )
-                {
-                    isPluginLoader = true;
                 }
             }
         }
 
-        var resws = GetReswData(context);
+        // 检查记录声明中的 ExportMeta 特性
+        foreach (var recordDeclaration in recordDeclarations)
+        {
+            var model = compilation.GetSemanticModel(recordDeclaration.SyntaxTree);
+            if (model.GetDeclaredSymbol(recordDeclaration) is INamedTypeSymbol metaSymbol &&
+                GetAttribute(metaSymbol, compilation, "ShadowPluginLoader.Attributes.ExportMetaAttribute") != null)
+            {
+                isPluginLoader = true;
+            }
+        }
+
+        var resws = GetReswData(additionalTexts);
         if (resws.Count == 0)
         {
             logger.Warning("SPLW001", "No .resw file found, skip I18N generation.");
             return;
         }
 
-        var keys = string.Empty;
-        var i18ns = string.Empty;
         var keyList = new List<string>();
         var i18NList = new List<string>();
         foreach (var resw in resws)
@@ -127,8 +172,8 @@ internal class I18NGenerator : ISourceGenerator
         public static string {resw.Key} => ResourcesHelper.GetString(ResourceKey.{resw.Key});");
         }
 
-        keys = string.Join(",", keyList);
-        i18ns = string.Join("", i18NList);
+        var keys = string.Join(",", keyList);
+        var i18Ns = string.Join("", i18NList);
         var reswEnumCode = $$"""
                              // Automatic Generate From ShadowPluginLoader.SourceGenerator
                              namespace {{currentNamespace}}.I18n
@@ -259,7 +304,7 @@ internal class I18NGenerator : ISourceGenerator
                              /// </summary>
                              public static class I18N
                              {
-                                 {{i18ns}}
+                                 {{i18Ns}}
                              }
                          }
                          """;
@@ -294,8 +339,10 @@ internal class I18NGenerator : ISourceGenerator
         context.AddSource($"LocaleExtension.g.cs", localeExtensionCode);
     }
 
-    public void Initialize(GeneratorInitializationContext context)
+    private static AttributeData? GetAttribute(ISymbol symbol, Compilation compilation, string attributeName)
     {
-        context.RegisterForSyntaxNotifications(() => new I18nSyntaxReceiver());
+        var attributeSymbol = compilation.GetTypeByMetadataName(attributeName);
+        return symbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
     }
 }

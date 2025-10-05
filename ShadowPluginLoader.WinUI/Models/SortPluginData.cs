@@ -1,3 +1,4 @@
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +30,7 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     /// <summary>
     /// Version
     /// </summary>
-    public Version Version { get; }
+    public NuGetVersion Version { get; }
 
 
     /// <summary>
@@ -60,7 +61,7 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
         MetaData = metaData;
         Id = metaData.Id;
         Priority = metaData.Priority;
-        Version = new Version(metaData.Version);
+        Version = metaData.Version;
         foreach (var dep in metaData.Dependencies)
         {
             Dependencies.Add(dep);

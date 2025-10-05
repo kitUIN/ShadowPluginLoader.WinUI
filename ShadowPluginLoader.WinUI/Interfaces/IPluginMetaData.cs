@@ -1,6 +1,6 @@
-using System.Collections.Generic;
-using System.Text.Json.Nodes;
+using NuGet.Versioning;
 using ShadowPluginLoader.WinUI.Models;
+using System;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -27,7 +27,17 @@ internal interface IPluginMetaData
     /// <summary>
     /// Plugin Version
     /// </summary>
-    string Version { get; init; }
+    NuGetVersion Version { get; init; }
+
+    /// <summary>
+    /// Plugin Sdk Version (When Build)
+    /// </summary>
+    NuGetVersion SdkVersion { get; init; }
+
+    /// <summary>
+    /// Plugin Type
+    /// </summary>
+    PluginEntryPointType MainPlugin { get; }
 
     /// <summary>
     /// Plugin Dependencies
