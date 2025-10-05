@@ -1,6 +1,9 @@
 using System;
 using DryIoc;
+using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Config;
+using ShadowPluginLoader.WinUI.Installer;
+using ShadowPluginLoader.WinUI.Scanners;
 using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowPluginLoader.WinUI;
@@ -23,10 +26,37 @@ public static class DiFactory
                 r => r.ImplementationType ?? r.Parent.ImplementationType ?? typeof(object)),
             setup: Setup.With(condition: r => r.Parent.ImplementationType != null || r.ImplementationType != null));
         Services.Register<PluginEventService>(reuse: Reuse.Singleton);
-        Services.Register<IPluginInstaller, ZipPluginInstaller>(reuse: Reuse.Singleton);
         var baseSdkConfig = BaseSdkConfig.Load();
         Services.RegisterInstance(baseSdkConfig);
         var innerSdkConfig = InnerSdkConfig.Load();
         Services.RegisterInstance(innerSdkConfig);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static void Init<TAPlugin, TMeta>()
+        where TAPlugin : AbstractPlugin<TMeta>
+        where TMeta : AbstractPluginMetaData
+    {
+        Services.Register<IDependencyChecker<TMeta>, DependencyChecker<TMeta>>(serviceKey: "base",
+            reuse: Reuse.Singleton);
+        Services.Register<IUpgradeChecker, UpgradeChecker>(serviceKey: "base",
+            reuse: Reuse.Singleton);
+        Services.Register<IRemoveChecker, RemoveChecker>(serviceKey: "base",
+            reuse: Reuse.Singleton);
+        Services.Register<IPluginScanner<TAPlugin, TMeta>, PluginScanner<TAPlugin, TMeta>>(
+            serviceKey: "base", reuse: Reuse.Singleton, 
+            made: Parameters.Of
+                .Type<IDependencyChecker<TMeta>>(serviceKey: "base")
+                .OverrideWith(Parameters.Of.Type<IUpgradeChecker>(serviceKey: "base"))
+                .OverrideWith(Parameters.Of.Type<IRemoveChecker>(serviceKey: "base"))
+            ); 
+        Services.Register<IPluginInstaller, ZipPluginInstaller<TAPlugin, TMeta>>(
+            serviceKey: "base",  reuse: Reuse.Singleton, 
+            made: Parameters.Of
+                .Type<IDependencyChecker<TMeta>>(serviceKey: "base")
+                .OverrideWith(Parameters.Of.Type<IPluginScanner<TAPlugin, TMeta>>(serviceKey: "base"))
+            );
     }
 }

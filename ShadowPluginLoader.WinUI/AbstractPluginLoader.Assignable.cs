@@ -18,23 +18,21 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-    /// <inheritdoc />
-    public virtual IPluginScanner<TAPlugin, TMeta> PluginScanner { get; }
 
     /// <summary>
     /// DependencyChecker
     /// </summary>
-    protected IDependencyChecker<TMeta> DependencyChecker { get; } = new DependencyChecker<TMeta>();
+    protected IDependencyChecker<TMeta> DependencyChecker { get; }
 
     /// <summary>
     /// UpgradeChecker
     /// </summary>
-    protected IUpgradeChecker UpgradeChecker { get; } = new UpgradeChecker();
+    protected IUpgradeChecker UpgradeChecker { get; }
 
     /// <summary>
     /// RemoveChecker
     /// </summary>
-    protected IRemoveChecker RemoveChecker { get; } = new RemoveChecker();
+    protected IRemoveChecker RemoveChecker { get; }
 
     /// <summary>
     /// <inheritdoc />
@@ -127,12 +125,10 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     {
         var plugin = GetPlugin(id);
         if (plugin == null) throw new PluginUpgradeException($"{id} Plugin not found");
-        await GetPluginInstaller(PluginSettingsHelper.GetPluginInstaller(id))
-            .PreUpgradeAsync(plugin, uri, TempFolder, PluginFolder);
     }
 
     /// <inheritdoc />
-    public void LoadAsync(IEnumerable<string> pluginIds)
+    public void Load(IEnumerable<string> pluginIds)
     {
         foreach (var pluginId in pluginIds)
         {

@@ -10,14 +10,10 @@ namespace ShadowPluginLoader.WinUI.Interfaces;
 /// </summary>
 /// <typeparam name="TMeta">Your Custom Class MetaData Assignable To <see cref="AbstractPluginMetaData"/></typeparam>
 /// <typeparam name="TAPlugin">Your Custom Interface IPlugin Assignable To <see cref="AbstractPlugin{TMeta}"/></typeparam>
-public interface IPluginLoader<TMeta, TAPlugin>
+public partial interface IPluginLoader<TMeta, TAPlugin>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-    /// <summary>
-    /// Plugin Scanner
-    /// </summary>
-    IPluginScanner<TAPlugin, TMeta> PluginScanner { get; }
 
     /// <summary>
     /// Get All Plugins
@@ -77,8 +73,8 @@ public interface IPluginLoader<TMeta, TAPlugin>
     Task UpgradePlugin(string id, Uri uri);
 
     /// <summary>
-    /// LoadAsync
+    /// Load
     /// </summary>
     /// <returns></returns>
-    void LoadAsync(IEnumerable<string> pluginIds);
+    void Load(IEnumerable<string> pluginIds);
 }

@@ -1,9 +1,13 @@
 using DryIoc;
 using Serilog;
+using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Args;
+using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
+using ShadowPluginLoader.WinUI.Installer;
+using ShadowPluginLoader.WinUI.Scanners;
 using ShadowPluginLoader.WinUI.Services;
 using System;
 using System.Collections.Generic;
@@ -11,14 +15,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Windows.Storage;
-using ShadowPluginLoader.WinUI.Checkers;
-using ShadowPluginLoader.WinUI.Scanners;
 
 namespace ShadowPluginLoader.WinUI;
 
 public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 {
-
     /// <summary>
     /// Logger Print With Prefix
     /// </summary>
@@ -59,71 +60,27 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// </summary>
     protected PluginEventService PluginEventService { get; }
 
-
-    /// <summary>
-    /// Get PluginInstaller
-    /// </summary>
-    /// <param name="uri"></param>
-    /// <returns></returns>
-    protected IPluginInstaller GetPluginInstaller(Uri uri)
-    {
-        foreach (var installer in DiFactory.Services.ResolveMany<IPluginInstaller>().OrderBy(x => x.Priority))
-        {
-            try
-            {
-                if (installer.Check(uri)) return installer;
-            }
-            catch (Exception e)
-            {
-                Logger.Warning("PluginInstaller CheckError: {Ex}", e);
-            }
-        }
-
-        return new BasePluginInstaller(Logger);
-    }
-
-    /// <summary>
-    /// Get PluginInstaller
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    protected IPluginInstaller GetPluginInstaller(string key)
-    {
-        foreach (var installer in DiFactory.Services.ResolveMany<IPluginInstaller>())
-        {
-            try
-            {
-                if (installer.Identify == key) return installer;
-            }
-            catch (Exception e)
-            {
-                Logger.Warning("PluginInstaller CheckError: {Ex}", e);
-            }
-        }
-
-        return new BasePluginInstaller(Logger);
-    }
-
     /// <summary>
     /// Default
     /// </summary>
-    /// <param name="logger">log</param>
-    /// <param name="pluginEventService">pluginEventService</param>
-    protected AbstractPluginLoader(ILogger logger, PluginEventService pluginEventService)
+    protected AbstractPluginLoader(ILogger logger, 
+        IDependencyChecker<TMeta> dependencyChecker,
+        IPluginInstaller pluginInstaller,
+        IUpgradeChecker upgradeChecker,
+        IRemoveChecker removeChecker,
+        IPluginScanner<TAPlugin, TMeta> pluginScanner,
+        PluginEventService pluginEventService)
     {
+        MetaDataHelper.Init<TMeta>();
         PluginFolderPath = Path.Combine(BaseFolder, PluginFolder);
         TempFolderPath = Path.Combine(BaseFolder, TempFolder);
-        PluginScanner = new PluginScanner<TAPlugin, TMeta>(DependencyChecker, UpgradeChecker, RemoveChecker);
+        PluginInstaller = pluginInstaller;
         Logger = logger;
+        PluginScanner = pluginScanner;
+        UpgradeChecker = upgradeChecker;
+        RemoveChecker = removeChecker;
+        DependencyChecker = dependencyChecker;
         PluginEventService = pluginEventService;
-    }
-
-    /// <summary>
-    /// Default
-    /// </summary>
-    protected AbstractPluginLoader(PluginEventService pluginEventService) :
-        this(Log.ForContext<AbstractPluginLoader<TMeta, TAPlugin>>(), pluginEventService)
-    {
     }
 
     /// <summary>
@@ -133,11 +90,10 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
 
     protected virtual void LoadConfigFile()
     {
-
     }
 
     /// <summary>
-    /// LoadAsync Plugin From Type
+    /// Load Plugin From Type
     /// </summary>
     /// <param name="meta">Plugin MetaData</param>
     protected virtual void LoadPlugin(TMeta meta)
@@ -154,7 +110,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
             instance.Loaded();
             PluginEventService.InvokePluginLoaded(this, new PluginEventArgs(meta.Id, PluginStatus.Loaded));
             stopwatch.Stop();
-            Logger.Information("{Pre}{ID}({isEnabled}): LoadAsync Success! Used: {mi} ms",
+            Logger.Information("{Pre}{ID}({isEnabled}): Load Success! Used: {mi} ms",
                 LoggerPrefix, meta.Id, enabled, stopwatch.ElapsedMilliseconds);
             DependencyChecker.LoadedPlugins.Add(meta.DllName, meta.Version);
             if (!enabled) return;
@@ -167,7 +123,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
                 stopwatch.Stop();
             }
 
-            Logger.Warning("{Pre}Plugin LoadAsync Failed! Used: {mi} ms, Error: {Ex}",
+            Logger.Warning("{Pre}Plugin Load Failed! Used: {mi} ms, Error: {Ex}",
                 LoggerPrefix, stopwatch.ElapsedMilliseconds, e);
             throw;
         }
@@ -201,13 +157,13 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     protected virtual TAPlugin LoadMainPlugin(Type plugin, TMeta meta)
     {
         var instance = DiFactory.Services.Resolve<TAPlugin>(serviceKey: meta.Id);
-        if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't LoadAsync Plugin");
-        Logger.Information("Plugin[{ID}] Main Class LoadAsync Success", meta.Id);
+        if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
+        Logger.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
         return instance;
     }
 
     /// <summary>
-    /// After LoadAsync Plugin
+    /// After Load Plugin
     /// </summary>
     protected virtual void AfterLoadPlugin(Type tPlugin, TAPlugin aPlugin, TMeta meta)
     {

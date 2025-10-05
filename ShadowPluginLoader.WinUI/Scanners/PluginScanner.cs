@@ -65,7 +65,6 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         DependencyChecker = dependencyChecker;
         UpgradeChecker = upgradeChecker;
         RemoveChecker = removeChecker;
-        MetaDataHelper.Init<TMeta>();
     }
 
     /// <summary>
@@ -145,7 +144,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     /// <param name="sortPluginData"></param>
     /// <returns></returns>
     /// <exception cref="PluginScanException"></exception>
-    private async Task<Tuple<string, Type>> GetMainPluginType(SortPluginData<TMeta> sortPluginData)
+    protected async Task<Tuple<string, Type>> GetMainPluginType(SortPluginData<TMeta> sortPluginData)
     {
         var dllFilePath =
             Path.GetFullPath(Path.GetDirectoryName(sortPluginData.Path!)! + "/../" + sortPluginData.MetaData.DllName +

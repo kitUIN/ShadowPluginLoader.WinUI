@@ -1,3 +1,4 @@
+using DryIoc;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Converters;
 using ShadowPluginLoader.WinUI.Exceptions;
@@ -5,11 +6,14 @@ using ShadowPluginLoader.WinUI.Interfaces;
 using ShadowPluginLoader.WinUI.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using YamlDotNet.Core.Tokens;
 
 namespace ShadowPluginLoader.WinUI.Helpers;
@@ -104,6 +108,26 @@ public static class MetaDataHelper
     public static TMeta? ToMeta<TMeta>(string content) where TMeta : AbstractPluginMetaData
     {
         return JsonSerializer.Deserialize<TMeta>(content, Options);
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TMeta"></typeparam>
+    /// <param name="zipPath"></param>
+    /// <returns></returns>
+    /// <exception cref="PluginLoadMetaException"></exception>
+    public static async Task<TMeta> ToMetaAsyncFromZip<TMeta>(string zipPath) where TMeta : AbstractPluginMetaData
+    {
+        await using FileStream zipToOpen = new(zipPath, FileMode.Open);
+        using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
+        var entry = archive.Entries.FirstOrDefault(e =>
+            e.FullName.EndsWith("/plugin.json", StringComparison.OrdinalIgnoreCase));
+        if (entry == null) throw new PluginLoadMetaException($"Not Found plugin.json in zip {zipPath}");
+        using var reader = new StreamReader(entry.Open());
+        var jsonContent = await reader.ReadToEndAsync();
+        var zipMeta = ToMeta<TMeta>(jsonContent) ??
+                      throw new PluginLoadMetaException($"Failed to deserialize plugin metadata from {zipPath}");
+        return zipMeta;
     }
 
     /// <summary>
