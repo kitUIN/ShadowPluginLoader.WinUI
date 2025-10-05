@@ -99,7 +99,7 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
             List<string> results = [];
             if (!UpgradeChecker.UpgradeChecked || !RemoveChecker.RemoveChecked)
                 throw new PluginScanException(
-                    "You need to try CheckUpgradeAndRemoveAsync before FinishAsync");
+                    "You need to try CheckUpgradeAndRemoveAsync before FinishScanAsync");
 
             List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
             CheckSdkVersion(beforeSorts);
@@ -117,13 +117,6 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
         {
             _finishLock.Release();
         }
-    }
-
-    /// <inheritdoc />
-    public async Task CheckUpgradeAndRemoveAsync()
-    {
-        await RemoveChecker.CheckRemoveAsync();
-        await UpgradeChecker.CheckUpgradeAsync();
     }
 
     /// <inheritdoc />

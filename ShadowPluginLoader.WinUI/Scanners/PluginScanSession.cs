@@ -19,10 +19,10 @@ public class PluginScanSession<TAPlugin, TMeta> : IPluginScanSession<TAPlugin, T
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-    private readonly PluginScanner<TAPlugin, TMeta> _scanner;
+    private readonly IPluginScanner<TAPlugin, TMeta> _scanner;
     private readonly Guid _token;
 
-    internal PluginScanSession(PluginScanner<TAPlugin, TMeta> scanner, Guid token)
+    internal PluginScanSession(IPluginScanner<TAPlugin, TMeta> scanner, Guid token)
     {
         _scanner = scanner;
         _token = token;

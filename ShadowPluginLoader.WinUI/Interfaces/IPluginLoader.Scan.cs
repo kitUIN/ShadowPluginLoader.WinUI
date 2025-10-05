@@ -6,8 +6,6 @@ using ShadowPluginLoader.WinUI.Scanners;
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
 public partial interface IPluginLoader<TMeta, TAPlugin>
-    where TAPlugin : AbstractPlugin<TMeta>
-    where TMeta : AbstractPluginMetaData
 {
     /// <summary>
     /// StartScan

@@ -28,12 +28,6 @@ public interface IPluginScanner<TAPlugin, TMeta>
     Task<IEnumerable<string>> FinishScanAsync(Task<SortPluginData<TMeta>>[] scanTaskArray, Guid token);
 
     /// <summary>
-    /// Checked for updates and removed plugins
-    /// </summary>
-    /// <returns></returns>
-    Task CheckUpgradeAndRemoveAsync();
-
-    /// <summary>
     /// Check Sdk Version
     /// </summary>
     /// <exception cref="PluginScanException"></exception>
