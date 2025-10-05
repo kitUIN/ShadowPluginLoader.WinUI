@@ -1,7 +1,11 @@
 using CustomExtensions.WinUI;
 using DryIoc;
+using NuGet.Versioning;
 using Serilog;
+using ShadowObservableConfig;
+using ShadowObservableConfig.Attributes;
 using ShadowPluginLoader.WinUI.Checkers;
+using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Models;
@@ -12,12 +16,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
-using NuGet.Versioning;
-using ShadowObservableConfig;
-using ShadowObservableConfig.Attributes;
-using ShadowPluginLoader.WinUI.Config;
 
 namespace ShadowPluginLoader.WinUI.Scanners;
 
@@ -26,6 +27,10 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
+    private readonly SemaphoreSlim _finishLock = new(1, 1);
+    private readonly ConcurrentDictionary<Guid, PluginScanSession<TAPlugin, TMeta>> _activeSessions = new();
+
+
     /// <summary>
     /// Logger
     /// </summary>
@@ -64,131 +69,15 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     }
 
     /// <summary>
-    /// Used to store Tasks that convert JSON files to TMeta
+    /// 
     /// </summary>
-    protected readonly ConcurrentBag<Task<SortPluginData<TMeta>>> ScanTaskList = [];
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(Type? type)
+    /// <returns></returns>
+    public PluginScanSession<TAPlugin, TMeta> StartScan()
     {
-        if (type is null) return this;
-        var dir = type.Assembly.Location[..^".dll".Length];
-        var metaPath = Path.Combine(dir, "Assets", "plugin.json");
-        Scan(new Uri(metaPath));
-        return this;
-    }
-
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan<TPlugin>()
-    {
-        Scan(typeof(TPlugin));
-        return this;
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(params Type?[] types)
-    {
-        foreach (var type in types)
-        {
-            Scan(type);
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(IEnumerable<Type?> types)
-    {
-        foreach (var type in types)
-        {
-            Scan(type);
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(Package package)
-    {
-        return Scan(new DirectoryInfo(package.InstalledPath));
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(DirectoryInfo dir)
-    {
-        if (!dir.Exists)
-        {
-            Logger?.Warning("Scan Dir[{DirFullName}]: Dir Not Exists", dir.FullName);
-            return this;
-        }
-
-        foreach (var assetDir in dir.EnumerateDirectories("Assets", SearchOption.AllDirectories))
-        {
-            var pluginPath = Path.Combine(assetDir.FullName, "plugin.json");
-            if (File.Exists(pluginPath)) Scan(new Uri(pluginPath));
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginImportException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(FileInfo pluginJson)
-    {
-        if (File.Exists(pluginJson.FullName)) Scan(new Uri(pluginJson.FullName));
-        return this;
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    /// <exception cref="PluginScanException"></exception>
-    public IPluginScanner<TAPlugin, TMeta> Scan(Uri uri)
-    {
-        if (!uri.IsFile && Directory.Exists(uri.LocalPath))
-        {
-            Scan(new DirectoryInfo(uri.LocalPath));
-        }
-        else
-        {
-            Logger?.Information("Scan Uri[{DirFullName}]: Success", uri.LocalPath);
-            ScanTaskList.Add(Task.Run(async () =>
-            {
-                var content = await File.ReadAllTextAsync(uri.LocalPath);
-                var meta = MetaDataHelper.ToMeta<TMeta>(content) ??
-                           throw new PluginScanException($"Failed to deserialize plugin metadata from {uri}");
-                return new SortPluginData<TMeta>(meta, uri);
-            }));
-        }
-
-        return this;
-    }
-
-    /// <inheritdoc />
-    public void ScanClear()
-    {
-        ScanTaskList.Clear();
+        var token = Guid.NewGuid();
+        var session = new PluginScanSession<TAPlugin, TMeta>(this, token);
+        _activeSessions[token] = session;
+        return session;
     }
 
     private void LoggerMetaSort(List<SortPluginData<TMeta>> sorts)
@@ -198,25 +87,37 @@ public class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, TMeta>
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<string>> FinishAsync()
+    public async Task<IEnumerable<string>> FinishScanAsync(Task<SortPluginData<TMeta>>[] scanTaskArray, Guid token)
     {
-        List<string> results = [];
-        if (!UpgradeChecker.UpgradeChecked || !RemoveChecker.RemoveChecked)
-            throw new PluginScanException(
-                "You need to try CheckUpgradeAndRemoveAsync before FinishAsync");
-        var scanTaskArray = ScanTaskList.ToArray();
-        ScanClear();
-        List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
-        CheckSdkVersion(beforeSorts);
-        var sortResult = DependencyChecker.DetermineLoadOrder(beforeSorts.ToList());
-        LoggerMetaSort(sortResult.Result);
-        await Task.WhenAll(sortResult.Result.Select(GetMainPluginType).ToArray());
-        sortResult.Result.ForEach(t =>
+        await _finishLock.WaitAsync();
+        try
         {
-            DependencyChecker.LoadedMetas[t.Id] = t.MetaData;
-            results.Add(t.Id);
-        });
-        return results;
+            if (!_activeSessions.TryRemove(token, out _))
+            {
+                throw new InvalidOperationException("Invalid or expired scan token.");
+            }
+
+            List<string> results = [];
+            if (!UpgradeChecker.UpgradeChecked || !RemoveChecker.RemoveChecked)
+                throw new PluginScanException(
+                    "You need to try CheckUpgradeAndRemoveAsync before FinishAsync");
+
+            List<SortPluginData<TMeta>> beforeSorts = [.. await Task.WhenAll(scanTaskArray)];
+            CheckSdkVersion(beforeSorts);
+            var sortResult = DependencyChecker.DetermineLoadOrder(beforeSorts.ToList());
+            LoggerMetaSort(sortResult.Result);
+            await Task.WhenAll(sortResult.Result.Select(GetMainPluginType).ToArray());
+            sortResult.Result.ForEach(t =>
+            {
+                DependencyChecker.LoadedMetas[t.Id] = t.MetaData;
+                results.Add(t.Id);
+            });
+            return results;
+        }
+        finally
+        {
+            _finishLock.Release();
+        }
     }
 
     /// <inheritdoc />
