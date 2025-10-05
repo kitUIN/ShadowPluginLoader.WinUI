@@ -2,6 +2,7 @@ using System;
 using DryIoc;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Config;
+using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Installer;
 using ShadowPluginLoader.WinUI.Scanners;
 using ShadowPluginLoader.WinUI.Services;
@@ -26,10 +27,6 @@ public static class DiFactory
                 r => r.ImplementationType ?? r.Parent.ImplementationType ?? typeof(object)),
             setup: Setup.With(condition: r => r.Parent.ImplementationType != null || r.ImplementationType != null));
         Services.Register<PluginEventService>(reuse: Reuse.Singleton);
-        var baseSdkConfig = BaseSdkConfig.Load();
-        Services.RegisterInstance(baseSdkConfig);
-        var innerSdkConfig = InnerSdkConfig.Load();
-        Services.RegisterInstance(innerSdkConfig);
     }
 
     /// <summary>
@@ -39,6 +36,11 @@ public static class DiFactory
         where TAPlugin : AbstractPlugin<TMeta>
         where TMeta : AbstractPluginMetaData
     {
+        MetaDataHelper.Init<TMeta>();
+        var baseSdkConfig = BaseSdkConfig.Load();
+        Services.RegisterInstance(baseSdkConfig);
+        var innerSdkConfig = InnerSdkConfig.Load();
+        Services.RegisterInstance(innerSdkConfig);
         Services.Register<IDependencyChecker<TMeta>, DependencyChecker<TMeta>>(serviceKey: "base",
             reuse: Reuse.Singleton);
         Services.Register<IUpgradeChecker, UpgradeChecker>(serviceKey: "base",

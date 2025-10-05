@@ -1,13 +1,10 @@
 using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ShadowPluginLoader.WinUI.Checkers;
-using ShadowPluginLoader.WinUI.Scanners;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -97,18 +94,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
             LoggerPrefix, id);
     }
 
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    public Task RemovePlugin(string id)
-    {
-        var plugin = GetPlugin(id);
-        if (plugin == null) throw new PluginRemoveException($"{id} Plugin Not Found");
-        var path = Path.GetDirectoryName(plugin.GetType().Assembly.Location);
-        if (path == null) throw new PluginRemoveException($"{id} Plugin Path Not Found");
-        RemoveChecker.PlanRemove(id, path);
-        return Task.CompletedTask;
-    }
 
 
     /// <inheritdoc />

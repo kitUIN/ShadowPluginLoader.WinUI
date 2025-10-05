@@ -59,11 +59,6 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// <param name="id">Plugin Id</param>
     void DisablePlugin(string id);
 
-    /// <summary>
-    /// Remove Plugin
-    /// </summary>
-    /// <param name="id">Plugin Id</param>
-    Task RemovePlugin(string id);
 
     /// <summary>
     /// Upgrade Plugin

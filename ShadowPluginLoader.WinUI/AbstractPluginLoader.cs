@@ -39,7 +39,8 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <summary>
     /// 
     /// </summary>
-    protected BaseSdkConfig BaseSdkConfig;
+    protected BaseSdkConfig BaseSdkConfig { get; }
+
 
     /// <summary>
     /// Logger
@@ -63,7 +64,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         PluginEventService pluginEventService,
         BaseSdkConfig baseSdkConfig)
     {
-        MetaDataHelper.Init<TMeta>();
         BaseSdkConfig = baseSdkConfig;
         PluginInstaller = pluginInstaller;
         Logger = logger;

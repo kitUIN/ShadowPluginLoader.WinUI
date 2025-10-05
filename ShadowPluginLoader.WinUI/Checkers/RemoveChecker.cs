@@ -1,13 +1,15 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using DryIoc;
 using System.Threading.Tasks;
+using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Exceptions;
 
 namespace ShadowPluginLoader.WinUI.Checkers;
 
 /// <inheritdoc />
-public class RemoveChecker : IRemoveChecker
+public partial class RemoveChecker : IRemoveChecker
 {
     /// <summary>
     /// lock
@@ -17,15 +19,20 @@ public class RemoveChecker : IRemoveChecker
     /// <inheritdoc />
     public bool RemoveChecked { get; private set; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [Autowired]
+    protected InnerSdkConfig InnerConfig { get; }
+
     /// <inheritdoc />
     public void PlanRemove(string id, string path)
     {
-        var inner = DiFactory.Services.Resolve<InnerSdkConfig>();
         lock (_planRemoveLock)
         {
-            if (inner.PlanRemove.Any(x => x.Id == id))
+            if (InnerConfig.PlanRemove.Any(x => x.Id == id))
                 throw new PlanRemoveException($"Plugin[{id}] already plan to remove");
-            inner.PlanRemove.Add(new PlanRemoveData()
+            InnerConfig.PlanRemove.Add(new PlanRemoveData()
             {
                 Id = id,
                 Path = path
@@ -36,22 +43,28 @@ public class RemoveChecker : IRemoveChecker
     /// <inheritdoc />
     public void RevokedRemove(string id)
     {
-        var inner = DiFactory.Services.Resolve<InnerSdkConfig>();
         lock (_planRemoveLock)
         {
-            var item = inner.PlanRemove.FirstOrDefault(x => x.Id == id);
+            var item = InnerConfig.PlanRemove.FirstOrDefault(x => x.Id == id);
             if (item != null)
             {
-                inner.PlanRemove.Remove(item);
+                InnerConfig.PlanRemove.Remove(item);
             }
         }
     }
 
     /// <inheritdoc />
-    public async Task<bool> CheckRemoveAsync()
+    public Task<bool> CheckRemoveAsync()
     {
-        RemoveChecked = true;
-        await Task.Delay(10);
-        return RemoveChecked;
+        lock (_planRemoveLock)
+        {
+            RemoveChecked = true;
+            foreach (var plan in InnerConfig.PlanRemove.ToArray())
+            {
+                Directory.Delete(plan.Path, recursive: true);
+                InnerConfig.PlanRemove.Remove(plan);
+            }
+            return Task.FromResult(RemoveChecked);
+        }
     }
 }
