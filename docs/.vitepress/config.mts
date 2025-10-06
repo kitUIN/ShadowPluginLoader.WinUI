@@ -33,9 +33,80 @@ export default withMermaid({
         label: "English",
         lang: "en",
         themeConfig: {
+          outline: {
+            label: "Page Navigation",
+          },
+          lastUpdated: {
+            text: "Last updated",
+          },
+          docFooter: {
+            prev: "Previous",
+            next: "Next",
+          },
+          langMenuLabel: "Switch Language",
+          returnToTopLabel: "Back to top",
+          sidebarMenuLabel: "Menu",
+          darkModeSwitchTitle: "Switch to dark theme",
+          lightModeSwitchTitle: "Switch to light theme",
+          darkModeSwitchLabel: "Theme",
+
+          nav: [
+            { text: "Home", link: "/" },
+            { text: "Quick Start", link: "/init/" },
+            { text: "Plugin Development", link: "/plugin/" },
+            { text: "Advanced Configuration", link: "/advance/" },
+          ],
+          sidebar: [
+            {
+              text: "Quick Start",
+              link: "/",
+              base: "/init/",
+              items: [
+                { text: "Create SDK Project", link: "customloader" },
+                { text: "Create Plugin Metadata Class", link: "metaplugin" },
+                { text: "Create Plugin Base Class", link: "iplugin" },
+                { text: "Create Plugin Loader Class", link: "customloaderclass" },
+              ],
+            },
+            {
+              text: "Plugin Development",
+              link: "/",
+              base: "/plugin/",
+              items: [
+                { text: "Create Plugin Project", link: "create" },
+                { text: "Custom Controls", link: "control" },
+                { text: "Plugin Resource Path", link: "msplugin" },
+                { text: "Custom Resource Dictionary", link: "resourcedictionary" },
+                { text: "Custom Resource Files", link: "assets" },
+                { text: "Plugin Settings", link: "settings" },
+                { text: "Plugin Packaging", link: "pack" },
+                { text: "Install/Update/Remove", link: "install" },
+                { text: "Plugin Events", link: "event" },
+              ],
+            },
+            {
+              text: "Advanced Configuration",
+              link: "/",
+              base: "/advance/",
+              items: [
+                { text: "Custom Plugin Loading Logic", link: "customloadplugin" },
+                { text: "I18N Internationalization", link: "i18n" },
+                { text: "Tools.Config.props File", link: "toolconfig" },
+                { text: "Quick Dependency Injection", link: "quickdi" },
+                { text: "Entry Points", link: "entrypoint" },
+              ],
+            },
+          ],
+
+          socialLinks: [
+            {
+              icon: "github",
+              link: "https://github.com/kitUIN/ShadowPluginLoader.WinUI",
+            },
+          ],
           editLink: {
             pattern:
-              "https://github.com/kitUIN/ShadowPluginLoader-Docs/edit/main/docs/:path",
+              "https://github.com/kitUIN/ShadowPluginLoader.WinUI/edit/main/docs/:path",
             text: "Edit this page on GitHub",
           },
         },

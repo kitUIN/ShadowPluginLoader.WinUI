@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: Quick Start
-      link: /zh/init/
+      link: /init/
     - theme: alt
       text: Examples
       link: /api-examples
@@ -22,4 +22,3 @@ features:
   - title: Full Toolchain
     details: Quickly, conveniently, and efficiently build your own plugin loader
 ---
-
