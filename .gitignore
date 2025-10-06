@@ -370,3 +370,4 @@ nuget.config
 /ShadowExample.Plugin.Emoji/GeneratedFiles/
 yarn.lock
 docs/.vitepress/cache/
+docs/.vitepress/dist/
