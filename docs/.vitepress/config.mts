@@ -103,8 +103,6 @@ export default withMermaid({
               items: [
                 { text: "自定义插件加载逻辑", link: "customloadplugin" },
                 { text: "I18N国际化", link: "i18n" },
-                { text: "元数据定义文件", link: "define" },
-                { text: "元数据项编写格式", link: "meta" },
                 { text: "Tool.Config.props文件", link: "toolconfig" },
                 { text: "快速依赖注入", link: "quickdi" },
                 { text: "注入点", link: "entrypoint" },
@@ -120,7 +118,7 @@ export default withMermaid({
           ],
           editLink: {
             pattern:
-              "https://github.com/kitUIN/ShadowPluginLoader-Docs/edit/main/docs/:path",
+              "https://github.com/kitUIN/ShadowPluginLoader.WinUI/edit/main/docs/:path",
             text: "在Github上编辑此页",
           },
         },

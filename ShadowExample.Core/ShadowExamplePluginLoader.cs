@@ -8,7 +8,5 @@ namespace ShadowExample.Core
     public partial class ShadowExamplePluginLoader :
         AbstractPluginLoader<ExampleMetaData, PluginBase>
     {
-
-
     }
 }

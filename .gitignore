@@ -368,3 +368,5 @@ nuget.config
 *.msix
 /ShadowPluginLoader.WinUI/GeneratedFiles/
 /ShadowExample.Plugin.Emoji/GeneratedFiles/
+yarn.lock
+docs/.vitepress/cache/
