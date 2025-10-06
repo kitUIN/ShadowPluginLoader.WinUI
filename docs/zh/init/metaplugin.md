@@ -23,11 +23,6 @@ public record ExampleMetaData : AbstractPluginMetaData
 
 会自动导出为`元数据定义文件`给后续的插件使用
 
-::: tip 说明
-
-关于`元数据定义文件`,可查阅: [元数据定义文件](/zh/advance/define)
-
-:::
 
 ## 继承
 

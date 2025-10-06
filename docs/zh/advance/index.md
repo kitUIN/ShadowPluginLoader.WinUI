@@ -11,5 +11,4 @@
 - [注入点](/zh/advance/entrypoint)
 
 说明:
-- [元数据定义文件](/zh/advance/define)
 - [Tools.Config.props文件](/zh/advance/toolconfig)

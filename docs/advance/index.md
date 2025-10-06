@@ -10,5 +10,4 @@ Tools:
 - [Entry Points](/advance/entrypoint)
 
 Documentation:
-- [Metadata Definition File](/advance/define)
 - [Tools.Config.props File](/advance/toolconfig)

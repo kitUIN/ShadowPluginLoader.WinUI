@@ -23,11 +23,6 @@ Your metadata class **must** use `ExportMeta`.
 
 It will automatically export as a `metadata definition file` for subsequent plugins to use.
 
-::: tip Note
-
-For `metadata definition file`, see: [Metadata Definition File](/advance/define)
-
-:::
 
 ## Inheritance
 

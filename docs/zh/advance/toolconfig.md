@@ -37,8 +37,8 @@
 `IsPluginLoader`指明该项目是否是插件加载器项目
 
 如果为`true`:
-- 导出`[ExportMeta]`的元数据类为[元数据定义文件](/zh/advance/define)
-- 把[元数据定义文件](/zh/advance/define)打包进`nuget`包的`build`文件夹与`buildTransitive`文件夹
+- 导出`[ExportMeta]`的元数据类
+- 把元数据定义文件打包进`nuget`包的`build`文件夹与`buildTransitive`文件夹
 
 ## IsPlugin
 

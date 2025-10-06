@@ -37,8 +37,8 @@ Only one of `IsPluginLoader` and `IsPlugin` can be `true`.
 `IsPluginLoader` indicates whether this project is a plugin loader project.
 
 If `true`:
-- Export `[ExportMeta]` metadata classes as [metadata definition file](/advance/define)
-- Package [metadata definition file](/advance/define) into `nuget` package's `build` folder and `buildTransitive` folder
+- Export `[ExportMeta]` metadata classes
+- Package metadata definition file into `nuget` package's `build` folder and `buildTransitive` folder
 
 ## IsPlugin
 
