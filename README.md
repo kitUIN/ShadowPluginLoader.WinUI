@@ -1,5 +1,5 @@
 <div align="right">
-🌍<a href="">English</a> / 中文
+🌍<a href="README.en.md">English</a> / 中文
 </div>
 <div align="center">
 
@@ -29,7 +29,7 @@
 - [x] `C#代码`
 - [x] 自定义`WinUI控件`(`Page`/`UserControl`)
 - [x] 自定义`资源字典`(`ResourceDictionary`)
-- [x] `图片资源`(`Assets`)
+- [x] `图片资源/其他资源`(`Assets`)
 - [x] `i18n`(`Resw`)
 ## 🚀快速开始
 
