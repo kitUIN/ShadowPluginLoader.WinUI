@@ -32,7 +32,7 @@ public partial class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, T
     /// <summary>
     /// Logger
     /// </summary>
-    protected ILogger Logger { get; } = Log.ForContext<PluginScanner<TAPlugin, TMeta>>();
+    protected ILogger Logger { get; } = Log.ForContext("PluginScanner", "");
 
 
     /// <summary>
@@ -129,10 +129,19 @@ public partial class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, T
                         t.GetCustomAttribute<ObservableConfigAttribute>() is { FileName: { Length: > 0 } })
             .Select(type => Task.Run(() =>
             {
-                var loadMethod = type.GetMethod("Load",
-                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                if (loadMethod == null) return;
-                DiFactory.Services.RegisterInstance(loadMethod.Invoke(null, null));
+                try
+                {
+                    var loadMethod = type.GetMethod("Load",
+                        BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (loadMethod == null) return;
+                    var instance = loadMethod.Invoke(null, null);
+                    DiFactory.Services.RegisterInstance(type, instance);
+                    Logger?.Information("{Plugin} Load Config: {Type}", sortPluginData.Id, type.FullName);
+                }
+                catch (Exception ex)
+                {
+                    Logger?.Error(ex, "{Plugin} Failed to load config: {Type}", sortPluginData.Id, type.FullName);
+                }
             }))
             .ToArray();
         // Load Config File
