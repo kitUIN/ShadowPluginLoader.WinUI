@@ -36,7 +36,7 @@ public static class MetaDataHelper
     /// <summary>
     /// 
     /// </summary>
-    public static PropertyInfo[]? Properties { get; private set; }
+    public static PropertyPath[]? Properties { get; private set; }
 
     /// <summary>
     /// 
@@ -57,20 +57,38 @@ public static class MetaDataHelper
     {
         if (Properties != null) return;
         var type = typeof(TMeta);
-        var properties = new List<PropertyInfo>();
-        while (type != null && type != typeof(object))
-        {
-            var props = type
-                .GetProperties(BindingFlags.Public
-                               | BindingFlags.Instance
-                               | BindingFlags.DeclaredOnly)
-                .Where(p => p.PropertyType == TargetType
-                            || p.PropertyType == TargetTypeList);
-            properties.AddRange(props);
-            type = type.BaseType;
-        }
+        var visitedTypes = new HashSet<Type>();
+        var result = new List<PropertyPath>();
 
-        Properties = properties.ToArray();
+        Collect(type, []);
+
+        Properties = result.ToArray();
+        return;
+
+        void Collect(Type? currentType, List<PropertyInfo> currentPath)
+        {
+            while (true)
+            {
+                if (currentType == null || currentType == typeof(object) || !visitedTypes.Add(currentType)) return;
+
+                var props = currentType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                foreach (var prop in props)
+                {
+                    var newPath = new List<PropertyInfo>(currentPath) { prop };
+
+                    if (prop.PropertyType == TargetType || prop.PropertyType == TargetTypeList)
+                    {
+                        result.Add(new PropertyPath(newPath));
+                    }
+                    else if (!prop.PropertyType.IsPrimitive && prop.PropertyType != typeof(string))
+                    {
+                        Collect(prop.PropertyType, newPath);
+                    }
+                }
+
+                currentType = currentType.BaseType;
+            }
+        }
     }
 
     /// <summary>

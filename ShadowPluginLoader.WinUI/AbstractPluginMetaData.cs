@@ -83,34 +83,47 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     /// LoadEntryPoint
     /// </summary>
     /// <returns></returns>
-    public void LoadEntryPoint(PropertyInfo[]? properties, Assembly assembly)
+    public void LoadEntryPoint(PropertyPath[] propertyPaths, Assembly assembly)
     {
-        if (properties == null) return;
-        foreach (var property in properties)
+        foreach (var path in propertyPaths)
         {
-            var isList = property.PropertyType == TargetTypeList;
+            object? current = this;
+            for (var i = 0; i < path.Path.Count - 1; i++)
+            {
+                var prop = path.Path[i];
+                var next = prop.GetValue(current);
+                if (next == null)
+                {
+                    next = Activator.CreateInstance(prop.PropertyType);
+                    prop.SetValue(current, next);
+                }
+                current = next;
+            }
+
+            var targetProp = path.TargetProperty;
+            var isList = targetProp.PropertyType == TargetTypeList;
+
             if (isList)
             {
                 List<PluginEntryPointType> entryPoints = [];
                 foreach (var entryPoint in EntryPoints)
                 {
-                    if (entryPoint.Name == property.Name && assembly.GetType(entryPoint.Type) is { } type)
+                    if (entryPoint.Name == targetProp.Name && assembly.GetType(entryPoint.Type) is { } type)
                         entryPoints.Add(new PluginEntryPointType(type));
                 }
-                property.SetValue(this, entryPoints);
+                targetProp.SetValue(current, entryPoints.ToArray());
             }
             else
             {
                 PluginEntryPointType? entryPoint = null;
                 foreach (var ep in EntryPoints)
                 {
-                    if (ep.Name != property.Name || assembly.GetType(ep.Type) is not { } type) continue;
+                    if (ep.Name != targetProp.Name || assembly.GetType(ep.Type) is not { } type) continue;
                     entryPoint = new PluginEntryPointType(type);
                     break;
                 }
-                property.SetValue(this, entryPoint);
+                targetProp.SetValue(current, entryPoint);
             }
-
         }
     }
 }

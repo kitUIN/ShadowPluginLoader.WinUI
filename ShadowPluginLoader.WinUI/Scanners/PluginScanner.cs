@@ -122,7 +122,7 @@ public partial class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, T
         var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(dllFilePath);
         var assembly = asm.ForeignAssembly;
 
-        sortPluginData.MetaData.LoadEntryPoint(MetaDataHelper.Properties, assembly);
+        sortPluginData.MetaData.LoadEntryPoint(MetaDataHelper.Properties!, assembly);
 
         var types = assembly.GetExportedTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(BaseConfig).IsAssignableFrom(t) &&
