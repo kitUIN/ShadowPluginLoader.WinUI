@@ -1,6 +1,50 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "ExampleMetaData",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "Id",
+    "Name",
+    "Version"
+  ],
+  "properties": {
+    "Id": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Version": {
+      "type": "string"
+    },
+    "SdkVersion": {
+      "type": "string",
+      "default": "1.2.6.0"
+    },
+    "Priority": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "Authors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Url": {
+      "type": "string"
+    },
+    "InnerMetaData": {
+      "$ref": "#/definitions/InnerMetaData"
+    },
+    "InnerMetaDatas": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/InnerMetaData"
+      }
+    }
+  },
   "definitions": {
     "InnerMetaData": {
       "type": "object",
@@ -19,61 +63,6 @@
           "format": "double"
         }
       }
-    },
-    "AbstractPluginMetaData": {
-      "type": "object",
-      "description": "Abstract PluginMetaData",
-      "x-abstract": true,
-      "additionalProperties": false,
-      "required": [
-        "Id",
-        "Name",
-        "Version"
-      ],
-      "properties": {
-        "Id": {
-          "type": "string"
-        },
-        "Name": {
-          "type": "string"
-        },
-        "Version": {
-          "type": "string"
-        },
-        "Priority": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
     }
-  },
-  "allOf": [
-    {
-      "$ref": "#/definitions/AbstractPluginMetaData"
-    },
-    {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Authors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "Url": {
-          "type": "string"
-        },
-        "InnerMetaData": {
-          "$ref": "#/definitions/InnerMetaData"
-        },
-        "InnerMetaDatas": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InnerMetaData"
-          }
-        }
-      }
-    }
-  ]
+  }
 }

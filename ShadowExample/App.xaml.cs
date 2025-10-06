@@ -44,12 +44,12 @@ namespace ShadowExample
         public App()
         {
             this.InitializeComponent();
-            ApplicationExtensionHost.Initialize(this);
             Init();
         }
 
         private void Init()
         {
+            ApplicationExtensionHost.Initialize(this);
             ShadowObservableConfig.GlobalSetting.Init(
                 ApplicationData.Current.LocalFolder.Path,
                 [

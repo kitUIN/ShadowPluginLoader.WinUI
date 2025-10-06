@@ -24,7 +24,7 @@
   </ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\ShadowPluginLoader.WinUI\ShadowPluginLoader.WinUI.csproj" />
-		<PackageReference Include="ShadowExample.Core" Version="1.2.5" />
+		<PackageReference Include="ShadowExample.Core" Version="1.2.6" />
 	</ItemGroup>
   <ItemGroup>
 

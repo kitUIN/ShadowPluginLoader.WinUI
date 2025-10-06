@@ -47,7 +47,7 @@ namespace ShadowExample
             var ids = await session
                 .Scan(new DirectoryInfo(Loader.PluginFolderPath))
                 .FinishAsync();
-            Task.Delay(1500).ContinueWith(_ => { Loader.Load(ids); });
+            Task.Delay(1500).ContinueWith(_ => { DispatcherQueue.TryEnqueue(() => { Loader.Load(ids); }); });
         }
 
         private void myButton_Click(object sender, RoutedEventArgs e)
@@ -58,13 +58,20 @@ namespace ShadowExample
         private async void InstallButton_OnClick(object sender, RoutedEventArgs e)
         {
             var path =
-                @"C:\Users\Kit_U\source\repos\kitUIN\ShadowPluginLoader.WinUI\package\ShadowExample.Plugin.Emoji-1.0.2.6-Debug.sdow";
+                @"C:\Users\Kit_U\source\repos\kitUIN\ShadowPluginLoader.WinUI\package\ShadowExample.Plugin.Emoji-1.0.2.9-Debug.sdow";
+            await Loader.InstallAsync([path]);
+        }
+
+        private async void Install2Button_OnClick(object sender, RoutedEventArgs e)
+        {
+            var path =
+                @"C:\Users\Kit_U\source\repos\kitUIN\ShadowPluginLoader.WinUI\package\ShadowExample.Plugin.Hello-1.1.4-Debug.sdow";
             await Loader.InstallAsync([path]);
         }
 
         private async void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var pluginId = "Emoji";
+            var pluginId = "ShadowExample.Plugin.Emoji";
             await Loader.RemovePlugin(pluginId);
             RemoveButton.Content = "等待重启";
             RebootButton.IsEnabled = true;
@@ -87,9 +94,9 @@ namespace ShadowExample
 
         private async void UpgradeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var pluginId = "Emoji";
+            var pluginId = "ShadowExample.Plugin.Emoji";
             var path =
-                @"C:\Users\Kit_U\source\repos\kitUIN\ShadowPluginLoader.WinUI\package\ShadowExample.Plugin.Emoji-1.0.2.7-Debug.sdow";
+                @"C:\Users\Kit_U\source\repos\kitUIN\ShadowPluginLoader.WinUI\package\ShadowExample.Plugin.Emoji-1.0.2.10-Debug.sdow";
             await Loader.UpgradePlugin(pluginId, new Uri(path));
             UpgradeButton.Content = "等待重启";
             RebootButton.IsEnabled = true;

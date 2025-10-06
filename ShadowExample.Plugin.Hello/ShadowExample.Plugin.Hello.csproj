@@ -9,7 +9,7 @@
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <PackageId>ShadowExample.Plugin.Hello</PackageId>
 	  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-	  <Version>1.1.2</Version>
+	  <Version>1.1.4</Version>
 	  <Author>kitUIN</Author>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
@@ -17,21 +17,10 @@
 	  <Description>✨ ShadowExample.Plugin.Hello | WinUI3✨</Description>
 	  <Copyright>Copyright 2024</Copyright>
 	  <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-	  <PluginMeta>
-		  <Id>Hello</Id>
-		  <Name>Hello</Name>
-		  <Version>$(Version)</Version>
-		  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-		  <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
-		  <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
-		  <Description>✨ ShadowExample.Plugin.Hello | WinUI3✨</Description>
-		  <Copyright>Copyright 2024</Copyright>
-		  <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
-	  </PluginMeta>
 	  <LangVersion>12</LangVersion>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="ShadowExample.Core" Version="1.1.10" />
+		<PackageReference Include="ShadowExample.Core" Version="1.2.6" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="AppxManifest.xml">

@@ -1,7 +1,5 @@
 {
-  "DllName": "ShadowExample.Plugin.Hello",
-  "Id": "Hello",
-  "Name": "Hello",
-  "Version": "1.1",
-  "Dependencies": []
+  "Id": "{{ PackageId }}",
+  "Name": "HelloWord",
+  "Version": "{{ Version }}"
 }

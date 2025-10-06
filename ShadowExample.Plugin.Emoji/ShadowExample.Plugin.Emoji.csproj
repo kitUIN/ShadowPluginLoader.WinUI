@@ -10,7 +10,7 @@
         <!-- Nuget && Plugin Meta -->
         <PackageId>ShadowExample.Plugin.Emoji</PackageId>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>1.0.2.7</Version>
+        <Version>1.0.2.10</Version>
         <Author>kitUIN</Author>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
@@ -23,12 +23,12 @@
         <LangVersion>12</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="ShadowExample.Core" Version="1.2.5" /> 
+        <PackageReference Include="ShadowExample.Core" Version="1.2.6" /> 
     </ItemGroup>
 
-	<!-- <ItemGroup Label="Dependencies"> -->
-	<!-- 	<PackageReference Include="ShadowExample.Plugin.Hello" Version="1.1.2"  Need="(1.0,2.0)" /> -->
-	<!-- </ItemGroup> -->
+	<ItemGroup Label="Dependencies">
+		<PackageReference Include="ShadowExample.Plugin.Hello" Version="1.1.4"  Need="(1.0,2.0)" />
+	</ItemGroup>
 
 
   <!-- <ItemGroup> -->

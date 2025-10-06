@@ -19,7 +19,8 @@
             Spacing="10"
             Orientation="Horizontal">
             <Button x:Name="MyButton" Click="myButton_Click">Click Me</Button>
-            <Button x:Name="InstallButton" Click="InstallButton_OnClick">安装</Button>
+            <Button x:Name="InstallButton" Click="InstallButton_OnClick">安装Emoji</Button>
+            <Button x:Name="Install2Button" Click="Install2Button_OnClick">安装HelloWorld</Button>
             <Button x:Name="UpgradeButton" Click="UpgradeButton_OnClick">升级</Button>
             <Button x:Name="RemoveButton" Click="RemoveButton_OnClick">卸载</Button>
         </StackPanel>
