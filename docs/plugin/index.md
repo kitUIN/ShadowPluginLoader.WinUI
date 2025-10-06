@@ -16,6 +16,6 @@ However, due to `WinUI` limitations, we need to follow some rules:
 - [Resource Files](/plugin/assets#资源文件规则)
 
 This project also provides convenient features:
-- [Plugin Settings](/plugin/settings)
+- [Plugin Configuration](/plugin/config)
 - [Packaging Functionality](/plugin/pack)
 - [Plugin Events](/plugin/event)

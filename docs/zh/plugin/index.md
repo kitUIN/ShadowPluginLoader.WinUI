@@ -19,6 +19,6 @@
 
 
 本项目还提供了便利的
-- [插件设置项](/zh/plugin/settings)
+- [插件配置文件](/zh/plugin/config)
 - [打包功能](/zh/plugin/pack)
 - [插件事件](/zh/plugin/event)
