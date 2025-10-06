@@ -34,7 +34,7 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
         foreach (var data in result)
         {
             session.Scan(new Uri(Path.Combine(BaseSdkConfig.PluginFolderPath,
-                data.MetaData.DllName, "Assets", "plugin.json")));
+                data.MetaData.DllName, data.MetaData.DllName, "plugin.json")));
         }
 
         Load(await session.FinishAsync());

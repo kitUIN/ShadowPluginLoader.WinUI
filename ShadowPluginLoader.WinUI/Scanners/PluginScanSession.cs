@@ -46,7 +46,7 @@ public class PluginScanSession<TAPlugin, TMeta> : IPluginScanSession<TAPlugin, T
     {
         if (type is null) return this;
         var dir = type.Assembly.Location[..^".dll".Length];
-        var metaPath = Path.Combine(dir, "Assets", "plugin.json");
+        var metaPath = Path.Combine(dir, "plugin.json");
         Scan(new Uri(metaPath));
         return this;
     }
@@ -106,10 +106,9 @@ public class PluginScanSession<TAPlugin, TMeta> : IPluginScanSession<TAPlugin, T
             return this;
         }
 
-        foreach (var assetDir in dir.EnumerateDirectories("Assets", SearchOption.AllDirectories))
+        foreach (var pluginFile in dir.EnumerateFiles("plugin.json", SearchOption.AllDirectories))
         {
-            var pluginPath = Path.Combine(assetDir.FullName, "plugin.json");
-            if (File.Exists(pluginPath)) Scan(new Uri(pluginPath));
+            Scan(new Uri(pluginFile.FullName));
         }
 
         return this;
