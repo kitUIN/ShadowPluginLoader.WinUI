@@ -15,11 +15,6 @@ public partial class BaseSdkConfig
     /// <summary>
     /// 
     /// </summary>
-    private readonly string _basePath = ApplicationData.Current.LocalFolder.Path;
-
-    /// <summary>
-    /// 
-    /// </summary>
     [ObservableConfigProperty] private string _pluginFolder = "plugin";
 
     /// <summary>
@@ -30,12 +25,12 @@ public partial class BaseSdkConfig
     /// <summary>
     /// 
     /// </summary>
-    public string PluginFolderPath => System.IO.Path.Combine(_basePath, _pluginFolder);
+    public string PluginFolderPath => System.IO.Path.Combine(StaticValues.BaseFolder, _pluginFolder);
 
     /// <summary>
     /// 
     /// </summary>
-    public string TempFolderPath => System.IO.Path.Combine(_basePath, _tempFolder);
+    public string TempFolderPath => System.IO.Path.Combine(StaticValues.BaseFolder, _tempFolder);
 
     /// <summary>
     /// 
