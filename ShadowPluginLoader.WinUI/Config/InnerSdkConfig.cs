@@ -3,35 +3,49 @@ using ShadowObservableConfig.Attributes;
 
 namespace ShadowPluginLoader.WinUI.Config;
 
-[ObservableConfig(FileName = ".inner_sdk_config")]
+[ObservableConfig(FileName = ".inner_sdk_config", FileExt = ".json")]
 public partial class InnerSdkConfig
 {
-    [ObservableConfigProperty]
-    private ObservableCollection<PlanRemoveData> planRemove;
+    /// <summary>
+    /// Plan Remove Plugins
+    /// </summary>
+    [ObservableConfigProperty] private ObservableCollection<PlanRemoveData> _planRemove;
 
-    [ObservableConfigProperty]
-    private ObservableCollection<PlanUpgradeData> planUpgrade;
+    /// <summary>
+    /// Plan Upgrade Plugins
+    /// </summary>
+    [ObservableConfigProperty] private ObservableCollection<PlanUpgradeData> _planUpgrade;
 }
 
 [ObservableConfig]
 public partial class PlanRemoveData
 {
-    [ObservableConfigProperty]
-    private string id;
+    /// <summary>
+    /// Plugin Id
+    /// </summary>
+    [ObservableConfigProperty] private string _id;
 
-    [ObservableConfigProperty]
-    private string path;
+    /// <summary>
+    /// Plugin Path
+    /// </summary>
+    [ObservableConfigProperty] private string _path;
 }
 
 [ObservableConfig]
 public partial class PlanUpgradeData
 {
-    [ObservableConfigProperty]
-    private string id;
+    /// <summary>
+    /// Plugin Id
+    /// </summary>
+    [ObservableConfigProperty] private string _id;
 
-    [ObservableConfigProperty]
-    private string targetPath;
+    /// <summary>
+    /// Plugin Path
+    /// </summary>
+    [ObservableConfigProperty] private string _targetPath;
 
-    [ObservableConfigProperty]
-    private string zipPath;
+    /// <summary>
+    /// Plugin Zip Path
+    /// </summary>
+    [ObservableConfigProperty] private string _zipPath;
 }

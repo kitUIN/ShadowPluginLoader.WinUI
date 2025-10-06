@@ -4,24 +4,51 @@ using ShadowPluginLoader.WinUI.Enums;
 
 namespace ShadowPluginLoader.WinUI.Config;
 
-[ObservableConfig(FileName = "base_sdk")]
+[ObservableConfig(FileName = "base_sdk", FileExt = ".json")]
 public partial class BaseSdkConfig
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableConfigProperty] private PluginUpgradeMethod _upgradeMethod = PluginUpgradeMethod.Coverage;
 
-    [ObservableConfigProperty] private PluginUpgradeMethod upgradeMethod = PluginUpgradeMethod.Coverage;
+    /// <summary>
+    /// 
+    /// </summary>
+    private readonly string _basePath = ApplicationData.Current.LocalFolder.Path;
 
-    private string basePath = ApplicationData.Current.LocalFolder.Path;
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableConfigProperty] private string _pluginFolder = "plugin";
 
-    [ObservableConfigProperty] private string pluginFolder = "plugin";
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableConfigProperty] private string _tempFolder = "temp";
 
-    [ObservableConfigProperty] private string tempFolder = "temp";
+    /// <summary>
+    /// 
+    /// </summary>
+    public string PluginFolderPath => System.IO.Path.Combine(_basePath, _pluginFolder);
 
-    public string PluginFolderPath => System.IO.Path.Combine(basePath, pluginFolder);
-    public string TempFolderPath => System.IO.Path.Combine(basePath, tempFolder);
+    /// <summary>
+    /// 
+    /// </summary>
+    public string TempFolderPath => System.IO.Path.Combine(_basePath, _tempFolder);
 
-    [ObservableConfigProperty] private bool closeInTaskBar;
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableConfigProperty] private bool _closeInTaskBar;
 
-    [ObservableConfigProperty] private bool closeInTaskBarRemember;
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableConfigProperty] private bool _closeInTaskBarRemember;
 
-    [ObservableConfigProperty] private bool isDebug;
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableConfigProperty] private bool _isDebug;
 }

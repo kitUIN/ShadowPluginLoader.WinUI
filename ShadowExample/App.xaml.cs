@@ -18,7 +18,9 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using ShadowExample.Core.Plugins;
+using ShadowObservableConfig.Json;
 using ShadowObservableConfig.Yaml;
 using ShadowPluginLoader.WinUI;
 using ShadowPluginLoader.WinUI.Checkers;
@@ -43,12 +45,17 @@ namespace ShadowExample
         {
             this.InitializeComponent();
             ApplicationExtensionHost.Initialize(this);
-            ShadowObservableConfig.ShadowConfigGlobalSetting.Init(new ShadowYamlConfigSetting());
             Init();
         }
 
         private void Init()
         {
+            ShadowObservableConfig.GlobalSetting.Init(
+                ApplicationData.Current.LocalFolder.Path,
+                [
+                    new JsonConfigLoader(),
+                    new YamlConfigLoader()
+                ]);
             DiFactory.Init<PluginBase, ExampleMetaData>();
             DiFactory.Services.Register<ShadowExamplePluginLoader>(
                 reuse: Reuse.Singleton,
@@ -57,7 +64,7 @@ namespace ShadowExample
                     .OverrideWith(Parameters.Of.Type<IRemoveChecker>(serviceKey: "base"))
                     .OverrideWith(Parameters.Of.Type<IPluginScanner<PluginBase, ExampleMetaData>>(serviceKey: "base"))
                     .OverrideWith(Parameters.Of.Type<IPluginInstaller<ExampleMetaData>>(serviceKey: "base"))
-                );
+            );
         }
 
         /// <summary>
