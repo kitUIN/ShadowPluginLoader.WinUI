@@ -114,9 +114,8 @@ public partial class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, T
     /// <exception cref="PluginScanException"></exception>
     protected async Task<Tuple<string, Type>> GetMainPluginType(SortPluginData<TMeta> sortPluginData)
     {
-        var dllFilePath =
-            Path.GetFullPath(Path.GetDirectoryName(sortPluginData.Path!)! + "/../" + sortPluginData.MetaData.DllName +
-                             ".dll");
+        var dllFileUri = new Uri(sortPluginData.Link, "../" + sortPluginData.MetaData.DllName + ".dll");
+        var dllFilePath = dllFileUri.LocalPath;
         if (!File.Exists(dllFilePath)) throw new PluginScanException($"Not Found {dllFilePath}");
 
         var asm = await ApplicationExtensionHost.Current.LoadExtensionAsync(dllFilePath);

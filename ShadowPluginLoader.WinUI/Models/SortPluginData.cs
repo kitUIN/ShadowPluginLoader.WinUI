@@ -78,7 +78,7 @@ public class SortPluginData<TMeta> where TMeta : AbstractPluginMetaData
     /// <param name="installerId"></param>
     public SortPluginData(TMeta metaData, Uri uri, string installerId = "Base") : this(metaData, installerId)
     {
-        Path = uri.AbsolutePath;
+        Path = uri.LocalPath;
         Link = uri;
     }
 

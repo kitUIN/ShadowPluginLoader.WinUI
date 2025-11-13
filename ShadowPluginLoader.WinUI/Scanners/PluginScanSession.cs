@@ -31,7 +31,7 @@ public class PluginScanSession<TAPlugin, TMeta> : IPluginScanSession<TAPlugin, T
     /// <summary>
     /// Logger
     /// </summary>
-    protected ILogger Logger { get; } = Log.ForContext<PluginScanSession<TAPlugin, TMeta>>();
+    protected ILogger Logger { get; } = Log.ForContext("SourceContext", "S.W.S.PluginScanSession");
 
 
     /// <summary>
