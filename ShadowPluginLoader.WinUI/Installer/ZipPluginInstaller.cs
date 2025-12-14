@@ -36,9 +36,16 @@ public partial class ZipPluginInstaller<TMeta> : IPluginInstaller<TMeta>
         var sortDataList = new List<SortPluginData<TMeta>>();
         foreach (var shadowFile in shadowFiles)
         {
+            var targetFile = shadowFile;
+            if (shadowFile.StartsWith("http"))
+            {
+                var tempFile = Path.Combine(BaseSdkConfig.TempFolderPath, Path.GetFileName(shadowFile));
+                await BaseHttpHelper.Instance.SaveFileAsync(shadowFile, tempFile);
+                targetFile = tempFile;
+            }
             sortDataList.Add(new SortPluginData<TMeta>(
-                await MetaDataHelper.ToMetaAsyncFromZip<TMeta>(shadowFile),
-                shadowFile));
+                await MetaDataHelper.ToMetaAsyncFromZip<TMeta>(targetFile),
+                targetFile));
         }
 
         var res = DependencyChecker.DetermineLoadOrder(sortDataList);
