@@ -22,7 +22,7 @@
         <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
         <RepositoryUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</RepositoryUrl>
         <Description>✨ ShadowPluginLoader | WinUI3✨</Description>
-        <Copyright>Copyright 2024-2025</Copyright>
+        <Copyright>Copyright 2024-2026</Copyright>
         <PackageTags>kitUIN;wasdk;plugin-loader;plugin;extension;winui</PackageTags>
         <PackageOutputPath>..\..\NugetPackages</PackageOutputPath>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -44,8 +44,8 @@
         <PackageReference Include="ShadowObservableConfig.Yaml" Version="0.6.3" />
         <PackageReference Include="ShadowObservableConfig.Json" Version="0.6.3" />
         <PackageReference Include="ShadowPluginLoader.Tool" Version="3.1.0" />
-        <PackageReference Include="NuGet.Versioning" Version="7.0.0" />
-        <PackageReference Include="SharpCompress" Version="0.41.0" />
+        <PackageReference Include="NuGet.Versioning" Version="7.0.1" />
+        <PackageReference Include="SharpCompress" Version="0.44.0" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="\" />

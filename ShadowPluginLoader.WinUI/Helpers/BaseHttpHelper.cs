@@ -20,7 +20,8 @@ public class BaseHttpHelper
     /// <summary>
     /// Lazy, thread-safe singleton instance
     /// </summary>
-    private static readonly Lazy<BaseHttpHelper> InnerInstance = new(() => new BaseHttpHelper(), LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly Lazy<BaseHttpHelper> InnerInstance =
+        new(() => new BaseHttpHelper(), LazyThreadSafetyMode.ExecutionAndPublication);
 
     /// <summary>
     /// 获取单例实例（线程安全、惰性初始化）
@@ -40,11 +41,14 @@ public class BaseHttpHelper
     /// HttpClient 可以在运行时被替换（例如切换代理），因此不是 readonly
     /// </summary>
     protected HttpClient Client;
+
     private readonly object _clientLock = new();
+
     /// <summary>
     /// Proxy
     /// </summary>
     protected IWebProxy? Proxy;
+
     private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     /// <summary>
@@ -60,10 +64,12 @@ public class BaseHttpHelper
         var httpRequestMessage = new HttpRequestMessage(method, url);
         // 默认接受 JSON
         httpRequestMessage.Headers.Accept.Clear();
-        httpRequestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+        httpRequestMessage.Headers.Accept.Add(
+            new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
         if (headers == null) return httpRequestMessage;
-        foreach (var header in headers.Where(header => !string.IsNullOrEmpty(header.Key) && !string.IsNullOrEmpty(header.Value)))
+        foreach (var header in headers.Where(header =>
+                     !string.IsNullOrEmpty(header.Key) && !string.IsNullOrEmpty(header.Value)))
         {
             try
             {
@@ -81,7 +87,8 @@ public class BaseHttpHelper
     /// <summary>
     /// GET 并将 JSON 反序列化为 T
     /// </summary>
-    public async Task<T?> GetAsync<T>(string url, Dictionary<string, string>? query = null, Dictionary<string, string>? headers = null, CancellationToken cancellationToken = default)
+    public async Task<T?> GetAsync<T>(string url, Dictionary<string, string>? query = null,
+        Dictionary<string, string>? headers = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -142,7 +149,8 @@ public class BaseHttpHelper
             // fallback: 直接拼接
             var sb = new StringBuilder(url);
             sb.Append(url.Contains("?") ? "&" : "?");
-            sb.Append(string.Join("&", query.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}")));
+            sb.Append(string.Join("&",
+                query.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}")));
             return sb.ToString();
         }
     }
@@ -150,7 +158,8 @@ public class BaseHttpHelper
     /// <summary>
     /// POST JSON 并将响应反序列化为 TResponse
     /// </summary>
-    public async Task<TResponse?> PostJsonAsync<TRequest, TResponse>(string url, TRequest payload, Dictionary<string, string>? headers = null, CancellationToken cancellationToken = default)
+    public async Task<TResponse?> PostJsonAsync<TRequest, TResponse>(string url, TRequest payload,
+        Dictionary<string, string>? headers = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -183,7 +192,8 @@ public class BaseHttpHelper
     /// <summary>
     /// 下载文件并返回字节数组
     /// </summary>
-    public async Task<byte[]> GetFileAsync(string url, Dictionary<string, string>? headers = null, CancellationToken cancellationToken = default)
+    public async Task<byte[]> GetFileAsync(string url, Dictionary<string, string>? headers = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -195,7 +205,8 @@ public class BaseHttpHelper
             var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             var len = bytes.Length;
             Log.Information("[GET FILE] {Url} downloaded {Len} bytes", url, len);
-            Log.Debug("[GET FILE] First 128 bytes (hex) of {Url}: {Preview}", url, BitConverter.ToString(bytes, 0, Math.Min(128, len)));
+            Log.Debug("[GET FILE] First 128 bytes (hex) of {Url}: {Preview}", url,
+                BitConverter.ToString(bytes, 0, Math.Min(128, len)));
 
             response.EnsureSuccessStatusCode();
             return bytes;
@@ -210,19 +221,51 @@ public class BaseHttpHelper
     /// <summary>
     /// 下载并保存到磁盘
     /// </summary>
-    public async Task SaveFileAsync(string url, string destPath, Dictionary<string, string>? headers = null, CancellationToken cancellationToken = default)
+    public async Task SaveFileAsync(
+        string url,
+        string destPath,
+        Dictionary<string, string>? headers = null,
+        IProgress<double>? progress = null, // 增加进度接口
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var bytes = await GetFileAsync(url, headers, cancellationToken);
+            // 1. 发起请求并只获取响应头，不立即下载内容
+            using var request = CreateRequestMessage(HttpMethod.Get, url, headers);
+            Log.Debug("[GET FILE] Downloading from {Url}", url);
+            using var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response.EnsureSuccessStatusCode();
 
+            // 2. 获取文件总大小
+            var totalBytes = response.Content.Headers.ContentLength;
+
+            // 3. 准备目录
             var dir = Path.GetDirectoryName(destPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
 
-            await File.WriteAllBytesAsync(destPath, bytes, cancellationToken);
+            // 4. 流式写入
+            await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            await using var fileStream =
+                new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
-            Log.Information("[SAVE FILE] Saved {Url} -> {Path} (len={Len})", url, destPath, bytes.Length);
-            Log.Debug("[SAVE FILE] Saved file from {Url} to {Path}", url, destPath);
+            var buffer = new byte[8192]; // 8KB 缓冲区
+            long totalReadBytes = 0;
+            int readBytes;
+
+            while ((readBytes = await contentStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+            {
+                await fileStream.WriteAsync(buffer.AsMemory(0, readBytes), cancellationToken);
+
+                totalReadBytes += readBytes;
+
+                // 5. 汇报进度
+                if (totalBytes.HasValue)
+                {
+                    progress?.Report((double)totalReadBytes / totalBytes.Value);
+                }
+            }
+
+            Log.Information("[SAVE FILE] Saved {Url} -> {Path} (len={Len})", url, destPath, totalReadBytes);
         }
         catch (Exception ex)
         {
@@ -235,13 +278,15 @@ public class BaseHttpHelper
     /// 配置代理：传入 proxyUrl 设置代理，传入 null 则取消代理。
     /// 支持用户名/密码和是否使用默认凭据。
     /// </summary>
-    public void ConfigureProxy(string? proxyUrl, string? username = null, string? password = null, bool bypassOnLocal = false, bool useDefaultCredentials = false)
+    public void ConfigureProxy(string? proxyUrl, string? username = null, string? password = null,
+        bool bypassOnLocal = false, bool useDefaultCredentials = false)
     {
         IWebProxy? proxy = null;
         if (!string.IsNullOrWhiteSpace(proxyUrl))
         {
             var wp = new WebProxy(proxyUrl) { BypassProxyOnLocal = bypassOnLocal };
-            if (!string.IsNullOrEmpty(username)) wp.Credentials = new NetworkCredential(username, password ?? string.Empty);
+            if (!string.IsNullOrEmpty(username))
+                wp.Credentials = new NetworkCredential(username, password ?? string.Empty);
             proxy = wp;
         }
 
@@ -280,7 +325,8 @@ public class BaseHttpHelper
                 // 忽略 dispose 异常
             }
 
-            Log.Information("[PROXY] Configured proxy: {Proxy}, UseDefaultCredentials={UseDefaultCredentials}", proxy?.ToString() ?? "none", useDefaultCredentials);
+            Log.Information("[PROXY] Configured proxy: {Proxy}, UseDefaultCredentials={UseDefaultCredentials}",
+                proxy?.ToString() ?? "none", useDefaultCredentials);
             Log.Debug("[PROXY] Proxy object details: {@Proxy}", proxy);
         }
     }

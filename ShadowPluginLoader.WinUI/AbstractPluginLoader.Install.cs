@@ -3,12 +3,13 @@ using ShadowPluginLoader.WinUI.Args;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
-using ShadowPluginLoader.WinUI.Helpers;
 using ShadowPluginLoader.WinUI.Installer;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -27,9 +28,10 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     protected IRemoveChecker RemoveChecker { get; }
 
     /// <inheritdoc />
-    public async Task InstallAsync(IEnumerable<string> shadowFiles)
+    public async Task InstallAsync(IEnumerable<string> shadowFiles, IProgress<InstallProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await PluginInstaller.InstallAsync(shadowFiles);
+        var result = await PluginInstaller.InstallAsync(shadowFiles, progress, cancellationToken);
         var session = PluginScanner.StartScan();
         foreach (var data in result)
         {
@@ -37,7 +39,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
                 data.MetaData.DllName, data.MetaData.DllName, "plugin.json")));
         }
 
-        Load(await session.FinishAsync());
+        var plugins = await session.FinishAsync();
+
+        progress?.Report(new InstallProgress("", 95, InstallProgressStep.Loading));
+        Load(plugins);
+        progress?.Report(new InstallProgress("", 100, InstallProgressStep.Success));
     }
 
 

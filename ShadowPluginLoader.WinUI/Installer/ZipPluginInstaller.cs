@@ -1,4 +1,5 @@
-﻿using ShadowPluginLoader.Attributes;
+﻿using System;
+using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Helpers;
@@ -10,7 +11,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using ShadowPluginLoader.WinUI.Enums;
 
 namespace ShadowPluginLoader.WinUI.Installer;
 
@@ -31,37 +34,73 @@ public partial class ZipPluginInstaller<TMeta> : IPluginInstaller<TMeta>
     protected BaseSdkConfig BaseSdkConfig { get; }
 
     /// <inheritdoc />
-    public async Task<List<SortPluginData<TMeta>>> InstallAsync(IEnumerable<string> shadowFiles)
+    public async Task<List<SortPluginData<TMeta>>> InstallAsync(IEnumerable<string> shadowFiles,
+        IProgress<InstallProgress>? progress = null, CancellationToken cancellationToken = default)
     {
+        var files = shadowFiles.ToList();
         var sortDataList = new List<SortPluginData<TMeta>>();
-        foreach (var shadowFile in shadowFiles)
+
+        // --- 阶段 1: 下载与解析 (占比 0% - 40%) ---
+        for (var i = 0; i < files.Count; i++)
         {
-            var targetFile = shadowFile;
-            if (shadowFile.StartsWith("http"))
+            var file = files[i];
+            var (fileBaseOffset, fileWeight) = ProgressHelper.CreateSubProgressBegin(
+                i, file.Length, 40);
+            var currentPath = file;
+            if (file.StartsWith("http"))
             {
-                var tempFile = Path.Combine(BaseSdkConfig.TempFolderPath, Path.GetFileName(shadowFile));
-                await BaseHttpHelper.Instance.SaveFileAsync(shadowFile, tempFile);
-                targetFile = tempFile;
+                var tempFile = Path.Combine(BaseSdkConfig.TempFolderPath, Path.GetFileName(file));
+
+                // 创建一个子进度汇报器，将 0-1 的下载进度映射到全局进度
+                var downloadProgress = new Progress<double>(p =>
+                {
+                    progress?.Report(new InstallProgress($"{Path.GetFileName(file)} ({p:P2})",
+                        Percentage: fileBaseOffset + (p * fileWeight), InstallProgressStep.Downloading));
+                });
+
+                await BaseHttpHelper.Instance.SaveFileAsync(file, tempFile, progress: downloadProgress,
+                    cancellationToken: cancellationToken);
+                currentPath = tempFile;
             }
-            sortDataList.Add(new SortPluginData<TMeta>(
-                await MetaDataHelper.ToMetaAsyncFromZip<TMeta>(targetFile),
-                targetFile));
+            else
+            {
+                progress?.Report(new InstallProgress($"{Path.GetFileName(file)}",
+                    Percentage: fileBaseOffset + fileWeight, InstallProgressStep.Downloading));
+            }
+
+            sortDataList.Add(new SortPluginData<TMeta>(await MetaDataHelper.ToMetaAsyncFromZip<TMeta>(currentPath),
+                currentPath));
         }
 
+        // --- 阶段 2: 排序与解压 (占比 40% - 90%) ---
         var res = DependencyChecker.DetermineLoadOrder(sortDataList);
-        foreach (var data in res.Result)
+        var sortedList = res.Result;
+
+        for (var i = 0; i < sortedList.Count; i++)
         {
-            await UnZip(data.Path, Path.Combine(BaseSdkConfig.PluginFolderPath, data.MetaData.DllName));
+            var data = sortedList[i];
+            var (fileBaseOffset, fileWeight) = ProgressHelper.CreateSubProgressBegin(
+                i, sortedList.Count, 50, 40);
+            var unzipProgress = new Progress<ProgressReport>(r =>
+            {
+                var p = r.PercentComplete ?? 0D;
+                progress?.Report(new InstallProgress($"{data.MetaData.DllName} ({p:P2})",
+                    fileBaseOffset + (p * fileWeight), InstallProgressStep.UnZipping));
+            });
+            await UnZip(data.Path, Path.Combine(BaseSdkConfig.PluginFolderPath, data.MetaData.DllName), unzipProgress,
+                cancellationToken);
         }
 
-        return res.Result;
+        return sortedList;
     }
 
 
     /// <summary>
     /// UnZip
     /// </summary>
-    protected virtual Task<string> UnZip(string zipPath, string outputPath)
+    protected virtual async Task<string> UnZip(string zipPath, string outputPath,
+        IProgress<ProgressReport>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         var options = new ReaderOptions
         {
@@ -72,16 +111,11 @@ public partial class ZipPluginInstaller<TMeta> : IPluginInstaller<TMeta>
             }
         };
         using var archive = ArchiveFactory.Open(zipPath, options);
-        if (!Directory.Exists(outputPath)) Directory.CreateDirectory(outputPath);
-        foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
+        await archive.WriteToDirectoryAsync(outputPath, new ExtractionOptions
         {
-            entry.WriteToDirectory(outputPath, new ExtractionOptions
-            {
-                ExtractFullPath = true,
-                Overwrite = true,
-            });
-        }
-
-        return Task.FromResult(outputPath);
+            ExtractFullPath = true,
+            Overwrite = true,
+        }, progress, cancellationToken);
+        return outputPath;
     }
 }
