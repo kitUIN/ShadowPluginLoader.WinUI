@@ -32,7 +32,7 @@ internal interface IPluginMetaData
     /// <summary>
     /// Plugin Sdk Version (When Build)
     /// </summary>
-    NuGetVersion SdkVersion { get; init; }
+    VersionRange SdkVersion { get; init; }
 
     /// <summary>
     /// Plugin Type

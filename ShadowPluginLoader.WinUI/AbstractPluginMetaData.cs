@@ -48,7 +48,7 @@ public abstract record AbstractPluginMetaData : IPluginMetaData
     /// <inheritdoc cref="IPluginMetaData.SdkVersion"/>
     /// </summary>
     [Meta(Required = false, AsString = true)]
-    public NuGetVersion SdkVersion { get; init; } = null!;
+    public VersionRange SdkVersion { get; init; } = null!;
 
     /// <summary>
     /// <inheritdoc cref="IPluginMetaData.MainPlugin"/>

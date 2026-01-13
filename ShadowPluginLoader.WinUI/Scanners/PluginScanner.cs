@@ -98,11 +98,10 @@ public partial class PluginScanner<TAPlugin, TMeta> : IPluginScanner<TAPlugin, T
     public void CheckSdkVersion(List<SortPluginData<TMeta>> metaList)
     {
         var version = new NuGetVersion(typeof(TMeta).Assembly.GetName().Version!);
-        foreach (var meta in metaList.Where(meta => meta.MetaData.SdkVersion.Major < version.Major ||
-                                                    meta.MetaData.SdkVersion.Minor < version.Minor))
+        foreach (var meta in metaList.Where(meta => !meta.MetaData.SdkVersion.Satisfies(version)))
         {
             throw new PluginScanException(
-                $"{meta.Id} Sdk Version Not Match, Need {version.Major}.{version.Minor}.*, But {meta.MetaData.SdkVersion}");
+                $"{meta.Id} Sdk Version Not Match, Need {meta.MetaData.SdkVersion}, But {version}");
         }
     }
 
