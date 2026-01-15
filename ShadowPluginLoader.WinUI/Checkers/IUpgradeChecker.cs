@@ -1,29 +1,28 @@
-﻿using ShadowPluginLoader.WinUI.Exceptions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace ShadowPluginLoader.WinUI.Installer;
+namespace ShadowPluginLoader.WinUI.Checkers;
 
 /// <summary>
 /// 
 /// </summary>
-public partial interface IPluginInstaller<TMeta>  
+public interface IUpgradeChecker
 {
-
-
     /// <summary>
-    /// PlanUpgrade
-    /// <exception cref="PlanUpgradeException"></exception>
+    /// 
     /// </summary>
+    /// <param name="id"></param>
+    /// <param name="pluginPath"></param>
+    /// <param name="zipPath"></param>
     void PlanUpgrade(string id, string pluginPath, string zipPath);
 
     /// <summary>
-    /// Revoked Upgrade
+    /// 
     /// </summary>
     /// <param name="id"></param>
     void RevokedUpgrade(string id);
 
     /// <summary>
-    /// Check Upgrade Async
+    /// 
     /// </summary>
     /// <returns></returns>
     Task<bool> CheckUpgradeAsync();

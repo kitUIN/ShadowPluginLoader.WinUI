@@ -1,19 +1,24 @@
-﻿using ShadowPluginLoader.Attributes;
+﻿using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Enums;
 using ShadowPluginLoader.WinUI.Exceptions;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using ShadowPluginLoader.WinUI.Helpers;
 
-namespace ShadowPluginLoader.WinUI.Installer;
+namespace ShadowPluginLoader.WinUI.Checkers;
 
-public partial class ZipPluginInstaller<TMeta>
+/// <summary>
+/// 
+/// </summary>
+public partial class UpgradeChecker : IUpgradeChecker
 {
     /// <summary>
     /// lock
     /// </summary>
-    private readonly object _planUpgradeLock = new();
+    private static readonly SemaphoreSlim PlanUpgradeLock = new SemaphoreSlim(1, 1);
 
     /// <summary>
     /// 
@@ -21,11 +26,18 @@ public partial class ZipPluginInstaller<TMeta>
     [Autowired]
     protected InnerSdkConfig InnerConfig { get; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [Autowired]
+    protected BaseSdkConfig BaseSdkConfig { get; }
+
 
     /// <inheritdoc />
     public void PlanUpgrade(string id, string pluginPath, string zipPath)
     {
-        lock (_planUpgradeLock)
+        PlanUpgradeLock.Wait();
+        try
         {
             if (InnerConfig.PlanUpgrade.Any(x => x.Id == id))
                 throw new PlanUpgradeException($"Plugin[{id}] already plan to upgrade");
@@ -36,12 +48,17 @@ public partial class ZipPluginInstaller<TMeta>
                 ZipPath = zipPath
             });
         }
+        finally
+        {
+            PlanUpgradeLock.Release();
+        }
     }
 
     /// <inheritdoc />
     public void RevokedUpgrade(string id)
     {
-        lock (_planUpgradeLock)
+        PlanUpgradeLock.Wait();
+        try
         {
             var item = InnerConfig.PlanUpgrade.FirstOrDefault(x => x.Id == id);
             if (item != null)
@@ -49,24 +66,37 @@ public partial class ZipPluginInstaller<TMeta>
                 InnerConfig.PlanUpgrade.Remove(item);
             }
         }
+        finally
+        {
+            PlanUpgradeLock.Release();
+        }
     }
 
+
     /// <inheritdoc />
-    public Task<bool> CheckUpgradeAsync()
+    public async Task<bool> CheckUpgradeAsync()
     {
-        lock (_planUpgradeLock)
+        await PlanUpgradeLock.WaitAsync();
+        try
         {
             foreach (var data in InnerConfig.PlanUpgrade.ToArray())
             {
                 if (BaseSdkConfig.UpgradeMethod == PluginUpgradeMethod.Remove)
                 {
-                    Directory.Delete(data.TargetPath, recursive: true);
+                    if (Directory.Exists(data.TargetPath))
+                        Directory.Delete(data.TargetPath, recursive: true);
                 }
-                UnZip(data.ZipPath, data.TargetPath);
+
+                await ZipHelper.UnZip(data.ZipPath, data.TargetPath);
                 InnerConfig.PlanUpgrade.Remove(data);
             }
+
             StaticValues.UpgradeChecked = true;
-            return Task.FromResult(StaticValues.UpgradeChecked);
+            return StaticValues.UpgradeChecked;
+        }
+        finally
+        {
+            PlanUpgradeLock.Release();
         }
     }
 }

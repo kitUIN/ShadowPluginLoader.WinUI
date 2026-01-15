@@ -1,8 +1,11 @@
+using System;
 using ShadowPluginLoader.Attributes;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
+using ShadowPluginLoader.WinUI.Enums;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
 
@@ -13,7 +16,6 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-
     /// <summary>
     /// DependencyChecker
     /// </summary>
@@ -94,13 +96,32 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
 
 
     /// <inheritdoc />
-    public void Load(IEnumerable<string> pluginIds)
+    public int Load(IEnumerable<string> pluginIds, IProgress<PipelineProgress>? progress = null)
     {
-        foreach (var pluginId in pluginIds)
+        var count = 0;
+        var enumerable = pluginIds as string[] ?? pluginIds.ToArray();
+        var total = enumerable.Length;
+        foreach (var pluginId in enumerable)
         {
             DependencyChecker.LoadedMetas.TryGetValue(pluginId, out var meta);
-            if (meta == null) continue;
+            if (meta == null)
+            {
+                continue;
+            }
+
             LoadPlugin(meta);
+            count++;
+            var d = count / total;
+            progress?.Report(new PipelineProgress(
+                TotalPercentage: 0.66D + d * 0.33D,
+                TotalStatusValue: meta.Id,
+                Step: InstallPipelineStep.Outbounding,
+                SubPercentage: d,
+                SubStatusValue: meta.Name,
+                SubStep: SubInstallPipelineStep.Outbounding
+            ));
         }
+
+        return count;
     }
 }

@@ -11,7 +11,7 @@
         <NoWarn>MSB3277</NoWarn>
         <EnableMsixTooling>true</EnableMsixTooling>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <LangVersion>12</LangVersion>
+        <LangVersion>preview</LangVersion>
         <!-- Nuget -->
         <Version>3.1.0</Version>
         <PackageId>ShadowPluginLoader.WinUI</PackageId>
@@ -43,7 +43,7 @@
         <PackageReference Include="ShadowPluginLoader.SourceGenerator" Version="3.0.7" />
         <PackageReference Include="ShadowObservableConfig.Yaml" Version="0.6.3" />
         <PackageReference Include="ShadowObservableConfig.Json" Version="0.6.3" />
-        <PackageReference Include="ShadowPluginLoader.Tool" Version="3.1.0" />
+        <PackageReference Include="ShadowPluginLoader.Tool" Version="3.1.1" />
         <PackageReference Include="NuGet.Versioning" Version="7.0.1" />
         <PackageReference Include="SharpCompress" Version="0.44.0" />
     </ItemGroup>
@@ -64,5 +64,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Config\" />
+	  <Folder Include="Installer\" />
 	</ItemGroup>
 </Project>
