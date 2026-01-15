@@ -24,8 +24,6 @@ using ShadowObservableConfig.Json;
 using ShadowObservableConfig.Yaml;
 using ShadowPluginLoader.WinUI;
 using ShadowPluginLoader.WinUI.Checkers;
-using ShadowPluginLoader.WinUI.Installer;
-using ShadowPluginLoader.WinUI.Scanners;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -57,14 +55,7 @@ namespace ShadowExample
                     new YamlConfigLoader()
                 ]);
             DiFactory.Init<PluginBase, ExampleMetaData>();
-            DiFactory.Services.Register<ShadowExamplePluginLoader>(
-                reuse: Reuse.Singleton,
-                made: Parameters.Of
-                    .Type<IDependencyChecker<ExampleMetaData>>(serviceKey: "base")
-                    .OverrideWith(Parameters.Of.Type<IRemoveChecker>(serviceKey: "base"))
-                    .OverrideWith(Parameters.Of.Type<IPluginScanner<PluginBase, ExampleMetaData>>(serviceKey: "base"))
-                    .OverrideWith(Parameters.Of.Type<IPluginInstaller<ExampleMetaData>>(serviceKey: "base"))
-            );
+            DiFactory.RegisterPluginLoader<ShadowExamplePluginLoader>();
         }
 
         /// <summary>

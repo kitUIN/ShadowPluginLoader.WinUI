@@ -18,7 +18,7 @@
             VerticalAlignment="Center"
             Spacing="10"
             Orientation="Horizontal">
-            <Button x:Name="MyButton" Click="myButton_Click">Click Me</Button>
+            <Button x:Name="MyButton" Click="myButton_Click">Open Folder</Button>
             <Button x:Name="InstallButton" Click="InstallButton_OnClick">安装Emoji</Button>
             <Button x:Name="Install2Button" Click="Install2Button_OnClick">安装HelloWorld</Button>
             <Button x:Name="UpgradeButton" Click="UpgradeButton_OnClick">升级</Button>
