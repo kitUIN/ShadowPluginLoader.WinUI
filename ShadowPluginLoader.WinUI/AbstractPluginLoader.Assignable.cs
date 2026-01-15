@@ -5,6 +5,7 @@ using ShadowPluginLoader.WinUI.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using ShadowPluginLoader.WinUI.Enums;
+using ShadowPluginLoader.WinUI.Exceptions;
 using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI;
@@ -103,23 +104,30 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin> : IPluginLoa
         var total = enumerable.Length;
         foreach (var pluginId in enumerable)
         {
-            DependencyChecker.LoadedMetas.TryGetValue(pluginId, out var meta);
-            if (meta == null)
+            try
             {
-                continue;
-            }
+                DependencyChecker.LoadedMetas.TryGetValue(pluginId, out var meta);
+                if (meta == null)
+                {
+                    throw new PluginNotFoundException($"{pluginId}: Can't find plugin meta.");
+                }
 
-            LoadPlugin(meta);
-            count++;
-            var d = count / total;
-            progress?.Report(new PipelineProgress(
-                TotalPercentage: 0.66D + d * 0.33D,
-                TotalStatusValue: meta.Id,
-                Step: InstallPipelineStep.Outbounding,
-                SubPercentage: d,
-                SubStatusValue: meta.Name,
-                SubStep: SubInstallPipelineStep.Outbounding
-            ));
+                LoadPlugin(meta);
+                count++;
+                var d = count / total;
+                progress?.Report(new PipelineProgress(
+                    TotalPercentage: 0.66D + d * 0.33D,
+                    TotalStatusValue: meta.Id,
+                    Step: InstallPipelineStep.Outbounding,
+                    SubPercentage: d,
+                    SubStatusValue: meta.Name,
+                    SubStep: SubInstallPipelineStep.Outbounding
+                ));
+            }
+            catch (Exception e)
+            {
+                Logger.Warning(e, "{Pre}{PluginId}: Plugin Load Failed!", LoggerPrefix, pluginId);
+            }
         }
 
         return count;

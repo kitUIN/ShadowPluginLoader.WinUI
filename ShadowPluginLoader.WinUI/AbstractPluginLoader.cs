@@ -116,11 +116,11 @@ public abstract partial class AbstractPluginLoader<TMeta, TAPlugin>
     /// <param name="plugin">Plugin Type</param>
     /// <param name="meta">PluginMetaData</param>
     /// <returns>Plugin Instance</returns>
-    /// <exception cref="PluginImportException">Can't Register Plugin</exception>
+    /// <exception cref="PluginInstanceException">Can't Register Plugin</exception>
     protected virtual TAPlugin LoadMainPlugin(Type plugin, TMeta meta)
     {
         var instance = DiFactory.Services.Resolve<TAPlugin>(serviceKey: meta.Id);
-        if (instance is null) throw new PluginImportException($"{plugin.Name}: Can't Load Plugin");
+        if (instance is null) throw new PluginInstanceException($"{plugin.Name}: Can't Load Plugin");
         Logger.Information("Plugin[{ID}] Main Class Load Success", meta.Id);
         return instance;
     }
