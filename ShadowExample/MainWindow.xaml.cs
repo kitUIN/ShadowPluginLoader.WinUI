@@ -56,17 +56,24 @@ namespace ShadowExample
 
         private async void InstallButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var name =
-                @"ShadowExample.Plugin.Emoji-1.0.2.9-Debug.sdow";
-            await Loader.CreatePipeline()
-                .Feed(new Uri(Path.Combine(AppContext.BaseDirectory, "../../../../../../", "package", name)))
-                .ProcessAsync();
+            try
+            {
+                var name =
+                    @"ShadowExample.Plugin.Emoji-1.0.3-Debug.sdow";
+                await Loader.CreatePipeline()
+                    .Feed(new Uri(Path.Combine(AppContext.BaseDirectory, "../../../../../../", "package", name)))
+                    .ProcessAsync();
+            }
+            catch (Exception exception)
+            {
+                Block.Text += $"Failed: {exception.Message}\n";
+            }
         }
 
         private async void Install2Button_OnClick(object sender, RoutedEventArgs e)
         {
             var name =
-                @"ShadowExample.Plugin.Hello-1.1.4-Debug.sdow";
+                @"ShadowExample.Plugin.Hello-1.1.6-Debug.sdow";
             await Loader.CreatePipeline()
                 .Feed(new Uri(Path.Combine(AppContext.BaseDirectory, "../../../../../../", "package", name)))
                 .ProcessAsync();
@@ -99,10 +106,26 @@ namespace ShadowExample
         {
             var pluginId = "ShadowExample.Plugin.Emoji";
             var name =
-                @"ShadowExample.Plugin.Emoji-1.0.2.10-Debug.sdow";
-            await Loader.UpgradePlugin(pluginId, new Uri(Path.Combine(AppContext.BaseDirectory, "../../../../../../", "package", name)));
+                @"ShadowExample.Plugin.Emoji-1.0.4-Debug.sdow";
+            await Loader.UpgradePlugin(pluginId,
+                new Uri(Path.Combine(AppContext.BaseDirectory, "../../../../../../", "package", name)));
             UpgradeButton.Content = "Upgrade";
             RebootButton.IsEnabled = true;
+        }
+
+        private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            var name =
+                @"ShadowExample.Plugin.Emoji-1.1.0-Debug.sdow";
+            try
+            {
+                await Loader.CreatePipeline()
+                    .Feed(new Uri(Path.Combine(AppContext.BaseDirectory, "../../../../../../", "package", name)))
+                    .ProcessAsync();
+            }catch (Exception ex)
+            {
+                Block.Text += $"Failed: {ex.Message}\n";
+            }
         }
     }
 }

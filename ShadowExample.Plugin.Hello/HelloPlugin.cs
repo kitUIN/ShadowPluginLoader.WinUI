@@ -15,8 +15,6 @@ namespace ShadowExample.Plugin.Hello
     [CheckAutowired]
     public partial class HelloPlugin : PluginBase
     {
-        protected override IEnumerable<string> ResourceDictionaries =>
-            ["ms-plugin://ShadowExample.Plugin.Hello/Themes/ResourceDictionary1.xaml"];
 
         public override string DisplayName => "HelloPlugin";
     }

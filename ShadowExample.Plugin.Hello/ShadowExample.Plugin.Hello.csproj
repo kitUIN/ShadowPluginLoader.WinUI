@@ -9,7 +9,7 @@
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <PackageId>ShadowExample.Plugin.Hello</PackageId>
 	  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-	  <Version>1.1.4</Version>
+	  <Version>1.1.6</Version>
 	  <Author>kitUIN</Author>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageProjectUrl>https://github.com/kitUIN/ShadowPluginLoader.WinUI</PackageProjectUrl>
@@ -20,17 +20,12 @@
 	  <LangVersion>12</LangVersion>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="ShadowExample.Core" Version="1.2.6" />
+		<PackageReference Include="ShadowExample.Core" Version="1.2.7" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="AppxManifest.xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	</ItemGroup>
-	<ItemGroup>
-	  <Page Update="Themes\ResourceDictionary1.xaml">
-	    <SubType>Designer</SubType>
-	  </Page>
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Assets\" />

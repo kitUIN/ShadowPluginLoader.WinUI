@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <Window
     x:Class="ShadowExample.MainWindow"
@@ -9,21 +9,29 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel HorizontalAlignment="Center" Orientation="Vertical"
-                VerticalAlignment="Center">
-        <TextBlock x:Name="Block"></TextBlock>
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Orientation="Vertical">
+        <TextBlock x:Name="Block" />
         <StackPanel
             x:Name="MyPanel"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Spacing="10"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+            Spacing="10">
             <Button x:Name="MyButton" Click="myButton_Click">Open Folder</Button>
+            <Button x:Name="Install2Button" Click="Install2Button_OnClick">安装HelloWorld(Emoji前置)</Button>
             <Button x:Name="InstallButton" Click="InstallButton_OnClick">安装Emoji</Button>
-            <Button x:Name="Install2Button" Click="Install2Button_OnClick">安装HelloWorld</Button>
+            <Button Click="ButtonBase_OnClick">安装SDK不兼容版本</Button>
             <Button x:Name="UpgradeButton" Click="UpgradeButton_OnClick">升级</Button>
             <Button x:Name="RemoveButton" Click="RemoveButton_OnClick">卸载</Button>
         </StackPanel>
-        <Button x:Name="RebootButton" Click="RebootButton_OnClick" IsEnabled="False">重启</Button>
+        <Button
+            x:Name="RebootButton"
+            Click="RebootButton_OnClick"
+            IsEnabled="False">
+            重启
+        </Button>
     </StackPanel>
 </Window>
