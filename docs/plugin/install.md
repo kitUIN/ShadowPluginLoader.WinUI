@@ -10,18 +10,18 @@ Need to initialize the loader first, scan plugins, and finally instantiate.
 
 ### Scan
 
-- `Scan(Type plugin type)`
-- `Scan<TPlugin>()`
-- `Scan(IEnumerable<Type> plugin type list)`
-- `Scan(DirectoryInfo folder)`
-- `Scan(FileInfo plguin.json file)`
-- `ScanAsync(Uri plugin.json local path)`
+- `Feed(Type plugin type)`
+- `Feed<TPlugin>()`
+- `Feed(IEnumerable<Type> plugin type list)`
+- `Feed(DirectoryInfo folder)`
+- `Feed(FileInfo plguin.json file)`
+- `Feed(Uri plugin.json local path)`
 
 ```csharp
-var session = loader.StartScan();
-await session
-    .Scan(type)
-    .FinishAsyn()
+var pipeline = loader.StartPipeline();
+await pipeline
+    .Feed(type)
+    .ProcessAsync()
 ```
 
 ### Instantiate

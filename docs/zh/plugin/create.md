@@ -43,7 +43,7 @@
 
 需要在根目录新建`plugin.json`
 
-可以使用`{{}}`获取`.csproj`中的变量
+可以使用`{{ variable in PropertyGroup }}`获取`.csproj`中的变量
 
 `Id`必须与`PackageId`对应
 

@@ -10,18 +10,18 @@
 
 ### 扫描
 
-- `Scan(Type 插件类型)`
-- `Scan<TPlugin>()`
-- `Scan(IEnumerable<Type> 插件类型列表)`
-- `Scan(DirectoryInfo 文件夹) `
-- `Scan(FileInfo plguin.json文件)`
-- `ScanAsync(Uri plugin.json本地路径)`
+- `Feed(Type 插件类型)`
+- `Feed<TPlugin>()`
+- `Feed(IEnumerable<Type> 插件类型列表)`
+- `Feed(DirectoryInfo 文件夹) `
+- `Feed(FileInfo plguin.json文件)`
+- `Feed(Uri plugin.json本地路径)`
 
 ```csharp
-var session = loader.StartScan();
-await session
-    .Scan(type)
-    .FinishAsyn()
+var pipeline = loader.StartPipeline();
+await pipeline
+    .Feed(type)
+    .ProcessAsync()
 ```
 
 ### 实例化
