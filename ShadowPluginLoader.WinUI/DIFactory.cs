@@ -3,8 +3,8 @@ using DryIoc;
 using ShadowPluginLoader.WinUI.Checkers;
 using ShadowPluginLoader.WinUI.Config;
 using ShadowPluginLoader.WinUI.Helpers;
-using ShadowPluginLoader.WinUI.Installer;
-using ShadowPluginLoader.WinUI.Scanners;
+using ShadowPluginLoader.WinUI.PluginFactories;
+using ShadowPluginLoader.WinUI.Processors;
 using ShadowPluginLoader.WinUI.Services;
 
 namespace ShadowPluginLoader.WinUI;
@@ -41,20 +41,23 @@ public static class DiFactory
         Services.RegisterInstance(baseSdkConfig);
         var innerSdkConfig = InnerSdkConfig.Load();
         Services.RegisterInstance(innerSdkConfig);
-        Services.Register<IDependencyChecker<TMeta>, DependencyChecker<TMeta>>(serviceKey: "base",
-            reuse: Reuse.Singleton);
-        Services.Register<IRemoveChecker, RemoveChecker>(serviceKey: "base",
-            reuse: Reuse.Singleton);
-        Services.Register<IPluginScanner<TAPlugin, TMeta>, PluginScanner<TAPlugin, TMeta>>(
-            serviceKey: "base", reuse: Reuse.Singleton, 
-            made: Parameters.Of
-                .Type<IDependencyChecker<TMeta>>(serviceKey: "base")
-            ); 
-        Services.Register<IPluginInstaller<TMeta>, ZipPluginInstaller<TMeta>>(
-            serviceKey: "base",  reuse: Reuse.Singleton, 
-            made: Parameters.Of
-                .Type<IDependencyChecker<TMeta>>(serviceKey: "base")
-                .OverrideWith(Parameters.Of.Type<IPluginScanner<TAPlugin, TMeta>>(serviceKey: "base"))
-            );
+        Services.Register<IDependencyChecker<TMeta>, DependencyChecker<TMeta>>(reuse: Reuse.Singleton,
+            ifAlreadyRegistered: IfAlreadyRegistered.Replace);
+        Services.Register<IRemoveChecker, RemoveChecker>(reuse: Reuse.Singleton,
+            ifAlreadyRegistered: IfAlreadyRegistered.Replace);
+        Services.Register<IUpgradeChecker, UpgradeChecker>(reuse: Reuse.Singleton,
+            ifAlreadyRegistered: IfAlreadyRegistered.Replace);
+        Services.Register<IMainProcessor, MainProcessor<TAPlugin, TMeta>>(Reuse.Singleton,
+            ifAlreadyRegistered: IfAlreadyRegistered.Replace);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public static void RegisterPluginLoader<T>() where T : IPluginFactory
+    {
+        Services.Register<T>(Reuse.Singleton);
+        Services.Register<IPluginFactory, T>(Reuse.Singleton, ifAlreadyRegistered: IfAlreadyRegistered.Replace);
     }
 }

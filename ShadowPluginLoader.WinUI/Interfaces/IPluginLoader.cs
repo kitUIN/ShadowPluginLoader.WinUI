@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ShadowPluginLoader.WinUI.Scanners;
+using ShadowPluginLoader.WinUI.Models;
 
 namespace ShadowPluginLoader.WinUI.Interfaces;
 
@@ -14,7 +14,6 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     where TAPlugin : AbstractPlugin<TMeta>
     where TMeta : AbstractPluginMetaData
 {
-
     /// <summary>
     /// Get All Plugins
     /// </summary>
@@ -71,5 +70,5 @@ public partial interface IPluginLoader<TMeta, TAPlugin>
     /// Load
     /// </summary>
     /// <returns></returns>
-    void Load(IEnumerable<string> pluginIds);
+    int Load(IEnumerable<string> pluginIds, IProgress<PipelineProgress>? progress = null);
 }

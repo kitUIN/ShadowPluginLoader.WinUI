@@ -175,8 +175,8 @@ public class AutowiredGenerator : IIncrementalGenerator
                              /// </summary>
                              public {{classClassNameSafe}}({{string.Join(", ", constructors)}}){{baseConstructorString}}
                              {
-                                 {{string.Join("\n        ", assignments)}}
-                                 ConstructorInit();
+                                  {{string.Join("\n        ", assignments)}}
+                                  ConstructorInit();
                              }
                              
                              /// <summary>
