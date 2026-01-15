@@ -41,7 +41,7 @@ Metadata items (except `Dependencies`) are set in `plugin.json`.
 
 Create a new `plugin.json` in the root directory.
 
-You can use `{{ variable in PropertyGroup }}` to get variables from `.csproj`.
+You can use `&#123;&#123; variables &#125;&#125;` to get variables from `.csproj`.
 
 `Id` must correspond to `PackageId`.
 
