@@ -2,6 +2,8 @@
 
 想在插件加载好后更新列表，或者在用户启用插件时显示提示？可以订阅 `IPluginEventService` 提供的事件。
 
+先通过[交互式加载演示](/zh/detail/detail#交互式加载演示)逐步查看每个加载过程与事件，也可以切换到禁用和异常场景。
+
 完成[主程序初始化](/zh/init/customloaderclass)后，先试着监听加载完成事件：
 
 ```csharp

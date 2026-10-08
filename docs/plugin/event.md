@@ -2,6 +2,8 @@
 
 Want to refresh a list when a plugin loads or show a message when it's enabled? Subscribe to events from `IPluginEventService`.
 
+Explore the [interactive loading flow](/detail/detail#interactive-loading-flow) to step through calls and events, including disabled and failure scenarios.
+
 After [initializing your app](/init/customloaderclass), try listening for loaded plugins:
 
 ```csharp
