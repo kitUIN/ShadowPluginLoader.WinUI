@@ -1,8 +1,10 @@
 # 插件配置文件
 
-配置由 [ShadowObservableConfig](https://github.com/kitUIN/ShadowObservableConfig) 提供。当前加载器引用其 JSON 和 YAML 实现。
+想让插件记住用户选的字号、主题或其他设置，可以使用 [ShadowObservableConfig](https://github.com/kitUIN/ShadowObservableConfig)。这里用 JSON 保存 Emoji 插件的设置。
 
-## 定义配置
+## 写一个配置类
+
+在插件项目中添加 `EmojiConfig.cs`：
 
 ```csharp [EmojiConfig.cs]
 using ShadowObservableConfig.Attributes;
@@ -20,13 +22,15 @@ public partial class EmojiConfig
 }
 ```
 
-源生成器生成可观察属性及配置加载/保存支持。`FileExt` 可使用 `.json` 或 `.yaml`，宿主必须先注册对应的配置加载器；SDK 自身也需要 JSON 支持，见[宿主初始化](/zh/init/customloaderclass)。为不同插件选择不同文件名，避免共用同一配置文件。
+`FileName` 是文件名，`FileExt` 是扩展名，`DirPath` 是保存配置的目录。不同插件最好使用不同文件名。
 
-## 自动载入与注入
+给字段加上 `[ObservableConfigProperty]` 后，工具会生成可绑定的属性，比如 `_defaultEmojiSize` 对应 `DefaultEmojiSize`，也会生成加载和保存配置的方法。
 
-默认主处理器在实例化插件前扫描插件程序集的公开类型。对非抽象、继承生成的 `BaseConfig`、且 `[ObservableConfig]` 中 `FileName` 非空的类，反射调用静态 `Load()`，再按具体类型注册返回的实例。
+如果更喜欢 YAML，把 `FileExt` 改成 `.yaml`。主程序需要先设置好对应的 JSON/YAML 加载器，前面的[初始化示例](/zh/init/customloaderclass)已经包含了这一步。
 
-因此可将[创建插件](/zh/plugin/create)中的主类替换为：
+## 在插件里读取设置
+
+加载器会先加载配置，再创建插件。所以在插件主类里添加一个 `[Autowired]` 属性，就能拿到配置：
 
 ```csharp [EmojiPlugin.cs]
 using ShadowExample.Core.Plugins;
@@ -50,11 +54,13 @@ public partial class EmojiPlugin : PluginBase
 }
 ```
 
-不带文件名的嵌套配置不会被扫描为独立文件。配置加载错误会写入日志；若之后构造函数无法解析配置类型，应先检查这些日志。
+配置类要像示例这样声明为 `public partial`，并填写 `FileName`。没有文件名的嵌套配置可以放在其他配置对象里，不会被单独当作文件加载。
 
-## 在控件中使用
+## 绑定到界面
 
-通过 DI 注入 `EmojiConfig`，或在自动加载完成后用 `DiFactory.Services.Resolve<EmojiConfig>()` 获取同一实例。将它暴露为控件的 `ViewModel` 属性后，可以绑定生成的属性：
+控件也可以注入 `EmojiConfig`，或在插件加载完成后调用 `DiFactory.Services.Resolve<EmojiConfig>()`。这样主类和控件用到的是同一份配置。
+
+假设控件把它放在 `ViewModel` 属性中，就可以这样绑定：
 
 ```xml
 <NumberBox Header="Emoji size"
@@ -63,4 +69,4 @@ public partial class EmojiPlugin : PluginBase
           IsChecked="{x:Bind ViewModel.EnableAutoComplete, Mode=TwoWay}" />
 ```
 
-在加载器管理的插件中优先复用 DI 实例。若单独使用 `EmojiConfig.Load()`，仍应先初始化 `GlobalSetting`。属性变更的保存、嵌套配置和自定义序列化规则请参阅与当前包版本对应的 ShadowObservableConfig 文档。
+更多设置方式，比如嵌套配置、自动保存和自定义格式，可以查看 ShadowObservableConfig 的文档。

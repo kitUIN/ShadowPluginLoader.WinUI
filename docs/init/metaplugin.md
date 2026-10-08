@@ -1,6 +1,8 @@
 # Create Plugin Metadata
 
-The default `AbstractPluginLoader<TMeta, TAPlugin>`, `DiFactory.Init<TAPlugin, TMeta>()`, and main processor require `TMeta` to derive from `BasePluginMetaData`.
+The loader needs to know a plugin's name, version, and dependencies. We call this information metadata.
+
+Add `ExampleMetaData.cs` to the SDK and derive it from `BasePluginMetaData`. The base class provides the common fields; here we'll add authors and a website:
 
 ```csharp [ExampleMetaData.cs]
 using ShadowPluginLoader.Attributes;
@@ -19,36 +21,41 @@ public record ExampleMetaData : BasePluginMetaData
 }
 ```
 
-`BasePluginMetaData` extends `AbstractPluginMetaData` with runtime `MainPlugin` and `EntryPoints` resolution. Deriving only from `AbstractPluginMetaData` does not satisfy the default loader's generic constraint. `[ExportMeta]` exports `plugin.d.json`; provide one exported metadata type per SDK.
+`[ExportMeta]` tells the build tool to generate `plugin.d.json` from this class. Choose one metadata class per SDK for this attribute.
 
-## Built-in properties
+## Fields you already have
 
-| Property | Type | Source and purpose |
+These properties are ready to use:
+
+| Property | Type | What it describes |
 | --- | --- | --- |
-| `Id` / `Name` | `string` | Plugin identifier / display name; required in the template |
-| `Version` | `NuGetVersion` | Plugin version, represented as a JSON string |
-| `SdkVersion` | `VersionRange` | SDK compatibility range; the build tool applies the schema default |
-| `Priority` | `int` | Defaults to 0; smaller values load earlier, subject to dependencies |
-| `Dependencies` | `PluginDependency[]` | Dependency `Id` and `Need` version ranges |
-| `DllName` | `string` | Assembly name without `.dll`, written by the build tool |
-| `BuiltIn` | `bool` | From `[MainPlugin(BuiltIn = true)]`; defaults to false |
-| `Raw` | `JsonElement` | A copy of the original JSON |
-| `MainPlugin` | `Type` | Main class resolved after assembly loading |
-| `EntryPoints` | `PluginEntryPointType[]` | Additional entry points resolved after assembly loading |
+| `Id` / `Name` | `string` | The plugin's unique identifier and name |
+| `Version` | `NuGetVersion` | Plugin version, written as a JSON string |
+| `SdkVersion` | `VersionRange` | Supported SDK versions |
+| `Priority` | `int` | Defaults to 0; smaller numbers load earlier, with dependencies loaded first |
+| `Dependencies` | `PluginDependency[]` | Required plugins and their version ranges |
+| `DllName` | `string` | Assembly name without `.dll` |
+| `BuiltIn` | `bool` | Whether the plugin is built in; set with `[MainPlugin(BuiltIn = true)]` |
+| `Raw` | `JsonElement` | The original JSON information |
+| `MainPlugin` | `Type` | The plugin's main class |
+| `EntryPoints` | `PluginEntryPointType[]` | Additional entry points provided by the plugin |
 
-For SDK assembly version `1.3.1.0`, the tool generates the default `SdkVersion: "[1.3, 1.4)"`. Runtime checks use the version of the SDK assembly containing the metadata type.
+You usually don't need to fill in `SdkVersion`. For an SDK assembly version of `1.3.1.0`, the tool supplies `[1.3, 1.4)`, allowing the 1.3 series. The loader checks this range for compatibility.
 
-## Custom properties
+## Add your own fields
 
-Use deserializable properties, normally `{ get; init; }`. Arrays and nested objects are supported. Give optional properties defaults or nullable types. JSON names must match the metadata properties.
+Add properties and mark them with `[Meta]`, just like `Authors` and `Url` above. Usually you'll use `{ get; init; }`. Arrays and nested objects work too. Give optional properties a default value or make them nullable with `?`.
 
-| `Meta` option | Type | Default | Effect |
-| --- | --- | --- | --- |
-| `Required` | `bool` | `true` | Marks a required schema property |
-| `Exclude` | `bool` | `false` | Removes the property from the exported schema |
-| `Regex` | `string?` | `null` | Schema string pattern constraint |
-| `AsString` | `bool` | `false` | Sets the schema type to string |
-| `Converter` | `Type?` | `null` | Registers a runtime `System.Text.Json` converter with a parameterless constructor |
-| `PropertyGroupName` | `string?` | `null` | Retained on the attribute, but not used for mapping by the current template reader |
+Here are the common `Meta` settings:
 
-Reference project properties with Scriban templates in `plugin.json`; see [Create a Plugin](/plugin/create). `AsString` does not implement runtime conversion. Versions and dependencies have built-in converters; custom types need their own handling. Access entry points through `MetaData.EntryPoints`, as described in [Entry Points](/advance/entrypoint).
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `Required` | `true` | Makes the field mandatory |
+| `Exclude` | `false` | Leaves the field out of the metadata definition |
+| `Regex` | `null` | Checks a string against a regular expression |
+| `AsString` | `false` | Describes the field as a string in the definition |
+| `Converter` | `null` | Sets a `System.Text.Json` converter type with a parameterless constructor |
+
+`AsString` only changes the definition. If your custom type needs conversion from a string, provide a converter too. Versions and dependencies already have built-in support.
+
+See [Create a Plugin](/plugin/create) to fill in these fields, or [Entry Points](/advance/entrypoint) to expose additional classes.

@@ -1,6 +1,6 @@
 # Plugin Loading Flow
 
-This describes the current default `InstallPipeline`, `MainProcessor`, and `AbstractPluginLoader` workflow.
+What happens after you call `ProcessAsync()`? This diagram follows a plugin from its input file to a ready instance.
 
 ```mermaid
 flowchart TD
@@ -23,8 +23,10 @@ flowchart TD
     P -- No --> R[Remain disabled]
 ```
 
-Preprocessors convert local JSON, archives, and HTTP downloads into workpieces. The main processor extracts archives, parses metadata, checks SDK versions and dependencies, loads assemblies, registers configurations/main classes, and returns plugin IDs. The loader resolves instances in that order and invokes their lifecycle.
+First, the loader reads the package or downloads the file, then checks its metadata and dependencies. Next, it loads the DLL, prepares configuration, creates the plugin instance, and tells the app that the plugin is ready.
 
-Within a batch, duplicate IDs prefer a higher version, then a lower `Priority`. Already loaded assemblies are filtered out. Dependencies load before their dependents; otherwise lower `Priority` values go first. This does not support unloading or replacing assemblies at runtime.
+Dependencies load first. Otherwise, smaller `Priority` values load earlier. If a batch includes several versions with the same ID, the higher version is selected.
 
-See [Installation and Management](/plugin/install) and [Custom Loading Logic](/advance/customloadplugin).
+Already loaded plugins are skipped. To update one, use the update method and restart the app.
+
+See [Install, Update, and Remove](/plugin/install) to use the loader, or [Custom Loading Logic](/advance/customloadplugin) to add your own steps.

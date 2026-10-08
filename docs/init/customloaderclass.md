@@ -1,8 +1,10 @@
-# Create the Loader and Initialize the Host
+# Create the Loader and Connect It to Your App
 
-## Loader in the SDK
+Now that you have metadata and a plugin base class, let's connect them to a loader and use it in your app.
 
-`[CheckAutowired]` generates a constructor for the `partial` class and forwards base dependencies.
+## Create the loader
+
+Add `ShadowExamplePluginLoader.cs` to the SDK:
 
 ```csharp [ShadowExamplePluginLoader.cs]
 using ShadowExample.Core.Plugins;
@@ -18,11 +20,11 @@ public partial class ShadowExamplePluginLoader
 }
 ```
 
-Note the generic parameter order: the loader uses `<ExampleMetaData, PluginBase>`, while initialization uses `DiFactory.Init<PluginBase, ExampleMetaData>()`.
+The two type arguments are your metadata and plugin base class. `[CheckAutowired]` generates the constructor, so you don't need any code in the class yet. Keep the `partial` keyword.
 
-## Host initialization
+## Initialize it in the app
 
-Reference the same SDK from the host and initialize it in `App.xaml.cs`. Retain the WinUI template's `OnLaunched` and window creation code.
+Reference the same SDK from your app, then add this initialization to the constructor in `App.xaml.cs`. Keep your existing `OnLaunched` and window creation code.
 
 ```csharp [App.xaml.cs]
 using CustomExtensions.WinUI;
@@ -64,10 +66,14 @@ public partial class App : Application
 }
 ```
 
-Initialize the extension host and configuration loaders before DI, then register and resolve the plugin loader. JSON support is needed for SDK configuration; YAML support is used by plugins with YAML configuration.
+This prepares XAML loading for plugins, sets up JSON/YAML configuration, initializes dependency injection, and registers your loader.
 
-The current `DiFactory` registers only `IPluginEventService`, while plugin and loader constructors request concrete `PluginEventService`. The registration above shares the same instance between both types. Current `InnerSdkConfig` plan collection fields have no initializers, so empty collections are supplied for the first launch as well.
+The `events` registration lets the app and plugins share one event service. The two `plans` assignments prepare empty upgrade and removal lists for the first launch. Follow the order shown above.
 
-Resolve the loader in the window with `DiFactory.Services.Resolve<ShadowExamplePluginLoader>()`. At startup, await `loader.CheckUpgradeAndRemoveAsync()` before processing plugins; see [Installation and Management](/plugin/install). Loading creates WinUI resources, so start it on the UI thread and preserve its synchronization context.
+The type argument order is easy to mix up: the loader takes `<ExampleMetaData, PluginBase>`, while `DiFactory.Init` takes `<PluginBase, ExampleMetaData>`.
 
-See [Custom Loading Logic](/advance/customloadplugin) for extension hooks.
+## Next: load a plugin
+
+In your window, call `DiFactory.Services.Resolve<ShadowExamplePluginLoader>()` to get the loader. Await `CheckUpgradeAndRemoveAsync()` before loading plugins.
+
+Loading uses WinUI resources, so call it on the window's UI thread. See [Install, Update, and Remove](/plugin/install) for a complete example. To add your own work before or after loading, see [Custom Loading Logic](/advance/customloadplugin).

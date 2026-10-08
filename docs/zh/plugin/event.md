@@ -1,6 +1,8 @@
 # 插件事件
 
-事件接口为 `ShadowPluginLoader.WinUI.Services.IPluginEventService`。先完成[宿主初始化](/zh/init/customloaderclass)中的接口/具体类型共享注册，再订阅：
+想在插件加载好后更新列表，或者在用户启用插件时显示提示？可以订阅 `IPluginEventService` 提供的事件。
+
+完成[主程序初始化](/zh/init/customloaderclass)后，先试着监听加载完成事件：
 
 ```csharp
 using DryIoc;
@@ -17,22 +19,29 @@ void OnPluginLoaded(object? sender, PluginEventArgs e)
 }
 ```
 
-订阅者销毁时使用 `events.PluginLoaded -= OnPluginLoaded` 解除订阅。事件同步触发，不保证自动切换到 UI 线程；更新控件时使用其 `DispatcherQueue`。
+`e.PluginId` 告诉你是哪个插件，`e.Status` 告诉你发生了什么。不再监听时，用 `events.PluginLoaded -= OnPluginLoaded` 取消订阅。需要更新界面的话，记得通过控件的 `DispatcherQueue` 回到 UI 线程。
 
-`PluginEventArgs` 提供 `PluginId` 和 `Status`。下表按当前源码的实际触发位置说明：
+## 加载和启用事件
 
-| 事件 | 当前触发条件 |
+| 事件 | 什么时候触发 |
 | --- | --- |
-| `PluginLoaded` | 实例加入加载器并执行 `Loaded()` 后；早于启用回调 |
-| `PluginEnabled` | `IsEnabled` 从 false 变为 true，在 `Enabled()` 之后 |
-| `PluginDisabled` | `IsEnabled` 从 true 变为 false，在 `Disabled()` 之后 |
-| `PluginPlanUpgrade` | 对插件实例设置 `PlanUpgrade=true` |
-| `PluginUpgraded` | 对插件实例设置 `PlanUpgrade=false` |
-| `PluginPlanRemove` | 设置实例 `PlanRemove=true`，或调用 `RemovePlugin`；当前 `UpgradePlugin` 也触发此事件 |
-| `PluginRemoved` | 服务公开此事件，但当前默认删除检查器没有触发它 |
+| `PluginLoaded` | 插件加载好，并执行完 `Loaded()` 之后 |
+| `PluginEnabled` | 从禁用变为启用，并执行完 `Enabled()` 之后 |
+| `PluginDisabled` | 从启用变为禁用，并执行完 `Disabled()` 之后 |
 
-插件保存为禁用状态时仍会实例化并触发 `PluginLoaded`；初始 false 不会触发 `PluginDisabled`。
+加载完成不代表已经启用。插件如果上次是禁用状态，启动时也会加载，但不会自动启用。
 
-::: warning 当前更新/删除事件的限制
-`UpgradePlugin` 当前调用的是 `InvokePluginPlanRemove`，状态也为 `PlanRemove`，不是计划升级事件。启动时的升级/删除检查器只执行计划，不发送 `PluginUpgraded` / `PluginRemoved`。因此不能依靠这些事件判断更新或删除完成；应等待 `CheckUpgradeAndRemoveAsync()` 并核对后续加载结果。直接设置 `PlanUpgrade` / `PlanRemove` 仅改变实例状态和通知，不会创建操作计划。
-:::
+## 更新和删除相关事件
+
+这部分事件使用时要留意触发条件：
+
+| 事件 | 什么时候触发 |
+| --- | --- |
+| `PluginPlanUpgrade` | 设置插件的 `PlanUpgrade=true` 时 |
+| `PluginUpgraded` | 设置插件的 `PlanUpgrade=false` 时 |
+| `PluginPlanRemove` | 设置 `PlanRemove=true`，或调用 `RemovePlugin` 时；`UpgradePlugin` 目前也会触发它 |
+| `PluginRemoved` | 默认删除流程暂时不会触发 |
+
+要确认更新或删除是否完成，请等待下次启动的 `CheckUpgradeAndRemoveAsync()` 执行完，再检查插件。不要仅凭上面的事件判断结果。
+
+安排操作时仍然使用[更新和删除方法](/zh/plugin/install)，直接修改 `PlanUpgrade`、`PlanRemove` 只会改变状态和发送通知。

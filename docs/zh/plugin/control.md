@@ -1,6 +1,8 @@
 # 自定义控件
 
-在插件中创建带 XAML 的 `Page` 或 `UserControl` 后，将模板构造函数里的 `InitializeComponent()` 替换为扩展加载方法：
+插件里也可以写 `Page` 和 `UserControl`，界面写法和普通 WinUI 项目一样。需要改的是加载 XAML 的那一步。
+
+新建控件后，打开它的 `.xaml.cs` 文件，把构造函数里的 `InitializeComponent()` 换成 `LoadComponent`：
 
 ```csharp [UserControl1.xaml.cs]
 using CustomExtensions.WinUI;
@@ -17,8 +19,8 @@ public sealed partial class UserControl1 : UserControl
 }
 ```
 
-`_contentLoaded` 是 WinUI XAML 生成代码提供的字段，不需要重复声明。`LoadComponent` 根据控件所在程序集和调用文件定位 XAML，再调用 `Application.LoadComponent`。
+这样控件就能找到插件里的 XAML 文件了。`_contentLoaded` 已经由 WinUI 生成，不用自己再声明。
 
-确保对应程序集已经通过插件加载流程注册到扩展宿主，再创建控件。不要同时调用 `InitializeComponent()` 和 `LoadComponent()`。纯代码控件不需要增加这段 XAML 加载逻辑。
+在插件加载完成后再创建控件，并且只保留上面的 `LoadComponent` 调用。如果是没有 XAML 的纯代码控件，就不需要这一步。
 
-如果控件使用 `[Autowired]` 自动生成构造函数，将加载调用放到 `partial void ConstructorInit()`，详见[快速依赖注入](/zh/advance/quickdi)。图片和其他插件资源使用[插件资源路径](/zh/plugin/msplugin)。
+如果你用 `[Autowired]` 生成构造函数，把这行调用放进 `partial void ConstructorInit()` 即可，具体见[快速依赖注入](/zh/advance/quickdi)。界面里的图片可以按[插件资源路径](/zh/plugin/msplugin)来引用。

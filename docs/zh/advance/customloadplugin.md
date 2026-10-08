@@ -1,8 +1,10 @@
 # 自定义插件加载逻辑
 
-## 实例化钩子
+有时你希望在插件开始工作前注册几个服务，或者在创建后做一些额外初始化。可以在加载器中重写对应的方法。
 
-在 SDK 的加载器类中覆写以下钩子；这是替换前文空加载器的完整示例：
+## 在加载前后做点事情
+
+把 SDK 中的加载器改成下面这样，就能在插件创建前后各写一条日志：
 
 ```csharp [ShadowExamplePluginLoader.cs]
 using System;
@@ -31,30 +33,34 @@ public partial class ShadowExamplePluginLoader
 }
 ```
 
-当前单个插件的调用顺序为：
+这几个方法会按下面的顺序调用：
 
-1. `BeforeLoadPlugin(Type, TMeta)`。
-2. `LoadMainPlugin(Type, TMeta)`：按 `meta.Id` 作为服务键解析 `TAPlugin`。
-3. `AfterLoadPlugin(Type, TAPlugin, TMeta)`。
-4. 将实例放入加载器字典，调用 `Loaded()`，触发 `PluginLoaded`。
-5. 如果保存的状态为启用，设置 `IsEnabled`，调用 `Enabled()` 并触发 `PluginEnabled`。
+1. `BeforeLoadPlugin`：准备创建插件，可以在这里注册它需要的服务。
+2. `LoadMainPlugin`：从 DI 容器中取出插件实例。
+3. `AfterLoadPlugin`：实例已经创建好，可以直接使用传入的 `instance`。
+4. 加载器保存插件，调用 `Loaded()`，然后发出 `PluginLoaded` 事件。
+5. 如果插件之前是启用状态，再调用 `Enabled()` 并发出 `PluginEnabled` 事件。
 
-`AfterLoadPlugin` 执行时实例尚未进入加载器字典，应直接使用传入的 `instance`。`BeforeLoadPlugin` 时程序集已加载、配置与主类已经注册；若要在加载程序集前验证包，应扩展预处理阶段。
+在 `AfterLoadPlugin` 中用参数里的 `instance` 就好，这时还不能通过 `GetPlugin` 找到它。
 
-通常只覆写前后钩子。覆写 `LoadMainPlugin` 时返回 `TAPlugin`；覆写 `LoadPlugin(TMeta)` 会接管完整生命周期，须自行保留状态、事件和依赖记录。
+一般重写前后两个方法就够了。如果重写整个 `LoadPlugin(TMeta)`，你也需要负责保存状态、发送事件和记录依赖。
 
-## 流水线扩展点
+## 想在加载 DLL 前检查插件包
 
-| 扩展点 | 使用方式 |
+`BeforeLoadPlugin` 调用时，DLL 已经加载了。如果想更早检查包内容，可以添加自己的预处理器。
+
+流水线分成几步，每一步都有对应接口：
+
+| 接口或类 | 负责什么 |
 | --- | --- |
-| `IMaterial` | 描述输入，提供 `TypeName`、`Path`、`Raw` |
-| `IPreprocessingProcessor` | 实现 `PreprocessAsync(IMaterial, CancellationToken)`，返回 `IWorkpiece` |
-| `ProcessorRegistry.PreprocessingProcessors` | 在处理开始前按 `TypeName` 注册预处理器 |
-| `IMainProcessor` | 实现 `MainProcessAsync(...)`，完成工作件到 `IProduct` 的转换 |
-| `IPluginFactory` | 提供 `CreatePipeline()` 和 `Outbound(...)` |
+| `IMaterial` | 描述要处理的输入，包括类型名称和路径 |
+| `IPreprocessingProcessor` | 读取或下载输入，返回 `IWorkpiece` |
+| `ProcessorRegistry.PreprocessingProcessors` | 保存输入类型名称与预处理器的对应关系 |
+| `IMainProcessor` | 检查插件信息、加载程序集，返回 `IProduct` |
+| `IPluginFactory` | 创建流水线，并在 `Outbound(...)` 中完成插件加载 |
 
-默认注册了本地 JSON、压缩包、HTTP 下载三种预处理器。未知 `TypeName` 会被流水线跳过；注册表是普通字典，应在启动阶段配置完毕。
+默认已经支持本地 JSON、压缩包和 HTTP 下载。要增加一种来源，就实现 `IMaterial` 和 `IPreprocessingProcessor`，再在启动时把处理器按 `TypeName` 加入注册表。
 
-替换主处理器时，在 `DiFactory.Init` 之后、解析加载器之前，用 DryIoc 重新注册 `IMainProcessor` 并指定 `IfAlreadyRegistered.Replace`。默认加载器的 `Outbound` 仍从依赖检查器的 `LoadedMetas` 取元数据；自定义主处理器须维护该缓存和主类 DI 注册，或同时提供自定义工厂。
+如果还要替换 `IMainProcessor`，在 `DiFactory.Init` 之后、取出加载器之前重新注册，并使用 `IfAlreadyRegistered.Replace`。继续使用默认加载器时，要保留元数据缓存 `LoadedMetas` 和主类的 DI 注册，因为后续创建插件还会用到它们。
 
-流程图见[加载流程](/zh/detail/detail)。
+可以结合[加载流程图](/zh/detail/detail)看每一步的位置。

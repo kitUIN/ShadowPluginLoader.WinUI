@@ -1,15 +1,19 @@
 # 插件打包
 
-在 `Tools.Config.props` 中设置 `IsPlugin=true`、`IsPluginLoader=false` 和 `AutoPluginPackage=true`，然后构建插件。
+插件写好后，把它打成一个 `.sdow` 文件，就可以交给主程序安装了。
 
-## 输出
+先检查 `Tools.Config.props`：`IsPlugin` 和 `AutoPluginPackage` 应为 `true`，`IsPluginLoader` 应为 `false`。然后正常构建项目即可。
 
-默认输出到 `$(ProjectDir)Packages/`：
+## 到哪里找安装包
+
+构建结束后，打开项目中的 `Packages` 文件夹。默认文件名是：
 
 - Release：`$(TargetName)-$(Version).sdow`。
 - Debug：`$(TargetName)-$(Version)-Debug.sdow`。
 
-`.sdow` 是 ZIP 格式，打包来源为插件构建输出目录。它包含程序集、生成的元数据、XAML 和资源等。下面仅示意关键结构，实际部署还需保留生成的 PRI 和必要依赖：
+比如 Emoji 插件的 Debug 包可以叫 `ShadowExample.Plugin.Emoji-1.1.0-Debug.sdow`。
+
+`.sdow` 实际上是一个 ZIP 压缩包，里面放着构建输出的 DLL、插件信息和资源文件。主要目录大致如下，此外还会有 PRI 等生成文件和依赖库：
 
 ```text
 ShadowExample.Plugin.Emoji.dll
@@ -21,11 +25,11 @@ ShadowExample.Plugin.Emoji/
     th.jpg
 ```
 
-`plugin.json` 位于以程序集命名的子目录，DLL 位于其上一级。不要只把源模板或 DLL 放入包中；预处理器查找的是以 `/plugin.json` 结尾的 ZIP 条目。
+保留这个目录结构，让 `plugin.json` 放在程序集同名的子文件夹里，DLL 放在它的上一层。直接使用构建工具生成的包就不需要自己整理这些文件。
 
-## 排除文件
+## 有些文件不想打进去怎么办
 
-在项目目录创建 `Plugin.Build.exclude`，每行一个模式：
+在项目根目录新建 `Plugin.Build.exclude`，每行写一个要排除的名称或通配模式：
 
 ```text [Plugin.Build.exclude]
 *.pdb
@@ -33,8 +37,10 @@ hello.*
 Fluent
 ```
 
-当前打包器递归枚举输出目录，以**文件或目录名称**进行不区分大小写的匹配；`*` 匹配任意字符，`?` 匹配单个字符。`Fluent` 匹配任意层级的同名目录；带路径的 `Fluent/*` 或 `core/**/text.txt` 不匹配，因为比较的不是相对路径。
+这个例子会排除 `.pdb` 文件、名称符合 `hello.*` 的文件，以及名为 `Fluent` 的目录。
 
-自定义清单替代工具默认清单。排除操作会实际删除构建输出目录中的匹配文件/目录，然后再压缩；不会修改源文件。若输出还要用于其他发布方式，请先重新构建。
+`*` 可以匹配任意字符，`?` 匹配一个字符。匹配时不区分大小写，只看文件或目录的名称，所以这里写 `Fluent` 即可，不要写成 `Fluent/*`。
 
-输出命名、目标替换和可选 MSIX 见[自定义打包](/zh/advance/custompluginbuild)。安装生成的包见[安装与管理](/zh/plugin/install)。
+自定义清单会替代默认清单，原来需要排除的公共依赖也要一起列进去。打包时会先从**构建输出目录**删掉匹配项，再生成压缩包；如果这份输出还要用来做别的发布，先重新构建一次。
+
+想改输出位置或包名，可以看[自定义打包](/zh/advance/custompluginbuild)。拿到包后，继续[安装试用](/zh/plugin/install)。

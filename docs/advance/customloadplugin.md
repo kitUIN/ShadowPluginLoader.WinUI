@@ -1,8 +1,10 @@
 # Custom Plugin Loading Logic
 
-## Instantiation hooks
+You may want to register extra services before a plugin starts or run some setup after it's created. Override the matching methods in your loader.
 
-Override the following hooks in your SDK loader. This complete example replaces the empty loader from the quick start:
+## Add work before and after creation
+
+Update the SDK loader like this to log a message before and after each plugin is created:
 
 ```csharp [ShadowExamplePluginLoader.cs]
 using System;
@@ -31,30 +33,34 @@ public partial class ShadowExamplePluginLoader
 }
 ```
 
-The current per-plugin sequence is:
+These methods run in this order:
 
-1. `BeforeLoadPlugin(Type, TMeta)`.
-2. `LoadMainPlugin(Type, TMeta)`, resolving `TAPlugin` with service key `meta.Id`.
-3. `AfterLoadPlugin(Type, TAPlugin, TMeta)`.
-4. Add the instance to the loader, call `Loaded()`, and raise `PluginLoaded`.
-5. If the persisted state is enabled, set `IsEnabled`, call `Enabled()`, and raise `PluginEnabled`.
+1. `BeforeLoadPlugin`: prepare to create the plugin; register any services it needs here.
+2. `LoadMainPlugin`: get the plugin instance from DI.
+3. `AfterLoadPlugin`: the instance is ready; use the supplied `instance` argument.
+4. The loader stores the plugin, calls `Loaded()`, and raises `PluginLoaded`.
+5. If the plugin was enabled, it calls `Enabled()` and raises `PluginEnabled`.
 
-The instance is not in the loader dictionary during `AfterLoadPlugin`; use its argument directly. Assemblies have already loaded and configurations/main classes have been registered by `BeforeLoadPlugin`. Validate packages in preprocessing if validation must precede assembly loading.
+Use the `instance` argument inside `AfterLoadPlugin`. It isn't available through `GetPlugin` yet.
 
-Usually the before/after hooks are sufficient. An override of `LoadMainPlugin` must return `TAPlugin`. Overriding `LoadPlugin(TMeta)` replaces the entire lifecycle, including state, events, and dependency records.
+Overriding the before/after methods is usually enough. If you replace the whole `LoadPlugin(TMeta)` method, you also take responsibility for state, events, and dependency records.
 
-## Pipeline extension points
+## Check packages before loading a DLL
 
-| Extension point | Usage |
+By the time `BeforeLoadPlugin` runs, the DLL is already loaded. Add a preprocessor if you need to check package contents earlier.
+
+Each step in the pipeline has its own interface:
+
+| Interface or class | What it handles |
 | --- | --- |
-| `IMaterial` | Describes input with `TypeName`, `Path`, and `Raw` |
-| `IPreprocessingProcessor` | Implements `PreprocessAsync(IMaterial, CancellationToken)`, returning `IWorkpiece` |
-| `ProcessorRegistry.PreprocessingProcessors` | Registers preprocessors by `TypeName` before processing starts |
-| `IMainProcessor` | Implements `MainProcessAsync(...)` to convert workpieces to `IProduct` results |
-| `IPluginFactory` | Provides `CreatePipeline()` and `Outbound(...)` |
+| `IMaterial` | Describes an input, including its type name and path |
+| `IPreprocessingProcessor` | Reads or downloads the input and returns an `IWorkpiece` |
+| `ProcessorRegistry.PreprocessingProcessors` | Maps input type names to preprocessors |
+| `IMainProcessor` | Checks metadata, loads assemblies, and returns `IProduct` results |
+| `IPluginFactory` | Creates pipelines and finishes loading through `Outbound(...)` |
 
-The defaults handle local JSON, archives, and HTTP downloads. Unknown material types are skipped. The registry is an ordinary dictionary; configure it during startup.
+Local JSON, archives, and HTTP downloads are already supported. For another source, implement `IMaterial` and `IPreprocessingProcessor`, then register the processor by `TypeName` during startup.
 
-To replace the main processor, register `IMainProcessor` in DryIoc with `IfAlreadyRegistered.Replace` after `DiFactory.Init` and before resolving the loader. The default loader's `Outbound` still reads metadata from the dependency checker's `LoadedMetas`. A custom processor must maintain this cache and main-class DI registrations, or be paired with a custom factory.
+To replace `IMainProcessor`, register it after `DiFactory.Init` and before resolving the loader, using `IfAlreadyRegistered.Replace`. If you keep the default loader, also maintain the `LoadedMetas` cache and main-class DI registrations: the loader needs them to create plugins.
 
-See the [loading flow](/detail/detail).
+See the [loading flow diagram](/detail/detail) to find where each step fits.

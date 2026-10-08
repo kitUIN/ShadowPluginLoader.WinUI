@@ -1,9 +1,10 @@
 # 高级配置
 
-- [自定义插件加载逻辑](/zh/advance/customloadplugin)：实例化钩子、预处理器和主处理器。
-- [加载流程](/zh/detail/detail)：从输入材料到插件启用。
-- [快速依赖注入](/zh/advance/quickdi)：构造函数与初始化回调。
-- [入口点](/zh/advance/entrypoint)：生成格式与运行时类型解析。
-- [I18N 国际化](/zh/advance/i18n)：资源文件与生成的帮助类。
-- [Tools.Config.props](/zh/advance/toolconfig)：项目角色和功能开关。
-- [自定义插件打包](/zh/advance/custompluginbuild)：输出、排除清单和 MSBuild 扩展点。
+基本插件跑起来后，可以按需要继续了解下面这些功能：
+
+- 想在加载前后执行自己的代码？看[自定义加载逻辑](/zh/advance/customloadplugin)。
+- 想了解插件是怎么加载起来的？看[加载流程图](/zh/detail/detail)。
+- 不想重复写构造函数？试试[快速依赖注入](/zh/advance/quickdi)。
+- 想让插件提供额外的类给主程序？使用[入口点](/zh/advance/entrypoint)。
+- 需要多语言界面？看[I18N 国际化](/zh/advance/i18n)。
+- 想调整构建开关或打包方式？看 [Tools.Config.props](/zh/advance/toolconfig) 和[自定义打包](/zh/advance/custompluginbuild)。

@@ -1,8 +1,12 @@
 # 快速依赖注入
 
-`ShadowPluginLoader.SourceGenerator` 生成构造函数，DryIoc 负责实际解析依赖。相关类需要声明为 `public partial`，特性来自 `ShadowPluginLoader.Attributes`。
+每加一个服务，都要手写构造函数来接收它，会有些重复。这里可以用 `[Autowired]` 和 `[CheckAutowired]` 帮你生成这些代码。
 
-## Autowired 属性
+使用前，给类加上 `public partial`，并引用 `ShadowPluginLoader.Attributes`。
+
+## 给属性加上 Autowired
+
+比如这个 ViewModel 需要写日志：
 
 ```csharp
 using Serilog;
@@ -22,7 +26,7 @@ public partial class StatusViewModel
 }
 ```
 
-上例生成的构造函数等效于：
+构建时，工具会生成类似这样的构造函数：
 
 ```csharp
 public StatusViewModel(ILogger logger)
@@ -32,11 +36,11 @@ public StatusViewModel(ILogger logger)
 }
 ```
 
-生成器还声明 `partial void ConstructorInit()`，可在原类中实现它，执行依赖赋值后的初始化。不要再手写相同签名的构造函数。
+拿到 `Logger` 后，会接着调用 `ConstructorInit()`。如果还有自己的初始化代码，放在这个方法里即可，不用另外手写构造函数。
 
-## CheckAutowired 类
+## 基类也需要参数怎么办
 
-在派生类上标记 `[CheckAutowired]`，即使没有新增 `[Autowired]` 属性，也会检测并转发基类构造参数。例如[插件主类](/zh/plugin/create)会生成：
+给派生类加上 `[CheckAutowired]`，工具会把基类需要的参数一起带上。例如前面的[插件主类](/zh/plugin/create)，生成的构造函数是这样的：
 
 ```csharp
 public EmojiPlugin(ExampleMetaData meta, ILogger logger,
@@ -47,10 +51,12 @@ public EmojiPlugin(ExampleMetaData meta, ILogger logger,
 }
 ```
 
-这些片段用于解释生成结果，不要复制到已有生成构造函数的类中。空类上仅加 `[CheckAutowired]` 不会凭空增加服务参数；没有待注入参数时不会生成构造函数。
+这段代码会自动生成，了解它做了什么就好，不需要再复制进插件类。
 
-## 服务注册
+## 别忘了注册服务
 
-特性不会自动注册业务服务。宿主须在解析之前用 `DiFactory.Services.Register<TService, TImplementation>()` 等方式注册服务。默认主处理器会按插件 ID 注册插件主类，并向它传入元数据；插件无需单独注册自己的主类。公开的配置类会按[配置章节](/zh/plugin/config)的规则载入并注册。
+生成构造函数后，DryIoc 还需要知道服务从哪里来。你自己写的服务，要先用 `DiFactory.Services.Register<TService, TImplementation>()` 等方法注册。
 
-若控件使用生成构造函数，可在 `ConstructorInit()` 中调用 `this.LoadComponent(ref _contentLoaded)`；不要同时保留一个绕过必需依赖的模板构造函数。参见[自定义控件](/zh/plugin/control)。
+插件主类和符合要求的[配置类](/zh/plugin/config)由加载器帮忙注册，不用重复处理。
+
+控件也可以这样注入依赖。把 `this.LoadComponent(ref _contentLoaded)` 放进 `ConstructorInit()`，就能在依赖准备好后加载 XAML，见[自定义控件](/zh/plugin/control)。

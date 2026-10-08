@@ -1,6 +1,8 @@
 # Plugin Events
 
-Use `ShadowPluginLoader.WinUI.Services.IPluginEventService`. First share the interface and concrete registration as shown in [Host Initialization](/init/customloaderclass), then subscribe:
+Want to refresh a list when a plugin loads or show a message when it's enabled? Subscribe to events from `IPluginEventService`.
+
+After [initializing your app](/init/customloaderclass), try listening for loaded plugins:
 
 ```csharp
 using DryIoc;
@@ -17,22 +19,29 @@ void OnPluginLoaded(object? sender, PluginEventArgs e)
 }
 ```
 
-Unsubscribe with `events.PluginLoaded -= OnPluginLoaded` when disposing the subscriber. Events are synchronous and do not automatically dispatch to the UI thread; use the control's `DispatcherQueue` for UI updates.
+`e.PluginId` identifies the plugin, and `e.Status` tells you what happened. Use `events.PluginLoaded -= OnPluginLoaded` when you no longer need the subscription. For UI changes, use the control's `DispatcherQueue` to return to the UI thread.
 
-`PluginEventArgs` contains `PluginId` and `Status`. The table describes actual current source behavior:
+## Loading and enabled-state events
 
-| Event | Current trigger |
+| Event | When it fires |
 | --- | --- |
-| `PluginLoaded` | After adding the instance and calling `Loaded()`, before enabling it |
-| `PluginEnabled` | `IsEnabled` changes from false to true, after `Enabled()` |
-| `PluginDisabled` | `IsEnabled` changes from true to false, after `Disabled()` |
-| `PluginPlanUpgrade` | Setting instance `PlanUpgrade=true` |
-| `PluginUpgraded` | Setting instance `PlanUpgrade=false` |
-| `PluginPlanRemove` | Setting instance `PlanRemove=true` or calling `RemovePlugin`; current `UpgradePlugin` also raises this event |
-| `PluginRemoved` | Exposed by the service, but not raised by the current default removal checker |
+| `PluginLoaded` | After the plugin loads and finishes `Loaded()` |
+| `PluginEnabled` | After changing from disabled to enabled and finishing `Enabled()` |
+| `PluginDisabled` | After changing from enabled to disabled and finishing `Disabled()` |
 
-Plugins with persisted disabled state are still instantiated and raise `PluginLoaded`. Their initial false state does not raise `PluginDisabled`.
+Loading doesn't necessarily enable a plugin. A plugin that was disabled during the previous run still loads at startup but stays disabled.
 
-::: warning Current update/removal event limitations
-`UpgradePlugin` currently calls `InvokePluginPlanRemove` with status `PlanRemove`, rather than the planned-upgrade event. Startup upgrade/removal checkers execute plans without raising `PluginUpgraded` / `PluginRemoved`. Do not use these events to determine operation completion; await `CheckUpgradeAndRemoveAsync()` and check subsequent loading results. Directly assigning `PlanUpgrade` / `PlanRemove` changes instance state and notifications without scheduling disk operations.
-:::
+## Update and removal events
+
+Pay attention to the conditions for these events:
+
+| Event | When it fires |
+| --- | --- |
+| `PluginPlanUpgrade` | When you set the plugin's `PlanUpgrade=true` |
+| `PluginUpgraded` | When you set `PlanUpgrade=false` |
+| `PluginPlanRemove` | When you set `PlanRemove=true` or call `RemovePlugin`; `UpgradePlugin` currently raises it too |
+| `PluginRemoved` | Not yet raised by the default removal workflow |
+
+To confirm an update or removal, wait for `CheckUpgradeAndRemoveAsync()` at the next startup and check the plugin afterward. Don't rely on these events alone for the result.
+
+Use the [update and removal methods](/plugin/install) to schedule operations. Assigning `PlanUpgrade` or `PlanRemove` only changes state and sends notifications.

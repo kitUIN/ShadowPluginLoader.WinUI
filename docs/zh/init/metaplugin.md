@@ -1,6 +1,8 @@
 # 创建插件元数据类
 
-默认 `AbstractPluginLoader<TMeta, TAPlugin>`、`DiFactory.Init<TAPlugin, TMeta>()` 和主处理器要求 `TMeta` 继承 `BasePluginMetaData`。
+加载器需要知道插件叫什么、版本是多少、依赖哪些插件。这些信息就是“元数据”。
+
+在 SDK 中新建 `ExampleMetaData.cs`，继承 `BasePluginMetaData`。常用信息已经由基类提供，我们再加上作者和网址：
 
 ```csharp [ExampleMetaData.cs]
 using ShadowPluginLoader.Attributes;
@@ -19,36 +21,41 @@ public record ExampleMetaData : BasePluginMetaData
 }
 ```
 
-`BasePluginMetaData` 继承 `AbstractPluginMetaData`，增加运行时解析的 `MainPlugin` 和 `EntryPoints`。仅继承 `AbstractPluginMetaData` 不满足默认加载器的泛型约束。`[ExportMeta]` 用于导出 `plugin.d.json`；一个 SDK 应提供一个导出的元数据类型。
+`[ExportMeta]` 告诉构建工具，用这个类生成 `plugin.d.json`。每个 SDK 选一个元数据类加上这个特性就可以了。
 
-## 内置属性
+## 已经有哪些信息
 
-| 属性 | 类型 | 来源与用途 |
+下面这些属性可以直接使用：
+
+| 属性 | 类型 | 用来做什么 |
 | --- | --- | --- |
-| `Id` / `Name` | `string` | 插件标识 / 显示名称，模板中必填 |
-| `Version` | `NuGetVersion` | 插件版本，JSON 中使用字符串 |
-| `SdkVersion` | `VersionRange` | SDK 兼容范围；构建工具从定义文件补默认值 |
-| `Priority` | `int` | 默认 0，数值小的优先，依赖关系优先于优先级 |
-| `Dependencies` | `PluginDependency[]` | 依赖的 `Id` 与 `Need` 版本范围 |
-| `DllName` | `string` | 构建工具写入的程序集名称，不含 `.dll` |
-| `BuiltIn` | `bool` | 来自 `[MainPlugin(BuiltIn = true)]`，默认 false |
-| `Raw` | `JsonElement` | 原始 JSON 的副本 |
-| `MainPlugin` | `Type` | 加载程序集后解析的主类 |
-| `EntryPoints` | `PluginEntryPointType[]` | 加载程序集后解析的额外入口点 |
+| `Id` / `Name` | `string` | 插件的唯一标识和名称 |
+| `Version` | `NuGetVersion` | 插件版本，在 JSON 中写成字符串 |
+| `SdkVersion` | `VersionRange` | 插件支持的 SDK 版本范围 |
+| `Priority` | `int` | 加载优先级，默认 0，数字越小越早加载；依赖插件会先加载 |
+| `Dependencies` | `PluginDependency[]` | 依赖哪些插件，以及它们的版本要求 |
+| `DllName` | `string` | 插件程序集名称，不含 `.dll` |
+| `BuiltIn` | `bool` | 是否为内置插件，可用 `[MainPlugin(BuiltIn = true)]` 设置 |
+| `Raw` | `JsonElement` | 原始 JSON 信息 |
+| `MainPlugin` | `Type` | 插件主类的类型 |
+| `EntryPoints` | `PluginEntryPointType[]` | 插件提供的其他入口点 |
 
-例如 SDK 程序集版本为 `1.3.1.0` 时，工具默认生成 `SdkVersion: "[1.3, 1.4)"`。运行时检查的是元数据类型所在 SDK 程序集的版本。
+`SdkVersion` 一般不用自己填。比如 SDK 的程序集版本是 `1.3.1.0`，工具会填入 `[1.3, 1.4)`，表示支持 1.3 系列的 SDK。加载时会用这个范围检查 SDK 是否兼容。
 
-## 自定义属性
+## 添加自己的信息
 
-使用可反序列化的属性（通常为 `{ get; init; }`）；数组和嵌套对象也可以作为元数据。可选字段应提供默认值或声明可空。`plugin.json` 的属性名需与元数据属性对应。
+像示例里的 `Authors` 和 `Url` 一样，添加属性并标上 `[Meta]` 就可以了。一般使用 `{ get; init; }`；数组和嵌套对象也能使用。可选属性记得给默认值，或者加上 `?`。
 
-| `Meta` 配置 | 类型 | 默认值 | 作用 |
-| --- | --- | --- | --- |
-| `Required` | `bool` | `true` | 标记 Schema 必填字段 |
-| `Exclude` | `bool` | `false` | 从导出的 Schema 中排除 |
-| `Regex` | `string?` | `null` | Schema 字符串正则约束 |
-| `AsString` | `bool` | `false` | 将 Schema 类型设为字符串 |
-| `Converter` | `Type?` | `null` | 运行时注册的 `System.Text.Json` 转换器，须有无参构造函数 |
-| `PropertyGroupName` | `string?` | `null` | 特性仍保留，但当前模板读取流程不使用它映射属性 |
+`Meta` 的常用设置如下：
 
-用 `plugin.json` 中的 Scriban 模板引用项目属性，见[创建插件](/zh/plugin/create)。`AsString` 本身不提供运行时转换；版本和依赖已有内置转换器，自定义类型需自行处理。入口点通过 `MetaData.EntryPoints` 访问，见[入口点](/zh/advance/entrypoint)。
+| 设置 | 默认值 | 用法 |
+| --- | --- | --- |
+| `Required` | `true` | 是否必须填写 |
+| `Exclude` | `false` | 设为 true 后，不写入元数据定义文件 |
+| `Regex` | `null` | 用正则表达式检查字符串格式 |
+| `AsString` | `false` | 在定义文件中把属性设为字符串类型 |
+| `Converter` | `null` | 指定 `System.Text.Json` 转换器类型，需要无参构造函数 |
+
+`AsString` 只决定定义文件中的类型。如果自定义类型需要从字符串转换，还要提供转换器；版本和依赖信息已经有内置支持。
+
+插件如何填写这些信息，可以接着看[创建插件项目](/zh/plugin/create)。额外入口点的用法放在[入口点](/zh/advance/entrypoint)一节。

@@ -1,8 +1,12 @@
 # 插件资源路径
 
-插件资源地址格式为 `ms-plugin://{程序集名称}/{文件路径}`。这里使用不含 `.dll` 的程序集名称，保持与 `DllName` 一致。
+主程序需要知道一张图片属于哪个插件，才能找到它。为此，我们用 `ms-plugin://{程序集名称}/{文件路径}` 来写插件资源的地址。
 
-## 代码中使用
+比如 Emoji 插件中的 `Assets/th.jpg`，地址就是 `ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg`。程序集名称不用加 `.dll`。
+
+## 在代码中使用
+
+插件加载好后，调用 `PluginPath()`，就能把这个地址转换成 WinUI 能识别的资源地址：
 
 ```csharp
 using CustomExtensions.WinUI;
@@ -11,11 +15,11 @@ string original = "ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg";
 string resolved = original.PluginPath();
 ```
 
-`PluginPath()` 返回供 WinUI 使用的资源地址字符串，不保证是可直接传给 `File.ReadAllText` 的磁盘路径。它需要插件已注册到 `ApplicationExtensionHost`；非 `ms-plugin://` 字符串保持原样。
+转换结果适合交给 WinUI 控件使用。如果要用 `File.ReadAllText` 一类方法读取磁盘文件，请使用文件的实际路径。
 
 ## 在 XAML 中使用
 
-静态资源地址可使用 `CustomExtensions.WinUI` 中的标记扩展：
+先引入 `CustomExtensions.WinUI` 命名空间，再根据控件需要的类型选择写法：
 
 ```xml
 <UserControl
@@ -33,9 +37,15 @@ string resolved = original.PluginPath();
 </UserControl>
 ```
 
-`PluginPath` 返回 `string`，`PluginUri` 返回 `Uri`，`PluginImageSource` 返回图片源。控件代码还需按[自定义控件](/zh/plugin/control)调用 `LoadComponent`。
+- `PluginImageSource` 用于 `Image.Source` 这样的图片属性。
+- `PluginUri` 返回 `Uri`，适合 `BitmapIcon.UriSource`。
+- `PluginPath` 返回字符串，可以用来显示资源地址。
 
-对于数据绑定，先在控件或应用资源中注册转换器（沿用上面的 `cw` 命名空间）：
+控件的构造函数也要按[自定义控件](/zh/plugin/control)一节改成 `LoadComponent`。
+
+## 配合数据绑定
+
+如果地址来自属性绑定，就用对应的转换器。先把它们放进控件或应用的资源中：
 
 ```xml
 <UserControl.Resources>
@@ -45,4 +55,6 @@ string resolved = original.PluginPath();
 </UserControl.Resources>
 ```
 
-例如控件有一个 `string ImagePath` 属性时，可使用 `Source="{x:Bind ImagePath, Converter={StaticResource PluginImageSourceConverter}}"`。转换器与对应标记扩展的返回类型相同。
+假设控件有一个 `string ImagePath` 属性，可以在图片上写 `Source="{x:Bind ImagePath, Converter={StaticResource PluginImageSourceConverter}}"`。
+
+另外两个转换器用法相同，分别返回字符串和 `Uri`。

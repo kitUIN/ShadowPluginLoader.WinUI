@@ -1,8 +1,10 @@
 # 创建插件项目
 
-## 项目与构建配置
+SDK 准备好后，我们来写第一个插件。这里用 `ShadowExample.Plugin.Emoji` 作为例子。
 
-创建 WinUI 类库并引用已发布到你的 NuGet 源的 SDK。下面的 SDK 版本与前文一致。
+## 新建项目
+
+新建一个 WinUI 类库，引用前面生成的 SDK 包：
 
 ```xml [ShadowExample.Plugin.Emoji.csproj]
 <Project Sdk="Microsoft.NET.Sdk">
@@ -26,6 +28,8 @@
 </Project>
 ```
 
+然后在项目根目录创建 `Tools.Config.props`，把 `IsPlugin` 设为 `true`。开启 `AutoPluginPackage` 后，每次构建都会顺便打包插件。
+
 ```xml [Tools.Config.props]
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -37,9 +41,9 @@
 </Project>
 ```
 
-## 元数据模板
+## 填写插件信息
 
-在项目根目录创建 `plugin.json`：
+在项目根目录新建 `plugin.json`：
 
 ```json [plugin.json]
 {
@@ -50,15 +54,17 @@
 }
 ```
 
-构建工具用 Scriban 渲染模板，以 `plugin.d.json` 校验，并把最终 JSON 写入输出目录下的 `{程序集名称}/plugin.json`。源模板与最终文件不同；部署时使用输出文件。
+双花括号里的名字对应 `.csproj` 中的属性。比如 `PackageId` 会被替换成 `ShadowExample.Plugin.Emoji`，以后改版本时也只需要修改项目里的 `Version`。
 
-模板变量来自 `.csproj` 中直接声明的 `PropertyGroup` 节点。当前工具读取原始 XML，不执行完整的 MSBuild 属性求值；不要依赖导入文件、条件求值或 `$(...)` 在模板中自动展开。SDK NuGet 包提供定义文件；项目引用时构建目标会尝试从被引用项目输出目录复制定义。
+这些变量要直接写在 `.csproj` 的 `PropertyGroup` 中。模板读取的是这里填写的值，不能靠导入文件或 `$(...)` 表达式取值。
 
-`Id` 建议与 `PackageId`、程序集名称保持一致，因为依赖声明使用包标识，而已加载依赖按 `DllName` 记录。必填字段为 `Id`、`Name`、`Version`；可填写 `Priority`、`SdkVersion` 和自定义字段。`SdkVersion` 未填写时由定义文件补默认范围。`DllName`、`MainPlugin`、`BuiltIn`、`EntryPoints` 由工具写入。
+`Id`、`Name` 和 `Version` 是必填项。建议让 `Id`、`PackageId` 和程序集名称保持一致，方便其他插件声明依赖。SDK 版本范围、DLL 名称和主类等信息，工具会帮你补上。
 
-## 插件主类
+构建后，输出目录的 `{程序集名称}/plugin.json` 就是填写完整的插件信息。发布时使用这个生成的文件。
 
-主类必须是公开、非抽象的 SDK 插件基类派生类。每个插件只声明一个 `[MainPlugin]`。
+## 写插件主类
+
+新建 `EmojiPlugin.cs`，继承 SDK 中的 `PluginBase`：
 
 ```csharp [EmojiPlugin.cs]
 using ShadowExample.Core.Plugins;
@@ -74,11 +80,13 @@ public partial class EmojiPlugin : PluginBase
 }
 ```
 
-`[MainPlugin]` 标记主类，`[CheckAutowired]` 生成构造函数，两者作用不同。`MetaData` 是实例属性，由加载器注入；可通过 `loader.GetPlugin(id)?.MetaData` 读取。
+`[MainPlugin]` 告诉加载器“从这个类开始”，每个插件加一处就够了。`[CheckAutowired]` 帮我们生成构造函数，`DisplayName` 则是插件的显示名称。
 
-## 插件依赖
+在插件内部，可以通过 `MetaData` 读取自己的信息；主程序可以通过 `loader.GetPlugin(id)?.MetaData` 读取。
 
-在项目中加入带 `Label="Dependencies"` 的 `ItemGroup`：
+## 如果还依赖其他插件
+
+比如 Emoji 插件需要 Hello 插件，就在项目文件里加上：
 
 ```xml
 <ItemGroup Label="Dependencies">
@@ -87,8 +95,10 @@ public partial class EmojiPlugin : PluginBase
 </ItemGroup>
 ```
 
-`Version` 决定构建时引用的 NuGet 包，`Need` 是运行时允许的版本范围；`[1.0,2.0)` 包含 1.0，不包含 2.0。工具也保留模板中显式写入的 `Dependencies`，再追加这个分组的依赖，不要重复声明同一项。
+`Version` 是编译时引用的包版本，`Need` 是运行时允许的版本范围。这里的 `[1.0,2.0)` 表示大于等于 1.0、小于 2.0。
 
-被依赖插件必须已加载，或与当前插件一起投入同一个流水线。普通 `PackageReference` 不会自动成为插件依赖。运行时会检查依赖版本并安排加载顺序。
+记得写上 `Label="Dependencies"`，工具才会把它当作插件依赖。也可以直接在 `plugin.json` 中填写 `Dependencies`，同一项选一种方式写就好。
 
-接下来可添加[控件](/zh/plugin/control)、[资源字典](/zh/plugin/resourcedictionary)、[配置](/zh/plugin/config)和[国际化](/zh/advance/i18n)，然后[打包](/zh/plugin/pack)。
+加载时，可以先加载 Hello，也可以把两个插件一起交给加载器，它会安排好先后顺序。
+
+到这里，一个最简单的插件就写好了。接下来可以[打包试用](/zh/plugin/pack)，或者继续添加[控件](/zh/plugin/control)、[资源字典](/zh/plugin/resourcedictionary)、[配置](/zh/plugin/config)和[多语言支持](/zh/advance/i18n)。

@@ -1,8 +1,10 @@
 # Plugin Configuration
 
-Configuration is provided by [ShadowObservableConfig](https://github.com/kitUIN/ShadowObservableConfig). The current loader references its JSON and YAML implementations.
+Use [ShadowObservableConfig](https://github.com/kitUIN/ShadowObservableConfig) to remember a user's preferred sizes, themes, or other settings. Here we'll save the Emoji plugin's settings as JSON.
 
-## Define configuration
+## Write a configuration class
+
+Add `EmojiConfig.cs` to the plugin project:
 
 ```csharp [EmojiConfig.cs]
 using ShadowObservableConfig.Attributes;
@@ -20,13 +22,15 @@ public partial class EmojiConfig
 }
 ```
 
-Its generator provides observable properties and configuration loading/saving support. Use `.json` or `.yaml` for `FileExt`, and register the matching loader in the host first. SDK configuration also needs JSON support; see [Host Initialization](/init/customloaderclass). Use distinct filenames for different plugins to avoid sharing configuration accidentally.
+`FileName` sets the filename, `FileExt` its extension, and `DirPath` the settings directory. Give each plugin its own filename.
 
-## Automatic loading and injection
+`[ObservableConfigProperty]` generates a bindable property for each field. For example, `_defaultEmojiSize` becomes `DefaultEmojiSize`. The tool also generates configuration loading and saving methods.
 
-Before instantiating a plugin, the default main processor scans public types in its assembly. For concrete types deriving from generated `BaseConfig` and marked `[ObservableConfig]` with a nonempty `FileName`, it invokes static `Load()` through reflection and registers the returned instance by concrete type.
+Prefer YAML? Change `FileExt` to `.yaml`. The app needs the matching JSON/YAML loader; the earlier [initialization example](/init/customloaderclass) sets up both.
 
-You can therefore replace the main class from [Create a Plugin](/plugin/create) with:
+## Read settings in the plugin
+
+The loader reads configuration before creating the plugin. Add an `[Autowired]` property to receive it:
 
 ```csharp [EmojiPlugin.cs]
 using ShadowExample.Core.Plugins;
@@ -50,11 +54,13 @@ public partial class EmojiPlugin : PluginBase
 }
 ```
 
-Nested configuration without a filename is not loaded as a separate file. Configuration loading errors are logged. Check those logs if the constructor subsequently cannot resolve a configuration type.
+Declare the configuration class as `public partial` and set `FileName`, as shown above. Nested configuration without a filename belongs inside another configuration object and isn't loaded as a separate file.
 
-## Use in controls
+## Bind settings to the UI
 
-Inject `EmojiConfig`, or resolve the same instance with `DiFactory.Services.Resolve<EmojiConfig>()` after automatic loading. Expose it as the control's `ViewModel` property and bind the generated properties:
+Controls can also receive `EmojiConfig` through injection, or call `DiFactory.Services.Resolve<EmojiConfig>()` after the plugin has loaded. This lets the plugin and its controls share the same settings object.
+
+If the control exposes it through a `ViewModel` property, bind it like this:
 
 ```xml
 <NumberBox Header="Emoji size"
@@ -63,4 +69,4 @@ Inject `EmojiConfig`, or resolve the same instance with `DiFactory.Services.Reso
           IsChecked="{x:Bind ViewModel.EnableAutoComplete, Mode=TwoWay}" />
 ```
 
-Prefer the shared DI instance in loader-managed plugins. Standalone `EmojiConfig.Load()` still requires prior `GlobalSetting` initialization. Consult the ShadowObservableConfig documentation matching your package version for persistence, nested settings, and custom serialization.
+See the ShadowObservableConfig documentation for nested settings, automatic saving, and custom formats.

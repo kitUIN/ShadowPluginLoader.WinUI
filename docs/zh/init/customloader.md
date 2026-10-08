@@ -1,10 +1,10 @@
 # 创建 SDK 项目
 
-SDK 是宿主和插件共同引用的 WinUI 类库，提供元数据、插件基类、加载器和业务 API。以下统一使用 `ShadowExample.Core`。
+先来建一个主程序和插件都能引用的类库。我们把它叫作 SDK，用来放插件信息、插件基类，以及主程序想提供给插件的功能。
 
-## 项目配置
+## 新建类库
 
-在 Visual Studio 中创建 WinUI 类库，配置项目文件：
+在 Visual Studio 中创建一个 WinUI 类库，命名为 `ShadowExample.Core`。打开项目文件，参考下面的配置：
 
 ```xml [ShadowExample.Core.csproj]
 <Project Sdk="Microsoft.NET.Sdk">
@@ -28,13 +28,13 @@ SDK 是宿主和插件共同引用的 WinUI 类库，提供元数据、插件基
 </Project>
 ```
 
-`3.1.9` 对应当前源码项目版本。若使用尚未发布的源码，请先构建并将对应包放入本地 NuGet 源，或在开发时使用项目引用；不要假定旧版包已经包含这里的 API。SDK 的 `1.3.1` 是本教程示例版本，后续插件引用需保持一致。
+这里有两个配置值得留意：`CopyLocalLockFileAssemblies` 会把依赖库一起复制到输出目录，方便工具读取元数据；`GeneratePackageOnBuild` 会在构建时生成 NuGet 包，之后主程序和插件就能引用它。
 
-`CopyLocalLockFileAssemblies` 确保导出元数据时能找到依赖程序集。`GeneratePackageOnBuild` 生成 SDK NuGet 包，供插件与宿主共同引用。可另外填写作者、许可证和仓库地址等 NuGet 信息。
+示例中 SDK 的版本是 `1.3.1`。你可以改成自己的版本，后面引用时对应上就好。
 
-## 标记 SDK 项目
+## 告诉工具这是 SDK 项目
 
-在项目根目录创建以下文件（工具也会在首次构建时复制默认文件）：
+在项目根目录新建 `Tools.Config.props`，把 `IsPluginLoader` 设为 `true`：
 
 ```xml [Tools.Config.props]
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -47,6 +47,8 @@ SDK 是宿主和插件共同引用的 WinUI 类库，提供元数据、插件基
 </Project>
 ```
 
-构建时工具将导出带 `[ExportMeta]` 的元数据类，生成 `plugin.d.json`，并将定义和导入属性打入 SDK 包的 `build` / `buildTransitive` 目录。先完成[元数据类](/zh/init/metaplugin)、[插件基类](/zh/init/iplugin)和[加载器类](/zh/init/customloaderclass)，再构建 SDK。
+这个开关会让工具在构建时生成 `plugin.d.json`，用来描述插件可以填写哪些信息。它也会随 SDK 一起打进 NuGet 包，供插件项目使用。
 
-更多配置见 [Tools.Config.props](/zh/advance/toolconfig)。
+接下来先[定义插件元数据](/zh/init/metaplugin)，再写[插件基类](/zh/init/iplugin)和[加载器](/zh/init/customloaderclass)。这些代码准备好后，就可以构建 SDK 了。
+
+其他开关的用途可以查看 [Tools.Config.props](/zh/advance/toolconfig)。

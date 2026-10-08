@@ -1,11 +1,9 @@
 # Plugin Development
 
-Complete [SDK and host initialization](/init/) before [creating a plugin project](/plugin/create). Plugins can contain C# code, WinUI XAML controls, resource dictionaries, images, and localized resources.
+Once the [SDK and app are set up](/init/), you're ready to write a plugin. Start by [creating the project](/plugin/create), then add the features you need.
 
-- [Custom Controls](/plugin/control): load XAML through the extension host.
-- [Resource Paths](/plugin/msplugin), [Resource Dictionaries](/plugin/resourcedictionary), and [Resource Files](/plugin/assets).
-- [Plugin Configuration](/plugin/config) and [Internationalization](/advance/i18n).
-- [Packaging](/plugin/pack) and [Installation, Updates, and Removal](/plugin/install).
-- [Plugin Events](/plugin/event).
+For a UI, write [custom controls](/plugin/control) and keep colors and styles in [resource dictionaries](/plugin/resourcedictionary). Put images and other files in your [resources folder](/plugin/assets) and access them through [plugin resource paths](/plugin/msplugin).
 
-Plugin base classes use `AbstractPlugin<TMeta>`. Pipelines handle installation, while updates and removals execute during startup checks after restart.
+Add a [configuration file](/plugin/config) to remember user settings, or use the [localization helpers](/advance/i18n) to support more languages.
+
+When it's ready, [package the plugin](/plugin/pack) and [install it in your app](/plugin/install). The app can also listen for [plugin events](/plugin/event) to track loading and enabled-state changes.

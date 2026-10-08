@@ -1,9 +1,11 @@
 # 资源文件
 
-把图片等资源放入插件项目的 `Assets` 目录，并确保其作为 WinUI 内容出现在构建输出和最终包中。例如仓库 Emoji 插件的 `Assets/th.jpg`。
+插件里要用到图片或其他文件时，可以把它们放进项目的 `Assets` 文件夹。比如 Emoji 插件的图片放在 `Assets/th.jpg`。
 
-资源路径使用 `ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg`，在代码中调用 `PluginPath()`，或在 XAML 中使用 `PluginImageSource` / `PluginUri`。完整示例见[插件资源路径](/zh/plugin/msplugin)。
+在 Visual Studio 中把这些文件作为内容包含进项目，构建后检查一下输出目录里有没有它们。
 
-不要把解析后的 WinUI 资源 URI 当作普通磁盘路径。读取任意数据文件时，按所使用存储 API 的要求处理 URI，或从插件程序集的 `Assembly.Location` 推导部署目录并组合实际文件路径。
+显示图片时，可以使用 `ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg`。代码和 XAML 的完整写法都在[插件资源路径](/zh/plugin/msplugin)一节。
 
-发布前检查[打包排除清单](/zh/plugin/pack)没有移除需要的资源。
+如果要读取普通数据文件，可以从插件程序集的 `Assembly.Location` 找到 DLL 所在目录，再拼出文件的实际路径。
+
+最后别忘了检查[打包排除清单](/zh/plugin/pack)，确保需要的文件都在插件包里。

@@ -1,8 +1,10 @@
 # 安装、更新和删除
 
-## 启动时加载
+有了加载器和插件，接下来就可以在主程序里把插件加载进来了。
 
-完成[宿主初始化](/zh/init/customloaderclass)后，从 UI 线程执行：
+## 启动时加载插件
+
+完成[主程序初始化](/zh/init/customloaderclass)后，在窗口的 UI 线程中调用：
 
 ```csharp
 using DryIoc;
@@ -18,29 +20,31 @@ await loader.CreatePipeline()
     .ProcessAsync();
 ```
 
-`CheckUpgradeAndRemoveAsync()` 先删除、再更新上次安排的插件，并设置处理器要求的检查标记。每次启动应在加载任何插件前等待它完成。
+先调用 `CheckUpgradeAndRemoveAsync()`，处理上次退出前安排的删除和更新。等它完成后，再加载插件。
 
-`ProcessAsync()` 完成预处理、元数据读取、依赖排序、程序集加载、DI 注册和插件实例化。无需再调用 `Load()`。公开的 `Load(IEnumerable<string>, IProgress<PipelineProgress>?)` 只用于处理已进入元数据缓存的插件 ID，通常由流水线的 `Outbound()` 调用。
+后面三步可以这样理解：`CreatePipeline()` 创建一次加载任务，`Feed(...)` 告诉它去哪里找插件，`ProcessAsync()` 开始处理。加载器会读插件信息、检查依赖，再创建插件实例，不用额外调用 `Load()`。
 
-## 输入来源
+## 可以从哪里加载
 
-需要 `using ShadowPluginLoader.WinUI.Extensions;` 才能使用这些 `Feed` 重载。
+加上 `using ShadowPluginLoader.WinUI.Extensions;` 后，`Feed` 可以接收这些参数：
 
-| 输入 | 当前行为 |
+| 参数 | 用法 |
 | --- | --- |
-| `DirectoryInfo` | 递归查找 `plugin.json`，不自动安装目录中的 `.sdow` |
-| `FileInfo` 或本地 `Uri` | 读取 `plugin.json`，或解压 `.sdow` |
-| HTTP / HTTPS `Uri` | 下载后按压缩包处理，不用于远程裸 JSON |
-| `Type` / `Feed<TPlugin>()` | 查找程序集旁的 `{程序集名称}/plugin.json`，仍需要 DLL 和元数据文件 |
-| `Type[]` / `IEnumerable<Type?>` | 逐个添加类型对应的元数据 |
-| `Windows.ApplicationModel.Package` | 递归扫描包的安装目录 |
-| `IMaterial` | 交给对应的预处理器 |
+| `DirectoryInfo` | 在目录和子目录中查找 `plugin.json` |
+| `FileInfo` 或本地 `Uri` | 指向一个 `plugin.json` 或 `.sdow` 包 |
+| HTTP / HTTPS `Uri` | 下载并安装插件压缩包 |
+| `Type` / `Feed<TPlugin>()` | 加载该类型对应的插件，需要程序集旁有 `{程序集名称}/plugin.json` |
+| `Type[]` / `IEnumerable<Type?>` | 一次传入多个插件类型 |
+| `Windows.ApplicationModel.Package` | 从已安装的 Windows 包中查找插件 |
+| `IMaterial` | 使用[自定义处理方式](/zh/advance/customloadplugin) |
 
-目录请使用 `DirectoryInfo`；当前 `Uri` 分支不能正确处理普通本地目录 URI。安装后的插件默认放在 `ApplicationData.Current.LocalFolder.Path/plugin`，下载临时文件位于 `temp`，可通过 `BaseSdkConfig` 配置。
+扫描文件夹时用 `DirectoryInfo`。它会查找已经解压好的插件；如果文件夹里放的是 `.sdow`，需要把包的路径传给 `Feed`。
 
-## 安装包与进度
+插件默认安装在应用本地数据目录的 `plugin` 文件夹中，下载的临时文件放在 `temp`。需要换位置时，可以修改 `BaseSdkConfig`。
 
-下面接续前面的 `loader`。依赖与插件可在同一流水线投入：
+## 安装插件包
+
+继续使用上面的 `loader`，把包的路径传进去即可。下面把 Hello 和 Emoji 一起安装，并输出处理进度：
 
 ```csharp
 using System;
@@ -58,15 +62,15 @@ await loader.CreatePipeline()
     .ProcessAsync(progress, cancellation.Token);
 ```
 
-网络安装可将输入替换为指向插件压缩包的 HTTPS URI。流水线消费当前输入并清空列表；重复安装已加载程序集不会实现热更新。
+从网络安装时，把路径换成插件压缩包的 HTTPS 地址即可。如果要取消，可以调用 `cancellation.Cancel()`；已经解压或加载的内容不会因此自动撤回。
 
-`PipelineProgress` 包含 `Step`、`SubStep`、状态文字和百分比字段。当前实现的部分阶段使用了不一致的百分比尺度，不能直接把所有数值当作统一的 0–1 比例显示。取消令牌传给预处理和主处理阶段，不保证回滚已解压文件或已加载程序集。
+示例使用 `Step`、`SubStep` 和状态文字显示进度。百分比字段在不同阶段的计算方式还不统一，暂时建议按步骤显示状态。
 
-捕获 `ProcessAsync()` 的异常并查看日志；部分元数据读取/解压失败会被记录并跳过，没有产出时不会报告 `Success`。处理完成后可用 `GetPlugin(id)` 核对需要的插件是否已加载。
+安装失败时可以捕获异常并查看日志。处理完成后，调用 `GetPlugin(id)` 就能确认插件有没有加载成功。
 
-## 更新与删除
+## 更新和删除
 
-下面两行分别演示安排更新和删除，应按用户实际操作调用：
+更新和删除都需要重启程序才会生效。下面分别演示这两个操作：
 
 ```csharp
 await loader.UpgradePlugin("ShadowExample.Plugin.Emoji",
@@ -74,11 +78,11 @@ await loader.UpgradePlugin("ShadowExample.Plugin.Emoji",
 await loader.RemovePlugin("ShadowExample.Plugin.Hello");
 ```
 
-`UpgradePlugin(string id, Uri uri)` 只接受本地 `.sdow` 文件 URI；网络包须先下载到本地。当前插件必须已加载，新版本必须更高，依赖版本必须满足要求。保留更新包直到下次启动执行完计划。
+更新时传入本地 `.sdow` 路径；网络上的包要先下载下来。要更新的插件需要已经加载，新版本要高于旧版本，依赖也要满足要求。更新包先别删，下次启动还会用到它。
 
-`RemovePlugin(string id)` 同样要求插件已加载。这两个方法写入计划，重启后由 `CheckUpgradeAndRemoveAsync()` 执行；不会在当前进程卸载程序集。不要用安装流水线替代已加载插件的升级。
+删除同样是针对已加载的插件。调用后，下次启动时的 `CheckUpgradeAndRemoveAsync()` 会执行这些操作。
 
-## 查询与启用状态
+## 查看和切换启用状态
 
 ```csharp
 var plugins = loader.GetPlugins();
@@ -89,4 +93,6 @@ loader.DisablePlugin("ShadowExample.Plugin.Emoji");
 loader.EnablePlugin("ShadowExample.Plugin.Emoji");
 ```
 
-未找到插件时，`GetPlugin` 和 `IsEnabled` 返回 `null`。禁用插件不等于卸载；实例和资源仍然存在。事件的实际触发行为见[插件事件](/zh/plugin/event)。
+插件不存在时，`GetPlugin` 和 `IsEnabled` 会返回 `null`。禁用后插件仍留在内存中，所以插件要在 `Disabled()` 里停止自己的工作。
+
+如果想在界面上显示加载、启用等状态变化，可以继续看[插件事件](/zh/plugin/event)。

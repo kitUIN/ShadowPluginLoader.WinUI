@@ -1,8 +1,10 @@
 # Install, Update, and Remove Plugins
 
-## Load at startup
+Now that you have a loader and a plugin, let's load the plugin in your app.
 
-After [initializing the host](/init/customloaderclass), run this on the UI thread:
+## Load plugins at startup
+
+After [initializing your app](/init/customloaderclass), call this on the window's UI thread:
 
 ```csharp
 using DryIoc;
@@ -18,29 +20,31 @@ await loader.CreatePipeline()
     .ProcessAsync();
 ```
 
-`CheckUpgradeAndRemoveAsync()` performs pending removals before upgrades and sets the flags required by the processor. Await it at each startup before loading any plugins.
+Start with `CheckUpgradeAndRemoveAsync()` to handle removals and updates scheduled during the previous run. Wait for it to finish before loading plugins.
 
-`ProcessAsync()` preprocesses inputs, reads metadata, sorts dependencies, loads assemblies, registers services, and instantiates plugins. No separate `Load()` call is needed. Public `Load(IEnumerable<string>, IProgress<PipelineProgress>?)` works on IDs already in the metadata cache and is normally called by pipeline `Outbound()`.
+The next three calls set up and run a loading task: `CreatePipeline()` creates it, `Feed(...)` tells it where to look, and `ProcessAsync()` starts the work. The loader reads metadata, checks dependencies, and creates plugin instances. You don't need a separate `Load()` call.
 
-## Input sources
+## Where can plugins come from?
 
-Import `ShadowPluginLoader.WinUI.Extensions` for these `Feed` overloads.
+Add `using ShadowPluginLoader.WinUI.Extensions;` to use these `Feed` overloads:
 
-| Input | Current behavior |
+| Argument | How to use it |
 | --- | --- |
-| `DirectoryInfo` | Recursively finds `plugin.json`; does not automatically install `.sdow` files in that directory |
-| `FileInfo` or local `Uri` | Reads `plugin.json` or extracts `.sdow` |
-| HTTP / HTTPS `Uri` | Downloads and processes an archive, not standalone remote JSON |
-| `Type` / `Feed<TPlugin>()` | Finds `{assembly name}/plugin.json` beside the assembly; DLL and metadata files are still required |
-| `Type[]` / `IEnumerable<Type?>` | Adds metadata locations for each type |
-| `Windows.ApplicationModel.Package` | Recursively scans the package installation directory |
-| `IMaterial` | Uses the matching preprocessor |
+| `DirectoryInfo` | Find `plugin.json` in a directory and its subdirectories |
+| `FileInfo` or local `Uri` | Point to a `plugin.json` file or `.sdow` package |
+| HTTP / HTTPS `Uri` | Download and install a plugin archive |
+| `Type` / `Feed<TPlugin>()` | Load the plugin for that type; requires `{assembly name}/plugin.json` beside the assembly |
+| `Type[]` / `IEnumerable<Type?>` | Supply several plugin types together |
+| `Windows.ApplicationModel.Package` | Find plugins in an installed Windows package |
+| `IMaterial` | Use [custom processing](/advance/customloadplugin) |
 
-Use `DirectoryInfo` for directories: the current URI branch does not correctly handle ordinary local directory URIs. Installed plugins default to `ApplicationData.Current.LocalFolder.Path/plugin`; downloads use `temp`. Configure these through `BaseSdkConfig`.
+Use `DirectoryInfo` when scanning a folder. It finds unpacked plugins. For `.sdow` files, pass each package path to `Feed` instead.
 
-## Packages and progress
+Plugins are installed in the `plugin` folder under the app's local data directory. Downloads go into `temp`. Change these locations through `BaseSdkConfig` if needed.
 
-Continuing with the same `loader`, feed dependencies and their plugins together:
+## Install a package
+
+Using the same `loader`, pass in your package paths. This example installs Hello and Emoji together and reports progress:
 
 ```csharp
 using System;
@@ -58,15 +62,15 @@ await loader.CreatePipeline()
     .ProcessAsync(progress, cancellation.Token);
 ```
 
-For network installation, use an HTTPS URI pointing to a plugin archive. Processing consumes and clears the current input list. Reinstalling an already loaded assembly does not hot-update it.
+To install from the web, use the archive's HTTPS address. Call `cancellation.Cancel()` to request cancellation; files already extracted and assemblies already loaded won't be rolled back.
 
-`PipelineProgress` provides `Step`, `SubStep`, status text, and percentage fields. Some current stages report inconsistent percentage scales, so do not assume every value is a normalized 0–1 fraction. Cancellation is passed to preprocessing and main processing; it does not guarantee rollback of extracted files or loaded assemblies.
+The example reports `Step`, `SubStep`, and status text. Percentage calculations aren't yet consistent across stages, so use the steps to show progress for now.
 
-Handle `ProcessAsync()` exceptions and inspect logs. Some metadata/extraction failures are logged and skipped; processing with no products does not report `Success`. Use `GetPlugin(id)` afterward to verify that required plugins loaded.
+Catch exceptions and check the logs if installation fails. After processing, call `GetPlugin(id)` to see whether the plugin loaded successfully.
 
 ## Update and remove
 
-These lines demonstrate separate update and removal actions; call them as appropriate:
+Updates and removals take effect after restarting the app. These lines show the two operations separately:
 
 ```csharp
 await loader.UpgradePlugin("ShadowExample.Plugin.Emoji",
@@ -74,11 +78,11 @@ await loader.UpgradePlugin("ShadowExample.Plugin.Emoji",
 await loader.RemovePlugin("ShadowExample.Plugin.Hello");
 ```
 
-`UpgradePlugin(string id, Uri uri)` accepts only a local `.sdow` file URI. Download network packages first. The current plugin must already be loaded, the new version must be higher, and dependency versions must satisfy their constraints. Keep the update archive until the next startup finishes processing the plan.
+For updates, provide a local `.sdow` path. Download web packages first. The plugin must already be loaded, the new version must be higher, and its dependencies must be satisfied. Keep the update archive until the next startup has used it.
 
-`RemovePlugin(string id)` also requires a loaded plugin. Both methods persist plans executed by `CheckUpgradeAndRemoveAsync()` after restart; they do not unload assemblies in the running process. Do not use the installation pipeline to update an already loaded plugin.
+Removal also applies to loaded plugins. On the next launch, `CheckUpgradeAndRemoveAsync()` carries out these operations.
 
-## Query and change enabled state
+## Read and change enabled state
 
 ```csharp
 var plugins = loader.GetPlugins();
@@ -89,4 +93,6 @@ loader.DisablePlugin("ShadowExample.Plugin.Emoji");
 loader.EnablePlugin("ShadowExample.Plugin.Emoji");
 ```
 
-`GetPlugin` and `IsEnabled` return `null` for missing plugins. Disabling does not unload an instance or its resources. See [Plugin Events](/plugin/event) for actual event behavior.
+`GetPlugin` and `IsEnabled` return `null` when a plugin isn't found. Disabled plugins stay in memory, so each plugin should stop its work in `Disabled()`.
+
+To show loading or enabled-state changes in your UI, see [Plugin Events](/plugin/event).

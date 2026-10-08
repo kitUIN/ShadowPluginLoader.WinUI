@@ -1,8 +1,12 @@
 # Quick Dependency Injection
 
-`ShadowPluginLoader.SourceGenerator` generates constructors; DryIoc resolves the dependencies. Declare participating classes as `public partial`. Attributes are in `ShadowPluginLoader.Attributes`.
+Writing a constructor for every new service gets repetitive. `[Autowired]` and `[CheckAutowired]` can generate that code for you.
 
-## Autowired properties
+Declare the class as `public partial` and import `ShadowPluginLoader.Attributes`.
+
+## Add Autowired to a property
+
+For example, this ViewModel needs a logger:
 
 ```csharp
 using Serilog;
@@ -22,7 +26,7 @@ public partial class StatusViewModel
 }
 ```
 
-The generated constructor is equivalent to:
+The build generates a constructor like this:
 
 ```csharp
 public StatusViewModel(ILogger logger)
@@ -32,11 +36,11 @@ public StatusViewModel(ILogger logger)
 }
 ```
 
-The generator also declares `partial void ConstructorInit()`. Implement it in your class for initialization after dependency assignment. Do not add another constructor with the same signature.
+After assigning `Logger`, it calls `ConstructorInit()`. Put any extra setup there instead of writing another constructor.
 
-## CheckAutowired classes
+## What if the base class needs parameters too?
 
-Mark derived classes with `[CheckAutowired]` to detect and forward base constructor parameters even without new `[Autowired]` properties. For example, the [main plugin class](/plugin/create) receives:
+Add `[CheckAutowired]` to the derived class. The generator will pass along the parameters its base class needs. For the earlier [main plugin class](/plugin/create), the constructor looks like this:
 
 ```csharp
 public EmojiPlugin(ExampleMetaData meta, ILogger logger,
@@ -47,10 +51,12 @@ public EmojiPlugin(ExampleMetaData meta, ILogger logger,
 }
 ```
 
-These fragments explain generated output; do not paste them into classes that already receive generated constructors. `[CheckAutowired]` on an empty class does not invent service parameters. If there are no injection parameters, no constructor is generated.
+This code is generated for you. You don't need to paste it into the plugin class.
 
-## Service registration
+## Register your services
 
-Attributes do not register application services. Register dependencies with methods such as `DiFactory.Services.Register<TService, TImplementation>()` before resolving consumers. The default main processor registers plugin main classes by plugin ID and supplies their metadata. Plugins do not need to register their own main classes. Public configuration classes are loaded and registered as described in [Plugin Configuration](/plugin/config).
+DryIoc still needs to know where each service comes from. Register your own services first with methods such as `DiFactory.Services.Register<TService, TImplementation>()`.
 
-For controls using generated constructors, call `this.LoadComponent(ref _contentLoaded)` inside `ConstructorInit()`. Avoid retaining a template constructor that bypasses required dependencies. See [Custom Controls](/plugin/control).
+The loader registers plugin main classes and supported [configuration classes](/plugin/config) for you.
+
+Controls can receive dependencies this way too. Put `this.LoadComponent(ref _contentLoaded)` in `ConstructorInit()` to load XAML once the dependencies are ready; see [Custom Controls](/plugin/control).

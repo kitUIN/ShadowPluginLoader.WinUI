@@ -1,15 +1,19 @@
 # Plugin Packaging
 
-Set `IsPlugin=true`, `IsPluginLoader=false`, and `AutoPluginPackage=true` in `Tools.Config.props`, then build the plugin.
+Once your plugin is ready, package it as a `.sdow` file for the app to install.
 
-## Output
+Check `Tools.Config.props`: set `IsPlugin` and `AutoPluginPackage` to `true`, and `IsPluginLoader` to `false`. Then build the project as usual.
 
-Packages default to `$(ProjectDir)Packages/`:
+## Find the package
+
+After building, open the project's `Packages` folder. The default filenames are:
 
 - Release: `$(TargetName)-$(Version).sdow`.
 - Debug: `$(TargetName)-$(Version)-Debug.sdow`.
 
-`.sdow` uses ZIP format and is created from the plugin build output. It contains assemblies, generated metadata, XAML, and resources. This abbreviated layout shows the important relationship; retain generated PRI files and required dependencies as well:
+For example, an Emoji debug package could be named `ShadowExample.Plugin.Emoji-1.1.0-Debug.sdow`.
+
+A `.sdow` file is a ZIP archive containing the build output: DLLs, plugin metadata, and resources. The main layout looks like this, alongside generated PRI files and dependencies:
 
 ```text
 ShadowExample.Plugin.Emoji.dll
@@ -21,11 +25,11 @@ ShadowExample.Plugin.Emoji/
     th.jpg
 ```
 
-`plugin.json` is inside the assembly-named subdirectory, with the DLL one level above it. Do not package only the source template or DLL. The archive preprocessor searches for ZIP entries ending in `/plugin.json`.
+Keep `plugin.json` in the assembly-named subfolder, with the DLL one level above it. Using the generated package saves you from arranging these files yourself.
 
-## Exclude files
+## Leave out files you don't need
 
-Create `Plugin.Build.exclude` in the project directory, with one pattern per line:
+Create `Plugin.Build.exclude` in the project directory. Put one name or wildcard pattern on each line:
 
 ```text [Plugin.Build.exclude]
 *.pdb
@@ -33,8 +37,10 @@ hello.*
 Fluent
 ```
 
-The current packager recursively enumerates output and matches **file or directory names**, case-insensitively. `*` matches any characters and `?` matches one character. `Fluent` matches that directory name at any depth. Path patterns such as `Fluent/*` or `core/**/text.txt` do not match because comparisons do not use relative paths.
+This excludes `.pdb` files, files matching `hello.*`, and directories named `Fluent`.
 
-The project list replaces the tool's default list. Exclusion actually deletes matching files/directories from build output before creating the archive; source files are unaffected. Rebuild before reusing the output for another deployment workflow.
+`*` matches any characters, and `?` matches one character. Matching ignores case and uses only the file or directory name, so write `Fluent`, not `Fluent/*`.
 
-See [Custom Packaging](/advance/custompluginbuild) for naming, target replacement, and optional MSIX support, or [Installation and Management](/plugin/install) to load the archive.
+Your list replaces the default list, so include any shared dependencies you still want excluded. Packaging deletes matches from the **build output directory** before creating the archive. Rebuild if you need to use that output for another deployment.
+
+See [Custom Packaging](/advance/custompluginbuild) to change the output location or filename. Once you have a package, [install and try it](/plugin/install).

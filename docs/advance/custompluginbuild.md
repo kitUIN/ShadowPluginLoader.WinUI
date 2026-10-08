@@ -1,6 +1,8 @@
 # Customize Plugin Packaging
 
-## Output directory and name
+The defaults work for most plugins. If you want another output folder, a different filename, or your own build workflow, here's where to change them.
+
+## Change the output folder and filename
 
 Create `Plugin.Build.props` in the plugin project directory:
 
@@ -15,26 +17,34 @@ Create `Plugin.Build.props` in the plugin project directory:
 </Project>
 ```
 
-This replaces the tool package's default file, so retain all defaults you need. `PluginPackagePath` sets the directory, `PluginPackageName` sets the name without its extension, and `PluginPackageExt` sets the extension. Debug builds append `-Debug`.
+`PluginPackagePath` sets the output folder, `PluginPackageName` sets the filename, and `PluginPackageExt` sets the extension. Change `PluginPackagePath`, for example, and the next build will put its package in that folder.
 
-Keep `.sdow` for compatibility with default `Feed(Uri)` and upgrade APIs. Changing the extension does not change the archive format. Other extensions need custom input handling; the upgrade API still accepts only `.sdow`.
+Debug builds also add `-Debug` to the name. Keep `.sdow` as the extension to use the loader's standard install and update methods.
 
-## Exclusions
+This file replaces the tool's default configuration. Start with the complete example above and adjust what you need.
 
-The project-level `Plugin.Build.exclude` is used when present; otherwise the tool's built-in list is used. Your list replaces the default, so retain exclusions for shared host assemblies as needed. See [Plugin Packaging](/plugin/pack).
+## Adjust exclusions
 
-## Replace MSBuild targets
+List unwanted files in your project's `Plugin.Build.exclude`; see [Plugin Packaging](/plugin/pack) for the format. When that file isn't present, the tool uses its own default list.
 
-| Property / local file | Default responsibility |
+Include any shared dependencies you still want excluded. Your list and the default list aren't merged automatically.
+
+## Use your own build workflow
+
+For further customization, replace the relevant MSBuild files:
+
+| Property / local file | Steps it handles |
 | --- | --- |
-| `ToolTargetsFile` / `Tool.targets` | General targets, including copying `Tools.Config.props` |
-| `LoaderToolTargetsFile` / `Loader.Build.targets` | SDK metadata export and NuGet packaging |
-| `PluginToolTargetsFile` / `Plugin.Build.targets` | Plugin schema copying, template generation, and packaging |
-| `LoaderPropsFile` / `Loaders.Build.props` | Passes `PluginDFile` from the SDK package to plugins |
-| `ExcludeFile` | Exclusion list path; the tool supports semicolon-separated files |
+| `ToolTargetsFile` / `Tool.targets` | General tasks such as copying `Tools.Config.props` |
+| `LoaderToolTargetsFile` / `Loader.Build.targets` | Exporting SDK metadata and creating NuGet packages |
+| `PluginToolTargetsFile` / `Plugin.Build.targets` | Copying definitions, generating plugin metadata, and packaging |
+| `LoaderPropsFile` / `Loaders.Build.props` | Telling plugin projects where to find `PluginDFile` |
+| `ExcludeFile` | Selecting exclusion lists; separate multiple paths with semicolons |
 
-Replacing a target file takes over its entire workflow. Preserve required metadata generation and resource copying. Although default props declare `DefaultExclude`, current packaging code does not use it to toggle built-in rules; control exclusions through the actual lists.
+Copy the tool's default file first, then change the steps you need. Keep metadata generation and resource copying so the package has everything required for loading.
 
-## Optional MSIX
+## Create an MSIX package
 
-The tool's switch is spelled `PluginMisxPackage`, with certificate settings `AppCertPath` and `AppCertPassword`. It invokes `PackageMsix.ps1` after ordinary packaging and requires a certificate and packaging tools. This does not make `.msix` archives valid default pipeline inputs; `Feed(Package)` accepts an already installed Windows package.
+Set `PluginMisxPackage` to `true` and supply the certificate path in `AppCertPath` and password in `AppCertPassword`. The build then uses `PackageMsix.ps1` to create an additional package.
+
+Use the installation pipeline for `.sdow` files. After installing an MSIX package in Windows, use `Feed(Package)` to find its plugins.

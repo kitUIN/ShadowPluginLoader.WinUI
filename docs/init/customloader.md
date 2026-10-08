@@ -1,10 +1,10 @@
 # Create an SDK Project
 
-The SDK is a WinUI class library shared by the host and plugins. It provides metadata, the plugin base class, the loader, and application APIs. This tutorial uses `ShadowExample.Core` throughout.
+Start with a class library that both your app and its plugins can reference. We'll call it the SDK. It will hold plugin metadata, the plugin base class, and any app features you want to make available to plugins.
 
-## Project configuration
+## Create the library
 
-Create a WinUI class library in Visual Studio and configure it as follows:
+In Visual Studio, create a WinUI class library named `ShadowExample.Core`. Open its project file and use this configuration as a starting point:
 
 ```xml [ShadowExample.Core.csproj]
 <Project Sdk="Microsoft.NET.Sdk">
@@ -28,13 +28,13 @@ Create a WinUI class library in Visual Studio and configure it as follows:
 </Project>
 ```
 
-`3.1.9` is the current source project version. For unpublished source changes, build the corresponding packages into a local NuGet feed or use project references during development. Older packages may not contain these APIs. The SDK version `1.3.1` is an example; use the same version in subsequent plugin references.
+Two settings are useful here. `CopyLocalLockFileAssemblies` copies dependencies to the output directory so the tool can read your metadata. `GeneratePackageOnBuild` creates a NuGet package that the app and plugins can reference.
 
-`CopyLocalLockFileAssemblies` makes dependencies available during metadata export. `GeneratePackageOnBuild` produces the SDK NuGet package shared by plugins and the host. Add your own author, license, and repository metadata as needed.
+The example SDK version is `1.3.1`. You can choose your own version; just use the same one when referencing the SDK later.
 
-## Mark the SDK project
+## Mark it as an SDK project
 
-Create this file in the project directory. The tool also copies a default file on the first build:
+Create `Tools.Config.props` in the project directory and set `IsPluginLoader` to `true`:
 
 ```xml [Tools.Config.props]
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -47,6 +47,8 @@ Create this file in the project directory. The tool also copies a default file o
 </Project>
 ```
 
-The build tool exports the metadata type marked `[ExportMeta]` into `plugin.d.json` and packages the definition and import properties under `build` / `buildTransitive`. Define the [metadata](/init/metaplugin), [plugin base class](/init/iplugin), and [loader](/init/customloaderclass) before building the SDK.
+This tells the build tool to generate `plugin.d.json`, which describes the information plugins can provide. The file is included in the SDK's NuGet package for plugin projects to use.
 
-See [Tools.Config.props](/advance/toolconfig) for additional settings.
+Next, define your [plugin metadata](/init/metaplugin), [base class](/init/iplugin), and [loader](/init/customloaderclass). Once those are ready, build the SDK.
+
+See [Tools.Config.props](/advance/toolconfig) for the other settings.

@@ -1,8 +1,10 @@
-# 创建加载器并初始化宿主
+# 创建加载器并接入主程序
 
-## SDK 中的加载器
+插件信息和基类都有了，接下来把它们交给加载器，再让主程序使用这个加载器。
 
-`[CheckAutowired]` 为 `partial` 类生成构造函数，转发基类依赖。
+## 创建加载器
+
+在 SDK 中新建 `ShadowExamplePluginLoader.cs`：
 
 ```csharp [ShadowExamplePluginLoader.cs]
 using ShadowExample.Core.Plugins;
@@ -18,11 +20,11 @@ public partial class ShadowExamplePluginLoader
 }
 ```
 
-注意泛型顺序：加载器是 `<ExampleMetaData, PluginBase>`，初始化方法是 `DiFactory.Init<PluginBase, ExampleMetaData>()`。
+这里的两个类型分别是插件元数据和插件基类。`[CheckAutowired]` 会帮我们生成构造函数，所以暂时不用往类里写其他代码。记得保留 `partial`。
 
-## 宿主初始化
+## 在主程序中初始化
 
-宿主引用同一个 SDK，在 `App.xaml.cs` 中完成以下初始化。保留 WinUI 模板已有的 `OnLaunched` 和窗口创建代码。
+让主程序引用同一个 SDK，然后在 `App.xaml.cs` 的构造函数中加入下面的初始化代码。原有的 `OnLaunched` 和创建窗口的代码继续保留。
 
 ```csharp [App.xaml.cs]
 using CustomExtensions.WinUI;
@@ -64,10 +66,14 @@ public partial class App : Application
 }
 ```
 
-顺序很重要：先初始化扩展宿主和配置加载器，再初始化 DI，最后注册并解析插件加载器。JSON 加载器用于 SDK 自身配置，YAML 加载器供使用 YAML 的插件配置使用。
+这段代码依次做了几件事：准备插件的 XAML 加载环境，设置 JSON/YAML 配置支持，初始化依赖注入，最后注册我们刚写好的加载器。
 
-当前 `DiFactory` 只将事件服务注册为 `IPluginEventService`，而插件与加载器构造函数依赖具体 `PluginEventService`。上面的注册让二者共用同一实例。当前 `InnerSdkConfig` 的计划集合没有字段初始值，因此首次启动时也显式补上空集合。
+中间的 `events` 注册让主程序和插件共用同一个事件服务；`plans` 的两行则为首次启动准备好升级和删除列表。按示例顺序放好即可。
 
-在窗口中用 `DiFactory.Services.Resolve<ShadowExamplePluginLoader>()` 获取加载器。启动时先 `await loader.CheckUpgradeAndRemoveAsync()`，再使用流水线加载插件，见[安装与管理](/zh/plugin/install)。加载会创建 WinUI 资源，应从 UI 线程发起并保留其同步上下文。
+这里容易写反的是泛型参数：加载器是 `<ExampleMetaData, PluginBase>`，而 `DiFactory.Init` 是 `<PluginBase, ExampleMetaData>`。
 
-扩展钩子见[自定义加载逻辑](/zh/advance/customloadplugin)。
+## 下一步：加载插件
+
+在窗口中调用 `DiFactory.Services.Resolve<ShadowExamplePluginLoader>()` 就能拿到加载器。之后先等待 `CheckUpgradeAndRemoveAsync()` 完成，再开始加载插件。
+
+加载过程会用到 WinUI 资源，放在窗口的 UI 线程中调用就好。完整示例见[安装、更新和删除](/zh/plugin/install)。如果想在加载前后加上自己的处理，可以看[自定义加载逻辑](/zh/advance/customloadplugin)。

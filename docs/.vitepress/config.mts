@@ -20,6 +20,10 @@ export default withMermaid({
       },
     },
     vite: {
+      optimizeDeps: {
+        // Mermaid uses CommonJS dependencies such as fastdom that need pre-bundling in dev.
+        include: ["mermaid"],
+      },
       plugins: [
         groupIconVitePlugin({
           customIcon: builtinIcons,

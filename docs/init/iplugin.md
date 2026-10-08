@@ -1,6 +1,8 @@
 # Create a Plugin Base Class
 
-Define your [metadata](/init/metaplugin) first and pass the same type to `AbstractPlugin<TMeta>`. Forward metadata, logging, and the event service to the base constructor.
+The base class defines what your plugins can do. Put shared behavior here so each plugin doesn't have to implement it again.
+
+Add `PluginBase.cs` to the SDK and pass your `ExampleMetaData` type to `AbstractPlugin`:
 
 ```csharp [PluginBase.cs]
 using Serilog;
@@ -19,15 +21,19 @@ public abstract class PluginBase : AbstractPlugin<ExampleMetaData>
 }
 ```
 
-Concrete plugins must implement `public override string DisplayName`. Add application-specific methods to your SDK base class as needed.
+The constructor passes plugin metadata, logging, and events to the base class. Each concrete plugin also needs a `DisplayName` property for its display name.
 
-| Member | Purpose |
+## Members you'll use
+
+| Member | When to use it |
 | --- | --- |
-| `MetaData` / `Id` | Metadata and identifier of this plugin instance |
-| `Loaded()` | Called after adding the instance to the loader, before `PluginLoaded` |
-| `protected Enabled()` / `Disabled()` | Called when enabled state changes, before the corresponding event |
-| `IsEnabled` | Persists enabled state and invokes callbacks when the value changes |
-| `protected ResourceDictionaries` | Dictionary paths merged into application resources during initialization |
-| `PlanUpgrade` / `PlanRemove` | Instance state and events; assigning these does not schedule disk operations |
+| `MetaData` / `Id` | Read the plugin's information and identifier |
+| `Loaded()` | Set things up once the plugin has loaded |
+| `protected Enabled()` / `Disabled()` | Start work when enabled and stop it when disabled |
+| `IsEnabled` | Read or change the enabled state; changes are saved |
+| `protected ResourceDictionaries` | Add resource dictionaries for the plugin |
+| `PlanUpgrade` / `PlanRemove` | Represent upgrade and removal state |
 
-`Init()` runs inside the base constructor. Keep `base.Init()` when overriding it to retain resource merging. Derived dependency properties have not yet been assigned by the constructor at this point. Schedule upgrades and removals through the [loader APIs](/plugin/install).
+`Loaded()` is usually a good place for initialization. If you override `Init()`, call `base.Init()` so resource dictionaries still load. It runs early, before injected properties in your derived class are assigned.
+
+To schedule an upgrade or removal, use the [loader methods](/plugin/install). Changing `PlanUpgrade` or `PlanRemove` alone won't schedule the operation.

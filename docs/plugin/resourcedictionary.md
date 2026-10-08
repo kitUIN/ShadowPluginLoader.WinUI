@@ -1,14 +1,18 @@
 # Custom Resource Dictionaries
 
-Plugins do not have their own `App.xaml`. Override the **protected** `ResourceDictionaries` property in the main plugin class, with `using System.Collections.Generic;`:
+In a normal app, you might put colors and styles in a resource dictionary and merge it in `App.xaml`. Plugins don't have their own `App.xaml`, so the main plugin class can load these dictionaries for you.
+
+Add this property to the main class and import `System.Collections.Generic`:
 
 ```csharp
 protected override IEnumerable<string> ResourceDictionaries =>
     ["ms-plugin://ShadowExample.Plugin.Emoji/Themes/ResourceDictionary1.xaml"];
 ```
 
-`ShadowExample.Plugin.Emoji` is the assembly name, not a display name. `AbstractPlugin<TMeta>.Init()` resolves each path, creates a `ResourceDictionary`, and adds it to `Application.Current.Resources.MergedDictionaries`.
+`ShadowExample.Plugin.Emoji` is the DLL's assembly name. When the plugin is created, these dictionaries are merged into the app's resources. You can then use `StaticResource` to reference their colors and styles.
 
-Merging happens during instance construction, before `Loaded()` and enabled events. Dictionaries are merged even for plugins with persisted disabled state and are not automatically removed when disabling a plugin. Avoid conflicting resource keys across plugins.
+For more dictionaries, add more paths to the list. Write their contents just as you would in a normal WinUI project.
 
-Built-in resources deployed with the host can use their correct `ms-appx:///` paths. Dictionary XAML otherwise follows ordinary WinUI usage; cross-plugin resource paths must follow the [resource path rules](/plugin/msplugin).
+Dictionaries stay in the app's resources when a plugin is disabled. Prefix your resource names with the plugin name to avoid clashes. Built-in resources deployed with the app can use `ms-appx:///` paths.
+
+See [Plugin Resource Paths](/plugin/msplugin) for more examples.

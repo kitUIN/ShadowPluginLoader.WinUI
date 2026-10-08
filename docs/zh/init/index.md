@@ -1,20 +1,19 @@
 # 快速开始
 
-本教程按当前仓库的加载器实现编写（项目版本 `3.1.9`）。宿主、SDK 和插件应使用兼容的包版本；仓库中部分示例项目仍引用旧包，不能直接作为当前 API 的依据。
+想给自己的 WinUI 3 应用加上插件功能？我们从一个 SDK 类库开始，再写一个简单的插件，最后让主程序把它加载进来。
 
-## 前置条件
+这里会用到三个项目：主程序负责显示界面，SDK 提供大家共用的接口，插件负责实现具体功能。
 
-- Windows、支持 WinUI 3 的 Visual Studio，以及 Windows App SDK 开发环境。
-- 了解 C#、XAML 和 DryIoc 依赖注入。
-- 示例使用 `net8.0-windows10.0.19041.0`；加载器还多目标编译到 .NET 6 和 .NET 9。
-- 编译当前加载器源码需要支持 C# 扩展块语法的编译器（例如 .NET 10 SDK），项目已设置 `LangVersion=preview`。目标框架版本与编译器版本是两回事。
+## 开始前准备什么
 
-## 开发顺序
+- 安装支持 WinUI 3 开发的 Visual Studio 和 Windows App SDK 开发工具。
+- 熟悉一些 C# 和 XAML 写法；依赖注入会用到 DryIoc。
+- 示例使用 .NET 8。如果还要编译加载器源码，请安装 .NET 10 SDK，以支持其中用到的 C# 扩展块语法。
 
-1. [创建 SDK 项目](/zh/init/customloader)。
-2. [定义元数据](/zh/init/metaplugin)和[插件基类](/zh/init/iplugin)。
-3. [创建加载器并初始化宿主](/zh/init/customloaderclass)。
-4. [创建插件](/zh/plugin/create)，然后[打包](/zh/plugin/pack)。
-5. 在宿主中[安装、加载和管理插件](/zh/plugin/install)。
+## 跟着这些步骤来
 
-默认加载链为 `CreatePipeline()` → `Feed(...)` → `ProcessAsync()`；处理结束时会自动实例化插件。
+1. [创建 SDK 项目](/zh/init/customloader)，放置主程序和插件共用的代码。
+2. [定义插件信息](/zh/init/metaplugin)，再[写好插件基类](/zh/init/iplugin)。
+3. [创建加载器](/zh/init/customloaderclass)，接入主程序。
+4. [写一个插件](/zh/plugin/create)，并把它[打包](/zh/plugin/pack)。
+5. 回到主程序，[加载和管理插件](/zh/plugin/install)。

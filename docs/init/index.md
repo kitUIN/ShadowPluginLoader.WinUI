@@ -1,20 +1,19 @@
 # Quick Start
 
-This tutorial follows the current loader source (project version `3.1.9`). Use compatible package versions in the host, SDK, and plugins. Some repository sample projects still reference older packages and do not represent every current API.
+Want to add plugins to your WinUI 3 app? We'll create a shared SDK, write a small plugin, and load it in the app.
 
-## Prerequisites
+You'll work with three projects: the app displays the UI, the SDK provides shared APIs, and plugins add features.
 
-- Windows, Visual Studio with WinUI 3 support, and the Windows App SDK development tools.
-- Familiarity with C#, XAML, and DryIoc dependency injection.
-- Examples target `net8.0-windows10.0.19041.0`; the loader also targets .NET 6 and .NET 9.
-- Building the current loader source requires a compiler with C# extension block support, such as the .NET 10 SDK. The project sets `LangVersion=preview`. The compiler version is separate from the target framework.
+## Before you start
 
-## Development order
+- Install Visual Studio with WinUI 3 support and the Windows App SDK development tools.
+- Have some familiarity with C# and XAML. We'll use DryIoc for dependency injection.
+- The examples target .NET 8. If you also want to build the loader from source, install the .NET 10 SDK for its C# extension block support.
 
-1. [Create an SDK project](/init/customloader).
-2. Define [metadata](/init/metaplugin) and a [plugin base class](/init/iplugin).
-3. [Create the loader and initialize the host](/init/customloaderclass).
-4. [Create a plugin](/plugin/create) and [package it](/plugin/pack).
-5. [Install, load, and manage plugins](/plugin/install) in the host.
+## Follow these steps
 
-The default loading sequence is `CreatePipeline()` → `Feed(...)` → `ProcessAsync()`. Processing automatically instantiates the plugins.
+1. [Create the SDK project](/init/customloader) for your shared code.
+2. [Describe your plugins with metadata](/init/metaplugin) and [create their base class](/init/iplugin).
+3. [Create the loader](/init/customloaderclass) and connect it to your app.
+4. [Write a plugin](/plugin/create) and [package it](/plugin/pack).
+5. Back in the app, [load and manage your plugins](/plugin/install).

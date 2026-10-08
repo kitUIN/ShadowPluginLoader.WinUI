@@ -1,8 +1,10 @@
 # Create a Plugin Project
 
-## Project and build configuration
+With the SDK ready, let's write your first plugin. We'll call it `ShadowExample.Plugin.Emoji`.
 
-Create a WinUI class library and reference the SDK published to your NuGet feed. The SDK version below matches the preceding tutorial.
+## Create the project
+
+Create a WinUI class library and reference the SDK package you built earlier:
 
 ```xml [ShadowExample.Plugin.Emoji.csproj]
 <Project Sdk="Microsoft.NET.Sdk">
@@ -26,6 +28,8 @@ Create a WinUI class library and reference the SDK published to your NuGet feed.
 </Project>
 ```
 
+Next, create `Tools.Config.props` in the project directory and set `IsPlugin` to `true`. Enabling `AutoPluginPackage` also packages the plugin whenever you build it.
+
 ```xml [Tools.Config.props]
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -37,7 +41,7 @@ Create a WinUI class library and reference the SDK published to your NuGet feed.
 </Project>
 ```
 
-## Metadata template
+## Fill in the plugin details
 
 Create `plugin.json` in the project directory:
 
@@ -50,15 +54,17 @@ Create `plugin.json` in the project directory:
 }
 ```
 
-The build tool renders the Scriban template, validates it against `plugin.d.json`, and writes the final JSON to `{assembly name}/plugin.json` under the output directory. Deploy the output file, not the source template.
+Names inside double braces refer to properties in the `.csproj`. For example, `PackageId` becomes `ShadowExample.Plugin.Emoji`. When you release a new version, you only need to change `Version` in the project file.
 
-Template variables come from `PropertyGroup` nodes declared directly in the `.csproj`. The tool reads raw XML rather than evaluating MSBuild, so imported values, conditions, and `$(...)` expressions are not automatically evaluated for templates. The SDK NuGet package supplies the schema; for project references, the build target attempts to copy it from the referenced project's output.
+Declare these values directly in a `.csproj` `PropertyGroup`. The template reads those values; it doesn't evaluate imported properties or `$(...)` expressions.
 
-Keep `Id`, `PackageId`, and the assembly name aligned: dependencies use package identifiers, while already loaded dependencies are recorded by `DllName`. Required fields are `Id`, `Name`, and `Version`. You can provide `Priority`, `SdkVersion`, and custom properties. If omitted, `SdkVersion` receives the schema's default range. The tool writes `DllName`, `MainPlugin`, `BuiltIn`, and `EntryPoints`.
+`Id`, `Name`, and `Version` are required. Keep `Id`, `PackageId`, and the assembly name the same to make dependency references straightforward. The tool fills in the SDK version range, DLL name, main class, and other generated details.
 
-## Main plugin class
+After building, you'll find the completed metadata at `{assembly name}/plugin.json` in the output directory. Use this generated file when distributing the plugin.
 
-The main class must be public, concrete, and derived from the SDK plugin base class. Declare one `[MainPlugin]` per plugin.
+## Write the main class
+
+Create `EmojiPlugin.cs` and derive it from the SDK's `PluginBase`:
 
 ```csharp [EmojiPlugin.cs]
 using ShadowExample.Core.Plugins;
@@ -74,11 +80,13 @@ public partial class EmojiPlugin : PluginBase
 }
 ```
 
-`[MainPlugin]` identifies the main class; `[CheckAutowired]` generates its constructor. `MetaData` is an instance property injected by the loader. Read it through `loader.GetPlugin(id)?.MetaData`.
+`[MainPlugin]` tells the loader where to start. Add it to one class per plugin. `[CheckAutowired]` generates the constructor, and `DisplayName` supplies the plugin's display name.
 
-## Plugin dependencies
+Inside the plugin, read its details through `MetaData`. In the app, use `loader.GetPlugin(id)?.MetaData`.
 
-Add an `ItemGroup` with `Label="Dependencies"`:
+## Add dependencies if you need them
+
+Suppose Emoji needs the Hello plugin. Add this to the project file:
 
 ```xml
 <ItemGroup Label="Dependencies">
@@ -87,8 +95,10 @@ Add an `ItemGroup` with `Label="Dependencies"`:
 </ItemGroup>
 ```
 
-`Version` selects the build-time NuGet package; `Need` is the allowed runtime version range. `[1.0,2.0)` includes 1.0 and excludes 2.0. The tool preserves explicitly supplied `Dependencies` in the template and appends this group's entries, so avoid duplicates.
+`Version` selects the package used for compilation. `Need` sets the allowed runtime versions: `[1.0,2.0)` means at least 1.0 and below 2.0.
 
-Dependencies must already be loaded or be fed into the same pipeline. Ordinary `PackageReference` entries do not automatically become plugin dependencies. Runtime processing checks dependency versions and determines load order.
+Include `Label="Dependencies"` so the tool recognizes this as a plugin dependency. You can also write `Dependencies` directly in `plugin.json`; choose one place for each entry.
 
-Add [controls](/plugin/control), [resource dictionaries](/plugin/resourcedictionary), [configuration](/plugin/config), or [localization](/advance/i18n), then [package the plugin](/plugin/pack).
+You can load Hello first or give both plugins to the loader together. It will put them in the right order.
+
+Your basic plugin is ready. You can [package and try it](/plugin/pack), or add [controls](/plugin/control), [resource dictionaries](/plugin/resourcedictionary), [settings](/plugin/config), and [translations](/advance/i18n).

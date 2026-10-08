@@ -1,6 +1,10 @@
 # Entry Points
 
-Mark public classes with `[EntryPoint]` to write their type names into the generated `plugin.json`. Set `Name` explicitly: its current default is `null`, and the tool does not substitute the class name.
+Sometimes a plugin needs to expose more than its main class. For example, it might provide an `EmojiReader` that the app can use to read content. Mark that class as an entry point.
+
+## Mark a class
+
+Add `[EntryPoint]` to a public class and give it a `Name`:
 
 ```csharp
 using ShadowPluginLoader.Attributes;
@@ -13,9 +17,11 @@ public class EmojiReader
 }
 ```
 
-## Generated format
+Set `Name` yourself. You'll use it to find the entry point later.
 
-`[MainPlugin]` produces the top-level `MainPlugin` string and `BuiltIn` flag. Additional entry points appear in the `EntryPoints` array; the main class is not an array entry.
+## What gets generated?
+
+The tool writes entry points into the generated `plugin.json`. The main class goes in `MainPlugin`, and additional classes go in `EntryPoints`:
 
 ```json
 {
@@ -36,11 +42,9 @@ public class EmojiReader
 }
 ```
 
-## Runtime use
+## Use it in the loader
 
-After loading the assembly, the main processor calls `BasePluginMetaData.ToBase(assembly)`. It resolves `MainPlugin` to a `Type` and entries to `PluginEntryPointType(Name, EntryPointType)` records. It does not fill custom properties by entry-point name or automatically register entry-point services.
-
-Register application entry points in the loader's `BeforeLoadPlugin(Type plugin, ExampleMetaData meta)` hook, for example:
+After loading the plugin, `MetaData.EntryPoints` gives you each entry point's name and `Type`. For example, find `EmojiReader` and register it with DI:
 
 ```csharp
 using System.Linq;
@@ -53,4 +57,6 @@ if (reader?.EntryPointType is { } type)
 }
 ```
 
-Entry-point classes must exist in the plugin assembly. Register any required constructor dependencies with DI. See [Custom Loading Logic](/advance/customloadplugin) for lifecycle hooks.
+Put this code in the loader's `BeforeLoadPlugin(Type plugin, ExampleMetaData meta)` method. Use `Name` to find the entry and `EntryPointType` to get its class.
+
+If the class's constructor needs other services, register those too. See [Custom Loading Logic](/advance/customloadplugin) for places to add your own code during loading.

@@ -1,8 +1,12 @@
 # Plugin Resource Paths
 
-Use `ms-plugin://{assembly name}/{file path}` for plugin resources. The assembly name excludes `.dll` and must match `DllName`.
+The app needs to know which plugin owns an image before it can find it. Use `ms-plugin://{assembly name}/{file path}` to identify resources inside a plugin.
 
-## Use in code
+For example, `Assets/th.jpg` in Emoji becomes `ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg`. Leave `.dll` off the assembly name.
+
+## Use a path in code
+
+Once the plugin has loaded, call `PluginPath()` to turn the address into a resource URI WinUI understands:
 
 ```csharp
 using CustomExtensions.WinUI;
@@ -11,11 +15,11 @@ string original = "ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg";
 string resolved = original.PluginPath();
 ```
 
-`PluginPath()` returns a WinUI resource address string, not necessarily a disk path suitable for `File.ReadAllText`. The plugin must already be registered with `ApplicationExtensionHost`. Strings without the `ms-plugin://` prefix are returned unchanged.
+Pass the result to WinUI controls. For disk access with methods such as `File.ReadAllText`, use the file's actual filesystem path.
 
-## Use in XAML
+## Use a path in XAML
 
-For fixed addresses, use markup extensions from `CustomExtensions.WinUI`:
+Import `CustomExtensions.WinUI`, then choose the extension that matches your control's property:
 
 ```xml
 <UserControl
@@ -33,9 +37,15 @@ For fixed addresses, use markup extensions from `CustomExtensions.WinUI`:
 </UserControl>
 ```
 
-`PluginPath` returns `string`, `PluginUri` returns `Uri`, and `PluginImageSource` returns an image source. Initialize the control with `LoadComponent` as described in [Custom Controls](/plugin/control).
+- `PluginImageSource` works with image properties such as `Image.Source`.
+- `PluginUri` returns a `Uri` for properties such as `BitmapIcon.UriSource`.
+- `PluginPath` returns a string, useful for displaying the resource address.
 
-For binding, register converters in control or application resources using the same `cw` namespace:
+Also update the control's constructor to use `LoadComponent`, as shown in [Custom Controls](/plugin/control).
+
+## Use a path with binding
+
+For a bound address, use the matching converter. First add the converters to control or application resources:
 
 ```xml
 <UserControl.Resources>
@@ -45,4 +55,6 @@ For binding, register converters in control or application resources using the s
 </UserControl.Resources>
 ```
 
-For a control with a `string ImagePath` property, for example, use `Source="{x:Bind ImagePath, Converter={StaticResource PluginImageSourceConverter}}"`. Converters return the same types as their corresponding markup extensions.
+If your control has a `string ImagePath` property, set the image's source to `Source="{x:Bind ImagePath, Converter={StaticResource PluginImageSourceConverter}}"`.
+
+The other two converters work the same way, returning a string or a `Uri`.

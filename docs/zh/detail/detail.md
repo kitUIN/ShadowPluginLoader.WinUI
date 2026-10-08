@@ -1,6 +1,6 @@
 # 插件加载流程
 
-以下描述当前默认 `InstallPipeline`、`MainProcessor` 和 `AbstractPluginLoader` 的协作顺序。
+调用 `ProcessAsync()` 之后，加载器会怎样一步步把插件准备好？可以结合下面的流程图来看。
 
 ```mermaid
 flowchart TD
@@ -23,8 +23,10 @@ flowchart TD
     P -- No --> R[Remain disabled]
 ```
 
-预处理器将本地 JSON、压缩包和 HTTP 下载转换为工作件。主处理器解压、解析元数据、检查 SDK 版本与依赖，加载程序集并注册配置与主类，最后输出插件 ID。加载器按该顺序解析实例并触发生命周期。
+先读取插件包或下载文件，再检查插件信息和依赖。检查完成后，加载器会加载 DLL、准备配置，最后创建插件实例，并通知主程序“插件加载好了”。
 
-同一批次的相同 ID 会优先选择更高版本，再比较 `Priority`；已经加载的程序集会被过滤。依赖优先加载，然后才考虑数值较小的 `Priority`。这不提供运行时程序集卸载或替换。
+如果插件依赖其他插件，会先加载它们。没有依赖关系时，`Priority` 越小越早加载。同一次处理里出现相同 ID 的多个版本，会优先选择高版本。
 
-使用方法见[安装与管理](/zh/plugin/install)，扩展方式见[自定义加载逻辑](/zh/advance/customloadplugin)。
+已经加载的插件会跳过。要更新它，请使用更新方法，并在重启后生效。
+
+想直接使用，可以看[安装、更新和删除](/zh/plugin/install)；想在某个步骤加入自己的处理，可以看[自定义加载逻辑](/zh/advance/customloadplugin)。
