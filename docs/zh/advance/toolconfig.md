@@ -1,55 +1,33 @@
-# `Tool.Config.props`文件
+# Tools.Config.props
 
-依赖本项目之后,会在生成过程中生成一份`Tool.Config.props`文件到你的项目目录中
+工具在首次构建时将默认 `Tools.Config.props` 复制到项目根目录。也可以预先手动创建，再按项目角色修改。文件名中的 `Tools` 为复数。
 
-该文件示例如下:
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
+```xml [Tools.Config.props]
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <!-- Whether the current project is a PluginLoader -->
-        <IsPluginLoader>false</IsPluginLoader>
-        <!-- Whether the current project is a Plugin -->
-        <IsPlugin>false</IsPlugin>
-        <!-- Auto Pack Plugin When IsPlugin == True-->
-        <AutoPluginPackage>true</AutoPluginPackage>
-        <!-- Auto Generate I18N -->
-        <AutoGenerateI18N>true</AutoGenerateI18N>
-        <!-- Debug SourceGenerator-->
-        <DebugSourceGenerator>false</DebugSourceGenerator>
-    </PropertyGroup>
+  <PropertyGroup>
+    <IsPluginLoader>false</IsPluginLoader>
+    <IsPlugin>false</IsPlugin>
+    <AutoPluginPackage>true</AutoPluginPackage>
+    <PluginMisxPackage>false</PluginMisxPackage>
+    <AutoGenerateI18N>true</AutoGenerateI18N>
+    <DebugSourceGenerator>false</DebugSourceGenerator>
+  </PropertyGroup>
 </Project>
 ```
 
-| 名称                      |    类型    | 说明                                                        |
-|-------------------------|:--------:|-----------------------------------------------------------|
-| `IsPluginLoader`        |  `bool`  | 该项目是否是插件加载器项目,详见[IsPluginLoader](#IsPluginLoader)         |
-| `IsPlugin`              |  `bool`  | 该项目是否是插件项目,详见[IsPlugin](#IsPlugin)                        |
-| `AutoPluginPackage`     |  `bool`  | 是否自动打包为插件(仅在`IsPlugin`为`true`时有效),详见[插件打包](/zh/plugin/pack) |
-| `AutoGenerateI18N`      |  `bool`  | 是否自动生成I18N帮助类,详见[I18N国际化](/zh/advance/i18n)               |
-| `DebugSourceGenerator`  | `bool`   | 只对插件项目有效,是否可见源生成器的输出文件(启用后将生成于`GeneratedFiles`)                           |
+| 属性 | 默认值 | 行为 |
+| --- | --- | --- |
+| `IsPluginLoader` | `false` | 导出 `[ExportMeta]` 的 Schema，并打入 SDK NuGet 包 |
+| `IsPlugin` | `false` | 导入插件构建目标，复制 `plugin.d.json`，生成元数据并打包 |
+| `AutoPluginPackage` | `true` | 插件构建时执行打包目标 |
+| `PluginMisxPackage` | `false` | 额外调用 MSIX 打包脚本，需证书配置；拼写以此为准 |
+| `AutoGenerateI18N` | `true` | 将 `Strings/**/*` 作为源生成器的附加输入 |
+| `DebugSourceGenerator` | `false` | 插件项目将生成源码输出到 `GeneratedFiles` |
 
-::: warning 注意
+SDK 设置 `IsPluginLoader=true`、`IsPlugin=false`；插件反过来；普通宿主两者都为 false。不要同时开启两者，当前目标导入在这种情况下优先采用 SDK 分支。
 
-`IsPluginLoader`与`IsPlugin`只能有一个为`true`
+源 `plugin.json` 必须自行编写，工具会渲染、校验并在输出目录生成最终文件。当前 `ReadMetaData` 挂在 `PackagePlugin` 前执行；关闭自动打包时，自定义流程应显式保留元数据生成步骤，并核对输出中的 JSON 是否更新。
 
-:::
+`DebugSourceGenerator` 生成的文件用于检查，不要手动编辑或重复加入编译。构造函数生成由 `[Autowired]` / `[CheckAutowired]` 触发，与 `AutoGenerateI18N` 无关。
 
-## IsPluginLoader
-
-`IsPluginLoader`指明该项目是否是插件加载器项目
-
-如果为`true`:
-- 导出`[ExportMeta]`的元数据类
-- 把元数据定义文件打包进`nuget`包的`build`文件夹与`buildTransitive`文件夹
-
-## IsPlugin
-
-`IsPlugin`指明该项目是否是插件项目
-
-如果为`true`:
-- 从`.csproj`文件中自动生成出`plugin.json`
-- 从`PluginLoader项目`中自动复制`plugin.d.json`到`Plugin项目`目录
-- 允许使用[插件打包](/zh/plugin/pack)功能
-
-
+参见[自定义打包](/zh/advance/custompluginbuild)、[依赖注入](/zh/advance/quickdi)和[国际化](/zh/advance/i18n)。

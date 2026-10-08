@@ -1,66 +1,54 @@
-# Create Plugin Metadata Class
+# Create Plugin Metadata
+
+The default `AbstractPluginLoader<TMeta, TAPlugin>`, `DiFactory.Init<TAPlugin, TMeta>()`, and main processor require `TMeta` to derive from `BasePluginMetaData`.
 
 ```csharp [ExampleMetaData.cs]
-// Example code
 using ShadowPluginLoader.Attributes;
-using ShadowPluginLoader.WinUI.Models;
+using ShadowPluginLoader.WinUI;
 
 namespace ShadowExample.Core.Plugins;
 
 [ExportMeta]
-public record ExampleMetaData : AbstractPluginMetaData
+public record ExampleMetaData : BasePluginMetaData
 {
-    [Meta(Required = true, PropertyGroupName = "Author")]
-    public string Author { get; init; }
+    [Meta(Required = false)]
+    public string[] Authors { get; init; } = [];
+
+    [Meta(Required = false)]
+    public string? Url { get; init; }
 }
 ```
 
-## Export Metadata
+`BasePluginMetaData` extends `AbstractPluginMetaData` with runtime `MainPlugin` and `EntryPoints` resolution. Deriving only from `AbstractPluginMetaData` does not satisfy the default loader's generic constraint. `[ExportMeta]` exports `plugin.d.json`; provide one exported metadata type per SDK.
 
-The `ExportMeta` attribute indicates that this class is metadata that needs to be exported.
+## Built-in properties
 
-Your metadata class **must** use `ExportMeta`.
+| Property | Type | Source and purpose |
+| --- | --- | --- |
+| `Id` / `Name` | `string` | Plugin identifier / display name; required in the template |
+| `Version` | `NuGetVersion` | Plugin version, represented as a JSON string |
+| `SdkVersion` | `VersionRange` | SDK compatibility range; the build tool applies the schema default |
+| `Priority` | `int` | Defaults to 0; smaller values load earlier, subject to dependencies |
+| `Dependencies` | `PluginDependency[]` | Dependency `Id` and `Need` version ranges |
+| `DllName` | `string` | Assembly name without `.dll`, written by the build tool |
+| `BuiltIn` | `bool` | From `[MainPlugin(BuiltIn = true)]`; defaults to false |
+| `Raw` | `JsonElement` | A copy of the original JSON |
+| `MainPlugin` | `Type` | Main class resolved after assembly loading |
+| `EntryPoints` | `PluginEntryPointType[]` | Additional entry points resolved after assembly loading |
 
-It will automatically export as a `metadata definition file (plugin.d.json)` for subsequent plugins to use.
+For SDK assembly version `1.3.1.0`, the tool generates the default `SdkVersion: "[1.3, 1.4)"`. Runtime checks use the version of the SDK assembly containing the metadata type.
 
+## Custom properties
 
-## Inheritance
+Use deserializable properties, normally `{ get; init; }`. Arrays and nested objects are supported. Give optional properties defaults or nullable types. JSON names must match the metadata properties.
 
-Your metadata class **must** inherit from `AbstractPluginMetaData`.
+| `Meta` option | Type | Default | Effect |
+| --- | --- | --- | --- |
+| `Required` | `bool` | `true` | Marks a required schema property |
+| `Exclude` | `bool` | `false` | Removes the property from the exported schema |
+| `Regex` | `string?` | `null` | Schema string pattern constraint |
+| `AsString` | `bool` | `false` | Sets the schema type to string |
+| `Converter` | `Type?` | `null` | Registers a runtime `System.Text.Json` converter with a parameterless constructor |
+| `PropertyGroupName` | `string?` | `null` | Retained on the attribute, but not used for mapping by the current template reader |
 
-`AbstractPluginMetaData` is the default plugin metadata [AbstractPluginMetaData.cs](https://github.com/kitUIN/ShadowPluginLoader.WinUI/blob/master/ShadowPluginLoader.WinUI/AbstractPluginMetaData.cs)
-
-## Additional Metadata Items
-
-In the example above, we added a new metadata item `Author`.
-
-```csharp
-public string Author { get; init; }
-```
-
-- All metadata items need to use property accessors
-  - `PluginEntryPointType` (`{ get;private set; }`)
-  - Other types (`{ get; init; }`)
-- Use `Array` for lists
-- Supports other basic types and entity classes
-
-## Additional Configuration for Metadata Items
-
-```csharp
-    [Meta(Required = true, PropertyGroupName = "Author")]
-    public string Author { get; init; }
-```
-
-In the above, we used the `Meta` attribute.
-
-This attribute is used to configure our metadata items.
-
-| Configurable Item | Type | Default | Description |
-| ------------- | :-----------: | ---- | ---- |
-| `Required` | `bool` | `true` | Whether it's required |
-| `Exclude` | `bool` | `false` | Whether to ignore this property, ignored properties won't be exported to define file |
-| `Regex` | `string?` | `null` | Regular expression for matching the property value |
-| `PropertyGroupName` | `string` | Property name | Corresponding `MSBuild` name for metadata, case sensitive |
-| `Converter` | `Type` | Custom converter | Custom converter inheriting from `JsonConverter` |
-| `AsString` | `string` | Whether to save as `string` | Serialize as `string` |
-| ~~`Nullable`~~ | ~~`bool`~~ | ~~`false`~~ | ~~Whether to allow this property to be `null`~~ Automatically determined by whether class name has question mark |
+Reference project properties with Scriban templates in `plugin.json`; see [Create a Plugin](/plugin/create). `AsString` does not implement runtime conversion. Versions and dependencies have built-in converters; custom types need their own handling. Access entry points through `MetaData.EntryPoints`, as described in [Entry Points](/advance/entrypoint).

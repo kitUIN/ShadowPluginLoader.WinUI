@@ -1,21 +1,11 @@
 # Plugin Development
 
-After you've designed your plugin loader, it's time to write plugins.
-- [Create Your Plugin Project](/plugin/create)
+Complete [SDK and host initialization](/init/) before [creating a plugin project](/plugin/create). Plugins can contain C# code, WinUI XAML controls, resource dictionaries, images, and localized resources.
 
-Plugins can load the following content:
-- C# code
-- Custom WinUI controls (Page/UserControl)
-- Custom resource dictionaries (ResourceDictionary)
-- Resource files (Assets)
-- i18n (Resw)
+- [Custom Controls](/plugin/control): load XAML through the extension host.
+- [Resource Paths](/plugin/msplugin), [Resource Dictionaries](/plugin/resourcedictionary), and [Resource Files](/plugin/assets).
+- [Plugin Configuration](/plugin/config) and [Internationalization](/advance/i18n).
+- [Packaging](/plugin/pack) and [Installation, Updates, and Removal](/plugin/install).
+- [Plugin Events](/plugin/event).
 
-However, due to `WinUI` limitations, we need to follow some rules:
-- [WinUI Controls](/plugin/control#WinUI控件规则)
-- [Resource Dictionaries](/plugin/resourcedictionary#资源字典规则)
-- [Resource Files](/plugin/assets#资源文件规则)
-
-This project also provides convenient features:
-- [Plugin Configuration](/plugin/config)
-- [Packaging Functionality](/plugin/pack)
-- [Plugin Events](/plugin/event)
+Plugin base classes use `AbstractPlugin<TMeta>`. Pipelines handle installation, while updates and removals execute during startup checks after restart.

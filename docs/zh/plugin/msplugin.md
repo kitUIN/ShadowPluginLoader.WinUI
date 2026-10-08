@@ -1,117 +1,48 @@
 # 插件资源路径
 
-## 定义
+插件资源地址格式为 `ms-plugin://{程序集名称}/{文件路径}`。这里使用不含 `.dll` 的程序集名称，保持与 `DllName` 一致。
 
-`ms-plugin://{程序集名称}/{文件路径}`
-
-## 示例
-
-程序集名称: `ShadowViewer.Plugin.Bika`
-
-文件路径: `/Themes/BikaTheme.xaml`
-
-插件资源路径: `ms-plugin://ShadowViewer.Plugin.Bika/Themes/BikaTheme.xaml`
-
-## 使用
-
-### 代码中使用
+## 代码中使用
 
 ```csharp
 using CustomExtensions.WinUI;
-public void Test()
-{
-    string originPath =  "ms-plugin://ShadowViewer.Plugin.Bika/Themes/BikaTheme.xaml"
-    string realPath = originPath.PluginPath();
-}
+
+string original = "ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg";
+string resolved = original.PluginPath();
 ```
 
-### 在 XAML 中使用
+`PluginPath()` 返回供 WinUI 使用的资源地址字符串，不保证是可直接传给 `File.ReadAllText` 的磁盘路径。它需要插件已注册到 `ApplicationExtensionHost`；非 `ms-plugin://` 字符串保持原样。
 
-#### Converter
+## 在 XAML 中使用
 
-这里提供三种 Converter
+静态资源地址可使用 `CustomExtensions.WinUI` 中的标记扩展：
 
-```xml [App.xaml]
-<!-- xmlns:cw="using:CustomExtensions.WinUI" -->
-<cw:PluginPathConverter x:Key="PluginPathConverter" />
-<cw:PluginUriConverter x:Key="PluginUriConverter" />
-<cw:PluginImageSourceConverter x:Key="PluginImageSourceConverter" />
-```
-
-- `PluginPathConverter` 用于返回值类型为 string
-- `PluginUriConverter` 用于返回值类型为 Uri
-- `PluginImageSourceConverter` 用于返回值类型为 ImageSource
-
-使用时需要在 App.xaml 或者 Page 中实例化
-
-::: code-group
-
-```xml [App.xaml]
-<Application
-    x:Class="ShadowViewer.App"
+```xml
+<UserControl
+    x:Class="ShadowExample.Plugin.Emoji.Controls.UserControl1"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:cw="using:CustomExtensions.WinUI"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Application.Resources>
-        <ResourceDictionary>
-            <cw:PluginUriConverter x:Key="PluginUriConverter" />
-            <cw:PluginPathConverter x:Key="PluginPathConverter" />
-            <cw:PluginImageSourceConverter x:Key="PluginImageSourceConverter" />
-        </ResourceDictionary>
-    </Application.Resources>
-</Application>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cw="using:CustomExtensions.WinUI">
+    <StackPanel>
+        <Image Source="{cw:PluginImageSource Source='ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg'}" />
+        <TextBlock Text="{cw:PluginPath Source='ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg'}" />
+        <BitmapIcon
+            UriSource="{cw:PluginUri Source='ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg'}"
+            ShowAsMonochrome="False" />
+    </StackPanel>
+</UserControl>
 ```
 
-```xml [Page.xaml]
-<Page.Resources>
-    <cw:PluginUriConverter x:Key="PluginUriConverter" />
+`PluginPath` 返回 `string`，`PluginUri` 返回 `Uri`，`PluginImageSource` 返回图片源。控件代码还需按[自定义控件](/zh/plugin/control)调用 `LoadComponent`。
+
+对于数据绑定，先在控件或应用资源中注册转换器（沿用上面的 `cw` 命名空间）：
+
+```xml
+<UserControl.Resources>
     <cw:PluginPathConverter x:Key="PluginPathConverter" />
+    <cw:PluginUriConverter x:Key="PluginUriConverter" />
     <cw:PluginImageSourceConverter x:Key="PluginImageSourceConverter" />
-</Page.Resources>
+</UserControl.Resources>
 ```
 
-:::
-
-使用`x:Bind`
-
-```xml
-<local2:PluginLogo
-    Grid.Column="0"
-    Width="60"
-    Height="60"
-    FontIconSize="35"
-    FontSize="40"
-    Logo="{x:Bind MetaData.Logo, Mode=OneWay, Converter={StaticResource PluginPathConverter}}" />
-```
-
-#### Extension
-
-这里提供三种 Extension
-
-```xml
-<!-- xmlns:cw="using:CustomExtensions.WinUI" -->
-cw:PluginPath
-cw:PluginUri
-cw:PluginImageSource
-```
-
-```xml
-<!-- xmlns:cw="using:CustomExtensions.WinUI" -->
-
-<Image
-    Grid.Row="0"
-    Width="300"
-    Source="{cw:PluginImageSource Source='ms-plugin://ShadowViewer.Plugin.Bika/Assets/Picacgs/logo.png'}"
-    />
-<TextBlock
-    Width="30"
-    Height="30"
-    Text="{cw:PluginPath Source='ms-plugin://ShadowViewer.Plugin.Bika/Assets/Icons/logo.png'}"
-     />
-<BitmapIcon
-    Width="30"
-    Height="30"
-    UriSource="{cw:PluginUri Source='ms-plugin://ShadowViewer.Plugin.Bika/Assets/Icons/logo.png'}"
-    ShowAsMonochrome="False" />
-
-```
+例如控件有一个 `string ImagePath` 属性时，可使用 `Source="{x:Bind ImagePath, Converter={StaticResource PluginImageSourceConverter}}"`。转换器与对应标记扩展的返回类型相同。

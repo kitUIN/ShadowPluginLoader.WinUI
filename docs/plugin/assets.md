@@ -1,11 +1,9 @@
 # Resource Files
 
-## Resource File Rules
+Put images and other resources under the plugin's `Assets` directory and ensure they appear as WinUI content in build output and the final package. The repository Emoji plugin uses `Assets/th.jpg`.
 
-In plugins, if we want to use some image or file resources from within the plugin package, we cannot load them directly.
+Use `ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg`, resolving it with `PluginPath()` in code or `PluginImageSource` / `PluginUri` in XAML. See [Plugin Resource Paths](/plugin/msplugin) for complete examples.
 
-We need some methods to modify the loading path so the program can recognize them correctly.
+Do not treat a resolved WinUI resource URI as an ordinary disk path. For arbitrary data files, follow your storage API's URI requirements, or derive the deployment directory from the plugin assembly's `Assembly.Location` and combine the actual file path.
 
-[Xaml Usage](/plugin/msplugin.html#在-xaml-中使用)
-
-[Code Usage](/plugin/msplugin.html#代码中使用)
+Before distributing, check that [packaging exclusions](/plugin/pack) retain all required resources.

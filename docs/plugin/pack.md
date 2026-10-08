@@ -1,61 +1,40 @@
 # Plugin Packaging
 
-## Prerequisites
+Set `IsPlugin=true`, `IsPluginLoader=false`, and `AutoPluginPackage=true` in `Tools.Config.props`, then build the plugin.
 
-Set `IsPlugin` and `AutoPluginPackage` to `true` in `Tool.Config.props`
+## Output
 
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <!-- Whether the current project is a PluginLoader -->
-        <IsPluginLoader>false</IsPluginLoader>
-        <!-- Whether the current project is a Plugin --> <!-- [!code focus] -->
-        <IsPlugin>true</IsPlugin> <!-- [!code focus] -->
-        <!-- Auto Pack Plugin When IsPlugin == True--> <!-- [!code focus] -->
-        <AutoPluginPackage>true</AutoPluginPackage> <!-- [!code focus] -->
-        <!-- Auto Generate I18N -->
-        <AutoGenerateI18N>true</AutoGenerateI18N>
-    </PropertyGroup>
-</Project>
+Packages default to `$(ProjectDir)Packages/`:
+
+- Release: `$(TargetName)-$(Version).sdow`.
+- Debug: `$(TargetName)-$(Version)-Debug.sdow`.
+
+`.sdow` uses ZIP format and is created from the plugin build output. It contains assemblies, generated metadata, XAML, and resources. This abbreviated layout shows the important relationship; retain generated PRI files and required dependencies as well:
+
+```text
+ShadowExample.Plugin.Emoji.dll
+ShadowExample.Plugin.Emoji/
+  plugin.json
+  Themes/
+    ResourceDictionary1.xaml
+  Assets/
+    th.jpg
 ```
 
-## Packaging
+`plugin.json` is inside the assembly-named subdirectory, with the DLL one level above it. Do not package only the source template or DLL. The archive preprocessor searches for ZIP entries ending in `/plugin.json`.
 
-After build completion, it will automatically package as an `sdow` file.
+## Exclude files
 
-Default path: `$(ProjectDir)Packages` (in the project folder's `Packages` folder)
+Create `Plugin.Build.exclude` in the project directory, with one pattern per line:
 
-::: tip Note
-To modify default configuration, see: [Custom Packaging](/advance/custompluginbuild#自定义打包)
-:::
-
-### Exclude Files
-
-Some files we don't want to package into the `sdow` file.
-
-Create a new file `Plugin.Build.exclude` in the project folder.
-
-For example:
-```txt
-Fluent/*
+```text [Plugin.Build.exclude]
+*.pdb
 hello.*
+Fluent
 ```
 
-Only supports:
-- `?` wildcard for one character
-- `*` wildcard for multiple characters
+The current packager recursively enumerates output and matches **file or directory names**, case-insensitively. `*` matches any characters and `?` matches one character. `Fluent` matches that directory name at any depth. Path patterns such as `Fluent/*` or `core/**/text.txt` do not match because comparisons do not use relative paths.
 
-This way, the `Fluent` folder and files named `hello` in the output folder will not be packaged.
+The project list replaces the tool's default list. Exclusion actually deletes matching files/directories from build output before creating the archive; source files are unaffected. Rebuild before reusing the output for another deployment workflow.
 
-If you want to exclude a specific file in all subdirectories under a folder:
-
-Use:
-```txt
-core/*text.txt 
-```
-
-Don't use:
-```txt
-core/**/text.txt 
-```
+See [Custom Packaging](/advance/custompluginbuild) for naming, target replacement, and optional MSIX support, or [Installation and Management](/plugin/install) to load the archive.

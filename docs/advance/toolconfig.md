@@ -1,53 +1,33 @@
-# `Tool.Config.props` File
+# Tools.Config.props
 
-After depending on this project, a `Tool.Config.props` file will be generated in your project directory during the build process.
+On the first build, the tool copies default `Tools.Config.props` into the project directory. You can also create it beforehand and configure the project role. The filename uses plural `Tools`.
 
-The file example is as follows:
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
+```xml [Tools.Config.props]
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <!-- Whether the current project is a PluginLoader -->
-        <IsPluginLoader>false</IsPluginLoader>
-        <!-- Whether the current project is a Plugin -->
-        <IsPlugin>false</IsPlugin>
-        <!-- Auto Pack Plugin When IsPlugin == True-->
-        <AutoPluginPackage>true</AutoPluginPackage>
-        <!-- Auto Generate I18N -->
-        <AutoGenerateI18N>true</AutoGenerateI18N>
-        <!-- Debug SourceGenerator-->
-        <DebugSourceGenerator>false</DebugSourceGenerator>
-    </PropertyGroup>
+  <PropertyGroup>
+    <IsPluginLoader>false</IsPluginLoader>
+    <IsPlugin>false</IsPlugin>
+    <AutoPluginPackage>true</AutoPluginPackage>
+    <PluginMisxPackage>false</PluginMisxPackage>
+    <AutoGenerateI18N>true</AutoGenerateI18N>
+    <DebugSourceGenerator>false</DebugSourceGenerator>
+  </PropertyGroup>
 </Project>
 ```
 
-| Name | Type | Description |
-| ------------- | :-----------: | ---- |
-| `IsPluginLoader` | `bool` | Whether this project is a plugin loader project, see [IsPluginLoader](#IsPluginLoader) |
-| `IsPlugin` | `bool` | Whether this project is a plugin project, see [IsPlugin](#IsPlugin) |
-| `AutoPluginPackage` | `bool` | Whether to automatically package as plugin (only effective when `IsPlugin` is `true`), see [Plugin Packaging](/plugin/pack) |
-| `AutoGenerateI18N` | `bool` | Whether to automatically generate I18N helper classes, see [I18N Internationalization](/advance/i18n) |
-| `DebugSourceGenerator` | `bool` | Applies only to the plugin project. Determines whether the source generator’s output files are visible (when enabled, they will be generated under `GeneratedFiles` |
+| Property | Default | Behavior |
+| --- | --- | --- |
+| `IsPluginLoader` | `false` | Exports the `[ExportMeta]` schema and packages it in the SDK NuGet package |
+| `IsPlugin` | `false` | Imports plugin targets, copies `plugin.d.json`, generates metadata, and packages output |
+| `AutoPluginPackage` | `true` | Runs plugin packaging during build |
+| `PluginMisxPackage` | `false` | Also invokes the MSIX script; requires certificate configuration and this exact spelling |
+| `AutoGenerateI18N` | `true` | Supplies `Strings/**/*` as generator additional files |
+| `DebugSourceGenerator` | `false` | Writes generated source to `GeneratedFiles` for plugin projects |
 
-::: warning Note
+SDKs set `IsPluginLoader=true` and `IsPlugin=false`; plugins do the reverse. Ordinary hosts leave both false. Do not enable both; current target imports prioritize the SDK branch in that case.
 
-Only one of `IsPluginLoader` and `IsPlugin` can be `true`.
+Write the source `plugin.json` yourself. The tool renders and validates it, then generates the output file. `ReadMetaData` currently runs before `PackagePlugin`; when disabling automatic packaging, explicitly retain metadata generation in your custom workflow and verify the output JSON is up to date.
 
-:::
+Generated files are for inspection; do not edit them or add them to compilation twice. Constructor generation is triggered by `[Autowired]` / `[CheckAutowired]`, independently of `AutoGenerateI18N`.
 
-## IsPluginLoader
-
-`IsPluginLoader` indicates whether this project is a plugin loader project.
-
-If `true`:
-- Export `[ExportMeta]` metadata classes
-- Package metadata definition file into `nuget` package's `build` folder and `buildTransitive` folder
-
-## IsPlugin
-
-`IsPlugin` indicates whether this project is a plugin project.
-
-If `true`:
-- Automatically generate `plugin.json` from `.csproj` file
-- Automatically copy `plugin.d.json` from the `PluginLoader project` to the `Plugin project` directory.
-- Allow using [plugin packaging](/plugin/pack) functionality
+See [Custom Packaging](/advance/custompluginbuild), [Dependency Injection](/advance/quickdi), and [Internationalization](/advance/i18n).

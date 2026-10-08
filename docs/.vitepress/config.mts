@@ -90,6 +90,8 @@ export default withMermaid({
               base: "/advance/",
               items: [
                 { text: "Custom Plugin Loading Logic", link: "customloadplugin" },
+                { text: "Loading Flow", base: "/", link: "detail/detail" },
+                { text: "Custom Plugin Packaging", link: "custompluginbuild" },
                 { text: "I18N Internationalization", link: "i18n" },
                 { text: "Tools.Config.props File", link: "toolconfig" },
                 { text: "Quick Dependency Injection", link: "quickdi" },
@@ -106,7 +108,7 @@ export default withMermaid({
           ],
           editLink: {
             pattern:
-              "https://github.com/kitUIN/ShadowPluginLoader.WinUI/edit/main/docs/:path",
+              "https://github.com/kitUIN/ShadowPluginLoader.WinUI/edit/master/docs/:path",
             text: "Edit this page on GitHub",
           },
         },
@@ -173,10 +175,12 @@ export default withMermaid({
               base: "/zh/advance/",
               items: [
                 { text: "自定义插件加载逻辑", link: "customloadplugin" },
+                { text: "加载流程", base: "/zh/", link: "detail/detail" },
+                { text: "自定义插件打包", link: "custompluginbuild" },
                 { text: "I18N国际化", link: "i18n" },
-                { text: "Tool.Config.props文件", link: "toolconfig" },
+                { text: "Tools.Config.props文件", link: "toolconfig" },
                 { text: "快速依赖注入", link: "quickdi" },
-                { text: "注入点", link: "entrypoint" },
+                { text: "入口点", link: "entrypoint" },
               ],
             },
           ],
@@ -189,7 +193,7 @@ export default withMermaid({
           ],
           editLink: {
             pattern:
-              "https://github.com/kitUIN/ShadowPluginLoader.WinUI/edit/main/docs/:path",
+              "https://github.com/kitUIN/ShadowPluginLoader.WinUI/edit/master/docs/:path",
             text: "在Github上编辑此页",
           },
         },

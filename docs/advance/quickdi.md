@@ -1,72 +1,56 @@
 # Quick Dependency Injection
 
+`ShadowPluginLoader.SourceGenerator` generates constructors; DryIoc resolves the dependencies. Declare participating classes as `public partial`. Attributes are in `ShadowPluginLoader.Attributes`.
+
+## Autowired properties
+
 ```csharp
-public EmojiPlugin(ILogger logger, PluginEventService pluginEventService) : base(logger, pluginEventService)
+using Serilog;
+using ShadowPluginLoader.Attributes;
+
+namespace ShadowExample.ViewModels;
+
+public partial class StatusViewModel
 {
+    [Autowired]
+    public ILogger Logger { get; }
 
-}
-```
-
-If you find writing dependency injection constructors like the above too cumbersome,
-
-Here are two attributes for quick development:
-
-## [Autowired]
-
-This attribute targets properties:
-
-```csharp
-[Autowired]
-public PluginLoader PluginService { get;}
-[Autowired]
-public ICallableService Caller { get;}
-[Autowired]
-public INavigateService NavigateService { get;}
-```
-
-Will automatically generate constructor:
-```csharp
-// Automatic Generate From ShadowPluginLoader.SourceGenerator
-
-namespace ShadowViewer.ViewModels;
-
-public partial class TitleBarViewModel
-{
-    public TitleBarViewModel(global::ShadowViewer.Core.PluginLoader pluginService, global::ShadowViewer.Core.Services.ICallableService caller, global::ShadowViewer.Core.Services.INavigateService navigateService)
+    partial void ConstructorInit()
     {
-       PluginService = pluginService;
-       Caller = caller;
-       NavigateService = navigateService;
+        Logger.Information("StatusViewModel initialized");
     }
 }
 ```
 
-## [CheckAutowired]
+The generated constructor is equivalent to:
 
-This attribute targets classes:
-
-Will automatically detect if the current class needs a dependency injection constructor, and build it directly if needed:
 ```csharp
-[CheckAutowired]
-public partial class TitleBarViewModel
+public StatusViewModel(ILogger logger)
 {
-    
+    Logger = logger;
+    ConstructorInit();
 }
 ```
 
-Will automatically generate constructor:
+The generator also declares `partial void ConstructorInit()`. Implement it in your class for initialization after dependency assignment. Do not add another constructor with the same signature.
+
+## CheckAutowired classes
+
+Mark derived classes with `[CheckAutowired]` to detect and forward base constructor parameters even without new `[Autowired]` properties. For example, the [main plugin class](/plugin/create) receives:
+
 ```csharp
-// Automatic Generate From ShadowPluginLoader.SourceGenerator
-
-namespace ShadowViewer.ViewModels;
-
-public partial class TitleBarViewModel
+public EmojiPlugin(ExampleMetaData meta, ILogger logger,
+    PluginEventService pluginEventService)
+    : base(meta, logger, pluginEventService)
 {
-    public TitleBarViewModel(global::ShadowViewer.Core.PluginLoader pluginService, global::ShadowViewer.Core.Services.ICallableService caller, global::ShadowViewer.Core.Services.INavigateService navigateService)
-    {
-       PluginService = pluginService;
-       Caller = caller;
-       NavigateService = navigateService;
-    }
+    ConstructorInit();
 }
 ```
+
+These fragments explain generated output; do not paste them into classes that already receive generated constructors. `[CheckAutowired]` on an empty class does not invent service parameters. If there are no injection parameters, no constructor is generated.
+
+## Service registration
+
+Attributes do not register application services. Register dependencies with methods such as `DiFactory.Services.Register<TService, TImplementation>()` before resolving consumers. The default main processor registers plugin main classes by plugin ID and supplies their metadata. Plugins do not need to register their own main classes. Public configuration classes are loaded and registered as described in [Plugin Configuration](/plugin/config).
+
+For controls using generated constructors, call `this.LoadComponent(ref _contentLoaded)` inside `ConstructorInit()`. Avoid retaining a template constructor that bypasses required dependencies. See [Custom Controls](/plugin/control).

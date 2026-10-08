@@ -1,68 +1,54 @@
 # 创建插件元数据类
 
+默认 `AbstractPluginLoader<TMeta, TAPlugin>`、`DiFactory.Init<TAPlugin, TMeta>()` 和主处理器要求 `TMeta` 继承 `BasePluginMetaData`。
+
 ```csharp [ExampleMetaData.cs]
-// 示例代码
 using ShadowPluginLoader.Attributes;
-using ShadowPluginLoader.WinUI.Models;
+using ShadowPluginLoader.WinUI;
 
 namespace ShadowExample.Core.Plugins;
 
 [ExportMeta]
-public record ExampleMetaData : AbstractPluginMetaData
+public record ExampleMetaData : BasePluginMetaData
 {
-    [Meta(Required = true, PropertyGroupName = "Author")]
-    public string Author { get; init; }
+    [Meta(Required = false)]
+    public string[] Authors { get; init; } = [];
+
+    [Meta(Required = false)]
+    public string? Url { get; init; }
 }
 ```
 
-## 导出元数据
+`BasePluginMetaData` 继承 `AbstractPluginMetaData`，增加运行时解析的 `MainPlugin` 和 `EntryPoints`。仅继承 `AbstractPluginMetaData` 不满足默认加载器的泛型约束。`[ExportMeta]` 用于导出 `plugin.d.json`；一个 SDK 应提供一个导出的元数据类型。
 
-`ExportMeta`特性指明这个类是需要导出的元数据
+## 内置属性
 
-你的元数据类**必须**使用`ExportMeta`
+| 属性 | 类型 | 来源与用途 |
+| --- | --- | --- |
+| `Id` / `Name` | `string` | 插件标识 / 显示名称，模板中必填 |
+| `Version` | `NuGetVersion` | 插件版本，JSON 中使用字符串 |
+| `SdkVersion` | `VersionRange` | SDK 兼容范围；构建工具从定义文件补默认值 |
+| `Priority` | `int` | 默认 0，数值小的优先，依赖关系优先于优先级 |
+| `Dependencies` | `PluginDependency[]` | 依赖的 `Id` 与 `Need` 版本范围 |
+| `DllName` | `string` | 构建工具写入的程序集名称，不含 `.dll` |
+| `BuiltIn` | `bool` | 来自 `[MainPlugin(BuiltIn = true)]`，默认 false |
+| `Raw` | `JsonElement` | 原始 JSON 的副本 |
+| `MainPlugin` | `Type` | 加载程序集后解析的主类 |
+| `EntryPoints` | `PluginEntryPointType[]` | 加载程序集后解析的额外入口点 |
 
-会自动导出为`元数据定义文件(plugin.d.json)`给后续的插件使用
+例如 SDK 程序集版本为 `1.3.1.0` 时，工具默认生成 `SdkVersion: "[1.3, 1.4)"`。运行时检查的是元数据类型所在 SDK 程序集的版本。
 
+## 自定义属性
 
-## 继承
+使用可反序列化的属性（通常为 `{ get; init; }`）；数组和嵌套对象也可以作为元数据。可选字段应提供默认值或声明可空。`plugin.json` 的属性名需与元数据属性对应。
 
-你的元数据类**必须**继承`AbstractPluginMetaData`
-  
-`AbstractPluginMetaData`是默认的插件元数据[AbstractPluginMetaData.cs](https://github.com/kitUIN/ShadowPluginLoader.WinUI/blob/master/ShadowPluginLoader.WinUI/AbstractPluginMetaData.cs)
+| `Meta` 配置 | 类型 | 默认值 | 作用 |
+| --- | --- | --- | --- |
+| `Required` | `bool` | `true` | 标记 Schema 必填字段 |
+| `Exclude` | `bool` | `false` | 从导出的 Schema 中排除 |
+| `Regex` | `string?` | `null` | Schema 字符串正则约束 |
+| `AsString` | `bool` | `false` | 将 Schema 类型设为字符串 |
+| `Converter` | `Type?` | `null` | 运行时注册的 `System.Text.Json` 转换器，须有无参构造函数 |
+| `PropertyGroupName` | `string?` | `null` | 特性仍保留，但当前模板读取流程不使用它映射属性 |
 
-## 额外的元数据项
-
-在上文的示例中,我们新增了一个元数据项`Author`
-
-```csharp
-public string Author { get; init; }
-```
-
-- 所有的元数据项都需要使用属性访问器
-  - `PluginEntryPointType` (`{ get;private set; }`)
-  - 其他类型(`{ get; init; }`)
-- 列表请使用`Array`
-- 支持其他基本类型与实体类
-
-## 元数据项的额外配置
-
-```csharp
-    [Meta(Required = true, PropertyGroupName = "Author")]
-    public string Author { get; init; }
-```
-在上文中,我们使用了`Meta`特性
-
-该特性用于配置我们的元数据项
-
-| 可配置项       |      类型      |  默认值 | 说明 |
-| ------------- | :-----------: | ---- | ---- |
-| `Required`      | `bool` | `true` | 是否为必须项 |
-| `Exclude`      |   `bool`   |   `false` | 是否忽略该属性,忽略后该属性不会被导出到define文件中 |
-| `Regex` |   `string?`    |    `null` |  正则表达式,用于匹配该属性的值 |
-| `PropertyGroupName` |   `string`    | 属性名称 |  元数据的对应的`MSBuild`名称,大小写敏感 |
-| `Converter ` |   `Type`    | 自定义转换器 |  继承`JsonConverter`的自定义转换器 |
-| `AsString ` |   `string`    | 保存是否为`string` |  序列化为`string` |
-| ~~`Nullable`~~ |   ~~`bool`~~    |   ~~`false`~~ |  ~~是否允许该属性为`null`~~ 通过类名是否有问号自动判断 |
-
-
-
+用 `plugin.json` 中的 Scriban 模板引用项目属性，见[创建插件](/zh/plugin/create)。`AsString` 本身不提供运行时转换；版本和依赖已有内置转换器，自定义类型需自行处理。入口点通过 `MetaData.EntryPoints` 访问，见[入口点](/zh/advance/entrypoint)。

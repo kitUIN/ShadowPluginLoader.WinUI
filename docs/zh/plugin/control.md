@@ -1,37 +1,24 @@
 # 自定义控件
 
-## WinUI控件规则
+在插件中创建带 XAML 的 `Page` 或 `UserControl` 后，将模板构造函数里的 `InitializeComponent()` 替换为扩展加载方法：
 
-创建新的`Page`或者`用户控件`的时候会自动生成一个构造函数
+```csharp [UserControl1.xaml.cs]
+using CustomExtensions.WinUI;
+using Microsoft.UI.Xaml.Controls;
 
-```csharp
-// 示例
-public LoginTip()
+namespace ShadowExample.Plugin.Emoji.Controls;
+
+public sealed partial class UserControl1 : UserControl
 {
-    this.InitializeComponent();
-}
-```
-但是在插件中默认的`InitializeComponent()`无法正常加载
-
-所以我们要改为
-```csharp
-using CustomExtensions.WinUI; // [!code ++]
-public LoginTip()
-{
-    this.InitializeComponent(); // [!code --]
-    this.LoadComponent(ref _contentLoaded); // [!code ++]
+    public UserControl1()
+    {
+        this.LoadComponent(ref _contentLoaded);
+    }
 }
 ```
 
-这样就能正常识别与载入插件的Xaml内容
+`_contentLoaded` 是 WinUI XAML 生成代码提供的字段，不需要重复声明。`LoadComponent` 根据控件所在程序集和调用文件定位 XAML，再调用 `Application.LoadComponent`。
 
-::: warning 注意
+确保对应程序集已经通过插件加载流程注册到扩展宿主，再创建控件。不要同时调用 `InitializeComponent()` 和 `LoadComponent()`。纯代码控件不需要增加这段 XAML 加载逻辑。
 
-插件中的每一个`Page`或者`UserControl/Control`都要更改为这种形式,否则将无法加载
-
-:::
-
-## 编写
-
-其余用法与普通WinUI项目一致
-
+如果控件使用 `[Autowired]` 自动生成构造函数，将加载调用放到 `partial void ConstructorInit()`，详见[快速依赖注入](/zh/advance/quickdi)。图片和其他插件资源使用[插件资源路径](/zh/plugin/msplugin)。

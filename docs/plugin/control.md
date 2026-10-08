@@ -1,37 +1,24 @@
 # Custom Controls
 
-## WinUI Control Rules
+After creating a XAML-backed `Page` or `UserControl` in a plugin, replace the template constructor's `InitializeComponent()` with the extension loader:
 
-When creating a new `Page` or `UserControl`, a constructor is automatically generated.
+```csharp [UserControl1.xaml.cs]
+using CustomExtensions.WinUI;
+using Microsoft.UI.Xaml.Controls;
 
-```csharp
-// Example
-public LoginTip()
+namespace ShadowExample.Plugin.Emoji.Controls;
+
+public sealed partial class UserControl1 : UserControl
 {
-    this.InitializeComponent();
+    public UserControl1()
+    {
+        this.LoadComponent(ref _contentLoaded);
+    }
 }
 ```
 
-However, the default `InitializeComponent()` in plugins cannot load normally.
+WinUI-generated XAML code provides `_contentLoaded`; do not declare it again. `LoadComponent` locates XAML using the control assembly and calling file, then calls `Application.LoadComponent`.
 
-So we need to change it to:
-```csharp
-using CustomExtensions.WinUI; // [!code ++]
-public LoginTip()
-{
-    this.InitializeComponent(); // [!code --]
-    this.LoadComponent(ref _contentLoaded); // [!code ++]
-}
-```
+Load the plugin assembly through the extension host before creating its controls. Do not call both `InitializeComponent()` and `LoadComponent()`. Code-only controls do not need this XAML initialization step.
 
-This way, the plugin's Xaml content can be properly recognized and loaded.
-
-::: warning Note
-
-Every `Page` or `UserControl/Control` in the plugin must be changed to this form, otherwise it cannot be loaded.
-
-:::
-
-## Development
-
-The rest of the usage is consistent with regular WinUI projects.
+For `[Autowired]` constructors, put the loading call in `partial void ConstructorInit()`; see [Quick Dependency Injection](/advance/quickdi). Use [plugin resource paths](/plugin/msplugin) for images and other resources.

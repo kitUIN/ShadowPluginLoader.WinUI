@@ -1,36 +1,14 @@
-# Custom Resource Dictionary
+# Custom Resource Dictionaries
 
-## Resource Dictionary Rules
-
-Generally, we put some commonly used `Color` and `Style` into a `theme.xaml`.
-
-This `theme.xaml` internally contains `ResourceDictionary`.
-
-In normal projects, we would put it in `App.xaml`, but plugins don't have `App.xaml`, so this functionality is implemented in the `AbstractPlugin` class.
-
-## Example
-
-Assuming in plugin `ShadowViewer.Plugin.Bika` (DLL name)
-
-We have a file at `/Themes/BikaTheme.xaml`
-
-Please implement the following accessor in your own plugin main class:
+Plugins do not have their own `App.xaml`. Override the **protected** `ResourceDictionaries` property in the main plugin class, with `using System.Collections.Generic;`:
 
 ```csharp
-public override IEnumerable<string> ResourceDictionaries => new List<string>
-{
-    "ms-plugin://ShadowViewer.Plugin.Bika/Themes/BikaTheme.xaml"
-};
+protected override IEnumerable<string> ResourceDictionaries =>
+    ["ms-plugin://ShadowExample.Plugin.Emoji/Themes/ResourceDictionary1.xaml"];
 ```
 
-This will automatically merge the resource dictionary into `App.xaml` when the plugin is loaded.
+`ShadowExample.Plugin.Emoji` is the assembly name, not a display name. `AbstractPlugin<TMeta>.Init()` resolves each path, creates a `ResourceDictionary`, and adds it to `Application.Current.Resources.MergedDictionaries`.
 
-::: tip Note
+Merging happens during instance construction, before `Loaded()` and enabled events. Dictionaries are merged even for plugins with persisted disabled state and are not automatically removed when disabling a plugin. Avoid conflicting resource keys across plugins.
 
-If it's a built-in plugin, just use the `ms-appx:///` path directly.
-
-:::
-
-## Development
-
-The rest of the usage is consistent with regular WinUI projects.
+Built-in resources deployed with the host can use their correct `ms-appx:///` paths. Dictionary XAML otherwise follows ordinary WinUI usage; cross-plugin resource paths must follow the [resource path rules](/plugin/msplugin).

@@ -1,37 +1,14 @@
 # 自定义资源字典
 
-## 资源字典规则
-
-一般来说,我们会将一些常用的`Color`,`Style`塞到一个`theme.xaml`中
-
-这个`theme.xaml`内部是`ResourceDictionary`
-
-正常项目中我们都会塞到`App.xaml`里,但是插件是没有`App.xaml`的,所以在`AbstractPlugin`类中就实现了该功能
-
-
-## 示例
-
-假设在插件`ShadowViewer.Plugin.Bika`(DLL名称)中
-
-我们有一个文件在`/Themes/BikaTheme.xaml`
-
-请用你自己的插件主类实现以下访问器
+插件没有自己的 `App.xaml`。在插件主类中覆写 **protected** 的 `ResourceDictionaries` 属性（需要 `using System.Collections.Generic;`）：
 
 ```csharp
-public override IEnumerable<string> ResourceDictionaries => new List<string>
-{
-    "ms-plugin://ShadowViewer.Plugin.Bika/Themes/BikaTheme.xaml"
-};
+protected override IEnumerable<string> ResourceDictionaries =>
+    ["ms-plugin://ShadowExample.Plugin.Emoji/Themes/ResourceDictionary1.xaml"];
 ```
 
-这样会在插件加载进入的时候资源字典会自动合并到`App.xaml`
+路径中的 `ShadowExample.Plugin.Emoji` 是程序集名称，不是显示名称。`AbstractPlugin<TMeta>.Init()` 将路径转换后创建 `ResourceDictionary` 并加入 `Application.Current.Resources.MergedDictionaries`。
 
-::: tip 说明
+合并发生在插件实例构造期间，早于 `Loaded()` 和启用事件。即使插件保存为禁用状态，字典也会合并；默认实现没有在禁用时自动移除字典。应避免插件间资源键冲突。
 
-如果是内置插件,直接使用`ms-appx:///`路径即可
-
-:::
-
-## 编写
-
-其余用法与普通WinUI项目一致
+内置且已随宿主部署的资源可使用正确的 `ms-appx:///` 路径。普通字典内部的 XAML 写法与 WinUI 一致，但跨插件资源路径仍应遵循[资源路径规则](/zh/plugin/msplugin)。

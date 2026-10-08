@@ -1,117 +1,48 @@
-# Plugin Resource Path
+# Plugin Resource Paths
 
-## Definition
+Use `ms-plugin://{assembly name}/{file path}` for plugin resources. The assembly name excludes `.dll` and must match `DllName`.
 
-`ms-plugin://{Assembly Name}/{File Path}`
-
-## Example
-
-Assembly name: `ShadowViewer.Plugin.Bika`
-
-File path: `/Themes/BikaTheme.xaml`
-
-Plugin resource path: `ms-plugin://ShadowViewer.Plugin.Bika/Themes/BikaTheme.xaml`
-
-## Usage
-
-### In Code
+## Use in code
 
 ```csharp
 using CustomExtensions.WinUI;
-public void Test()
-{
-    string originPath =  "ms-plugin://ShadowViewer.Plugin.Bika/Themes/BikaTheme.xaml"
-    string realPath = originPath.PluginPath();
-}
+
+string original = "ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg";
+string resolved = original.PluginPath();
 ```
 
-### In XAML
+`PluginPath()` returns a WinUI resource address string, not necessarily a disk path suitable for `File.ReadAllText`. The plugin must already be registered with `ApplicationExtensionHost`. Strings without the `ms-plugin://` prefix are returned unchanged.
 
-#### Converter
+## Use in XAML
 
-Three converters are provided here:
+For fixed addresses, use markup extensions from `CustomExtensions.WinUI`:
 
-```xml [App.xaml]
-<!-- xmlns:cw="using:CustomExtensions.WinUI" -->
-<cw:PluginPathConverter x:Key="PluginPathConverter" />
-<cw:PluginUriConverter x:Key="PluginUriConverter" />
-<cw:PluginImageSourceConverter x:Key="PluginImageSourceConverter" />
-```
-
-- `PluginPathConverter` for return type string
-- `PluginUriConverter` for return type Uri
-- `PluginImageSourceConverter` for return type ImageSource
-
-You need to instantiate them in App.xaml or Page when using.
-
-::: code-group
-
-```xml [App.xaml]
-<Application
-    x:Class="ShadowViewer.App"
+```xml
+<UserControl
+    x:Class="ShadowExample.Plugin.Emoji.Controls.UserControl1"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:cw="using:CustomExtensions.WinUI"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Application.Resources>
-        <ResourceDictionary>
-            <cw:PluginUriConverter x:Key="PluginUriConverter" />
-            <cw:PluginPathConverter x:Key="PluginPathConverter" />
-            <cw:PluginImageSourceConverter x:Key="PluginImageSourceConverter" />
-        </ResourceDictionary>
-    </Application.Resources>
-</Application>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cw="using:CustomExtensions.WinUI">
+    <StackPanel>
+        <Image Source="{cw:PluginImageSource Source='ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg'}" />
+        <TextBlock Text="{cw:PluginPath Source='ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg'}" />
+        <BitmapIcon
+            UriSource="{cw:PluginUri Source='ms-plugin://ShadowExample.Plugin.Emoji/Assets/th.jpg'}"
+            ShowAsMonochrome="False" />
+    </StackPanel>
+</UserControl>
 ```
 
-```xml [Page.xaml]
-<Page.Resources>
-    <cw:PluginUriConverter x:Key="PluginUriConverter" />
+`PluginPath` returns `string`, `PluginUri` returns `Uri`, and `PluginImageSource` returns an image source. Initialize the control with `LoadComponent` as described in [Custom Controls](/plugin/control).
+
+For binding, register converters in control or application resources using the same `cw` namespace:
+
+```xml
+<UserControl.Resources>
     <cw:PluginPathConverter x:Key="PluginPathConverter" />
+    <cw:PluginUriConverter x:Key="PluginUriConverter" />
     <cw:PluginImageSourceConverter x:Key="PluginImageSourceConverter" />
-</Page.Resources>
+</UserControl.Resources>
 ```
 
-:::
-
-Using `x:Bind`:
-
-```xml
-<local2:PluginLogo
-    Grid.Column="0"
-    Width="60"
-    Height="60"
-    FontIconSize="35"
-    FontSize="40"
-    Logo="{x:Bind MetaData.Logo, Mode=OneWay, Converter={StaticResource PluginPathConverter}}" />
-```
-
-#### Extension
-
-Three extensions are provided here:
-
-```xml
-<!-- xmlns:cw="using:CustomExtensions.WinUI" -->
-cw:PluginPath
-cw:PluginUri
-cw:PluginImageSource
-```
-
-```xml
-<!-- xmlns:cw="using:CustomExtensions.WinUI" -->
-
-<Image
-    Grid.Row="0"
-    Width="300"
-    Source="{cw:PluginImageSource Source='ms-plugin://ShadowViewer.Plugin.Bika/Assets/Picacgs/logo.png'}"
-    />
-<TextBlock
-    Width="30"
-    Height="30"
-    Text="{cw:PluginPath Source='ms-plugin://ShadowViewer.Plugin.Bika/Assets/Icons/logo.png'}"
-     />
-<BitmapIcon
-    Width="30"
-    Height="30"
-    UriSource="{cw:PluginUri Source='ms-plugin://ShadowViewer.Plugin.Bika/Assets/Icons/logo.png'}"
-    ShowAsMonochrome="False" />
-
-```
+For a control with a `string ImagePath` property, for example, use `Source="{x:Bind ImagePath, Converter={StaticResource PluginImageSourceConverter}}"`. Converters return the same types as their corresponding markup extensions.

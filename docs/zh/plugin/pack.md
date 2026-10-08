@@ -1,63 +1,40 @@
 # 插件打包
 
-## 前置要求
+在 `Tools.Config.props` 中设置 `IsPlugin=true`、`IsPluginLoader=false` 和 `AutoPluginPackage=true`，然后构建插件。
 
-`Tool.Config.props`中`IsPlugin`与`AutoPluginPackage`设置为`true`
+## 输出
 
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <!-- Whether the current project is a PluginLoader -->
-        <IsPluginLoader>false</IsPluginLoader>
-        <!-- Whether the current project is a Plugin --> <!-- [!code focus] -->
-        <IsPlugin>true</IsPlugin> <!-- [!code focus] -->
-        <!-- Auto Pack Plugin When IsPlugin == True--> <!-- [!code focus] -->
-        <AutoPluginPackage>true</AutoPluginPackage> <!-- [!code focus] -->
-        <!-- Auto Generate I18N -->
-        <AutoGenerateI18N>true</AutoGenerateI18N>
-    </PropertyGroup>
-</Project>
+默认输出到 `$(ProjectDir)Packages/`：
+
+- Release：`$(TargetName)-$(Version).sdow`。
+- Debug：`$(TargetName)-$(Version)-Debug.sdow`。
+
+`.sdow` 是 ZIP 格式，打包来源为插件构建输出目录。它包含程序集、生成的元数据、XAML 和资源等。下面仅示意关键结构，实际部署还需保留生成的 PRI 和必要依赖：
+
+```text
+ShadowExample.Plugin.Emoji.dll
+ShadowExample.Plugin.Emoji/
+  plugin.json
+  Themes/
+    ResourceDictionary1.xaml
+  Assets/
+    th.jpg
 ```
 
-## 打包
+`plugin.json` 位于以程序集命名的子目录，DLL 位于其上一级。不要只把源模板或 DLL 放入包中；预处理器查找的是以 `/plugin.json` 结尾的 ZIP 条目。
 
-在生成结束后会自动打包为`sdow`文件
+## 排除文件
 
-默认路径为:`$(ProjectDir)Packages`(项目文件夹的`Packages`文件夹内)
+在项目目录创建 `Plugin.Build.exclude`，每行一个模式：
 
-::: tip 说明
-如果要修改默认配置,请查阅: [自定义打包](/zh/advance/custompluginbuild#自定义打包)
-:::
-
-### 排除文件
-
-有些不需要的文件我们不想打包进`sdow`文件中
-
-在项目文件夹新建文件`Plugin.Build.exclude`
-
-例如:
-```txt
-Fluent/*
+```text [Plugin.Build.exclude]
+*.pdb
 hello.*
+Fluent
 ```
 
-仅能使用
-- `?` 通配一个字符
-- `*` 通配多个字符
+当前打包器递归枚举输出目录，以**文件或目录名称**进行不区分大小写的匹配；`*` 匹配任意字符，`?` 匹配单个字符。`Fluent` 匹配任意层级的同名目录；带路径的 `Fluent/*` 或 `core/**/text.txt` 不匹配，因为比较的不是相对路径。
 
-这样在输出文件夹内的`Fluent`文件夹和名为`hello`的文件都不会被打包
+自定义清单替代工具默认清单。排除操作会实际删除构建输出目录中的匹配文件/目录，然后再压缩；不会修改源文件。若输出还要用于其他发布方式，请先重新构建。
 
-如果你想排除文件夹下所有子目录中的某个文件
-
-应当使用
-
-```txt
-core/*text.txt 
-```
-
-不要使用
-
-```txt
-core/**/text.txt 
-```
+输出命名、目标替换和可选 MSIX 见[自定义打包](/zh/advance/custompluginbuild)。安装生成的包见[安装与管理](/zh/plugin/install)。

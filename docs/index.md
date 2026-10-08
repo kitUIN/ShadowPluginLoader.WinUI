@@ -12,7 +12,7 @@ hero:
       link: /init/
     - theme: alt
       text: Examples
-      link: /api-examples
+      link: https://github.com/kitUIN/ShadowPluginLoader.WinUI/tree/master/ShadowExample
 
 features:
   - title: WinUI3
